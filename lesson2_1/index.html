@@ -900,6 +900,229 @@
      RENDERER — Box grid, status panel, meter, prisoner path
      ============================================================ */
 
+  // Cache box elements
+  let boxElements = null;
+
+  function ensureBoxElements() {
+    if (boxElements) return;
+    const grid = document.getElementById('box-grid');
+    grid.innerHTML = '';
+    boxElements = [];
+    for (let i = 0; i < 100; i++) {
+      const div = document.createElement('div');
+      div.className = 'box';
+      div.dataset.index = i;
+      grid.appendChild(div);
+      boxElements.push(div);
+    }
+  }
+
+  function renderBoxGrid() {
+    ensureBoxElements();
+    const current = state.prisonerPath.length > 0
+      ? state.prisonerPath[state.prisonerPath.length - 1]
+      : -1;
+    const pathSet = new Set(state.prisonerPath);
+
+    for (let i = 0; i < 100; i++) {
+      const el = boxElements[i];
+      // Reset classes
+      el.className = 'box';
+
+      if (state.revealed[i]) {
+        el.classList.add('revealed');
+        el.textContent = state.boxes[i];
+      } else {
+        el.textContent = '';
+      }
+
+      if (i === current && state.roundState === 'RUNNING') {
+        el.classList.add('current');
+        // Check if this was a found box
+        const prisonerVal = state.boxes[current];
+        if (prisonerVal === state.currentPrisoner) {
+          el.classList.add('found');
+        }
+      } else if (pathSet.has(i)) {
+        el.classList.add('in-path');
+      }
+
+      // If round ended as LOSE and this box is in the failed prisoner's path
+      if (state.roundState === 'LOSE' && pathSet.has(i) && i === current) {
+        el.classList.add('failed');
+      }
+    }
+  }
+
+  function renderStatusPanel() {
+    document.getElementById('stat-round').textContent = state.round;
+
+    const stateEl = document.getElementById('stat-state');
+    stateEl.textContent = state.roundState;
+    stateEl.className = 'stat-value';
+    stateEl.classList.add('state-' + state.roundState.toLowerCase());
+
+    const prisonerEl = document.getElementById('stat-prisoner');
+    if (state.roundState === 'RUNNING') {
+      prisonerEl.textContent = (state.currentPrisoner + 1) + ' / 100';
+    } else {
+      prisonerEl.textContent = state.roundState === 'IDLE' ? '—' : (state.currentPrisoner + 1) + ' / 100';
+    }
+
+    const boxesEl = document.getElementById('stat-boxes');
+    if (state.roundState === 'RUNNING') {
+      boxesEl.textContent = state.prisonerStep + ' / 50';
+    } else {
+      boxesEl.textContent = state.roundState === 'IDLE' ? '—' : state.prisonerStep + ' / 50';
+    }
+
+    document.getElementById('stat-wins').textContent = state.totalWins;
+    document.getElementById('stat-losses').textContent = state.totalLosses;
+
+    const total = state.totalWins + state.totalLosses;
+    const rate = total === 0 ? 0 : (state.totalWins / total) * 100;
+    document.getElementById('stat-rate').textContent = rate.toFixed(1) + '%';
+
+    document.getElementById('stat-streak').textContent = state.maxStreak;
+  }
+
+  function renderMeter() {
+    const total = state.totalWins + state.totalLosses;
+    const rate = total === 0 ? 0 : (state.totalWins / total) * 100;
+
+    const fill = document.getElementById('meter-fill');
+    fill.style.width = rate + '%';
+
+    // Color thresholds
+    fill.className = 'meter-fill';
+    if (rate < 30) fill.classList.add('low');
+    else if (rate <= 50) fill.classList.add('mid');
+    else fill.classList.add('high');
+
+    document.getElementById('meter-label').textContent = rate.toFixed(1) + '%';
+  }
+
+  function renderPrisonerPath() {
+    const el = document.getElementById('path-display');
+    if (state.roundState === 'IDLE') {
+      el.innerHTML = 'Awaiting execution order...';
+      return;
+    }
+    if (state.prisonerPath.length === 0) {
+      el.innerHTML = 'Prisoner #' + state.currentPrisoner + ' — preparing...';
+      return;
+    }
+
+    const path = state.prisonerPath;
+    const prisonerId = state.currentPrisoner;
+    let html = '';
+
+    // Build path steps (show last ~8 steps to avoid overflow)
+    const showFrom = Math.max(0, path.length - 12);
+    for (let i = showFrom; i < path.length; i++) {
+      const boxIdx = path[i];
+      const foundVal = state.boxes[boxIdx];
+      const isFound = foundVal === prisonerId;
+      const isLast = i === path.length - 1;
+      if (isFound && isLast) {
+        html += 'Prisoner #' + prisonerId + ' — box #' + boxIdx + ' → ' + foundVal + ' <span class="found-text">✓ FOUND</span>';
+      } else if (isLast && state.roundState === 'LOSE') {
+        html += 'Prisoner #' + prisonerId + ' — box #' + boxIdx + ' → ' + foundVal + ' <span class="fail-text">✗ FAILED</span>';
+      } else if (isLast) {
+        html += 'Prisoner #' + prisonerId + ' — box #' + boxIdx + ' → ' + foundVal + ' (continues)';
+      } else {
+        // Only show arrow for non-last in chain
+        html += 'box #' + boxIdx + ' → ' + foundVal + ' → ';
+      }
+    }
+
+    if (state.roundState === 'WIN') {
+      html += '<br><span class="found-text">◈ ALL 100 PRISONERS SURVIVED ◈</span>';
+    } else if (state.roundState === 'LOSE') {
+      html += '<br><span class="fail-text">✖ PRISONER #' + prisonerId + ' EXECUTED</span>';
+    }
+
+    el.innerHTML = html;
+  }
+
+  function renderMixerPanel() {
+    const panel = document.getElementById('mixer-panel');
+    const strategy = Strategies[state.strategy];
+    panel.innerHTML = '';
+
+    for (const [key, mixer] of Object.entries(strategy.mixers)) {
+      const group = document.createElement('div');
+      group.className = 'mixer-group';
+
+      const labelRow = document.createElement('div');
+      labelRow.className = 'mixer-label';
+      const label = document.createElement('span');
+      label.textContent = key.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase());
+      const val = document.createElement('span');
+      val.className = 'mixer-value';
+      val.id = 'mixer-val-' + key;
+      const currentVal = state.config[key] !== undefined ? state.config[key] : mixer.default;
+      val.textContent = mixer.step >= 1 ? currentVal : currentVal.toFixed(2);
+
+      labelRow.appendChild(label);
+      labelRow.appendChild(val);
+
+      const input = document.createElement('input');
+      input.type = 'range';
+      input.min = mixer.min;
+      input.max = mixer.max;
+      input.step = mixer.step;
+      input.value = currentVal;
+      input.dataset.mixerKey = key;
+
+      input.addEventListener('input', function(e) {
+        const v = parseFloat(e.target.value);
+        state.config[key] = v;
+        document.getElementById('mixer-val-' + key).textContent = mixer.step >= 1 ? v : v.toFixed(2);
+      });
+
+      group.appendChild(labelRow);
+      group.appendChild(input);
+      panel.appendChild(group);
+    }
+  }
+
+  function renderOverlay() {
+    const overlay = document.getElementById('overlay');
+    const text = document.getElementById('overlay-text');
+
+    if (state.roundState === 'WIN') {
+      overlay.classList.add('active');
+      text.textContent = 'ALL SURVIVED';
+      text.className = 'overlay-text win';
+    } else if (state.roundState === 'LOSE') {
+      overlay.classList.add('active');
+      text.textContent = 'EXECUTED';
+      text.className = 'overlay-text lose';
+    } else {
+      overlay.classList.remove('active');
+    }
+  }
+
+  function renderAll() {
+    renderBoxGrid();
+    renderStatusPanel();
+    renderMeter();
+    renderPrisonerPath();
+    renderOverlay();
+  }
+
+  function renderStrategySelector() {
+    const select = document.getElementById('strategy-select');
+    select.innerHTML = '';
+    for (const [key, s] of Object.entries(Strategies)) {
+      const opt = document.createElement('option');
+      opt.value = key;
+      opt.textContent = s.name;
+      if (key === state.strategy) opt.selected = true;
+      select.appendChild(opt);
+    }
+  }
   </script>
 
   <!-- CONTROLLER — event listeners, simulation loop, init -->
