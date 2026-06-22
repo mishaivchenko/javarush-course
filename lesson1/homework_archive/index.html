@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DeployNight — Developer Incident Archive</title>
+  <style>
+    /* ===== RESET & BASE ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: #141414;
+      color: #fff;
+      overflow-x: hidden;
+    }
+
+    /* ===== SCROLLBAR ===== */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #1a1a1a; }
+    ::-webkit-scrollbar-thumb { background: #e50914; border-radius: 4px; }
+
+    /* ===== HEADER ===== */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 60px;
+      height: 68px;
+      background: linear-gradient(180deg, rgba(20,20,20,0.98) 0%, rgba(20,20,20,0.85) 80%, transparent 100%);
+      transition: background 0.3s;
+    }
+    .header.scrolled { background: #141414; }
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.8rem;
+      font-weight: 800;
+      letter-spacing: -1px;
+    }
+    .header-brand .brand-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      background: #e50914;
+      border-radius: 6px;
+      font-size: 1.2rem;
+      box-shadow: 0 0 20px rgba(229,9,20,0.4);
+    }
+    .header-brand .brand-text {
+      background: linear-gradient(90deg, #e50914, #ff6b6b);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .header-nav { display: flex; gap: 20px; align-items: center; }
+    .header-nav a {
+      color: #b3b3b3;
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: color 0.2s;
+      cursor: default;
+    }
+    .header-nav a:hover { color: #fff; }
+    .header-nav a.active { color: #fff; font-weight: 600; }
+    .header-status {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.75rem;
+      color: #e50914;
+      font-weight: 600;
+    }
+    .header-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 22px;
+      height: 22px;
+      padding: 0 6px;
+      border-radius: 999px;
+      background: #e50914;
+      color: #fff;
+      font-size: 0.65rem;
+      font-weight: 700;
+      line-height: 1;
+      box-shadow: 0 0 12px rgba(229,9,20,0.5);
+      transition: transform 0.2s;
+    }
+    .header-badge:hover { transform: scale(1.15); }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #e50914;
+      animation: pulse-dot 1.5s ease-in-out infinite;
+    }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; box-shadow: 0 0 6px #e50914; }
+      50% { opacity: 0.4; box-shadow: 0 0 12px #e50914; }
+    }
+
+    /* ===== HERO ===== */
+    .hero {
+      position: relative;
+      min-height: 85vh;
+      display: flex;
+      align-items: flex-end;
+      padding: 0 60px 80px;
+      margin-top: 68px;
+      background: linear-gradient(135deg, #1a0000 0%, #0d0d0d 40%, #141414 100%);
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 800px;
+      height: 800px;
+      background: radial-gradient(circle, rgba(229,9,20,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 200px;
+      background: linear-gradient(0deg, #141414 0%, transparent 100%);
+      pointer-events: none;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border: 1px solid #e50914;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: #e50914;
+      margin-bottom: 16px;
+    }
+    .hero h1 {
+      font-size: 5rem;
+      font-weight: 900;
+      letter-spacing: -2px;
+      line-height: 1;
+      margin-bottom: 10px;
+      position: relative;
+    }
+    .hero h1 .accent { color: #e50914; }
+    .hero-meta {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 0.95rem;
+      color: #b3b3b3;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .hero-meta .match {
+      color: #46d369;
+      font-weight: 700;
+    }
+    .hero-meta .tag {
+      padding: 2px 8px;
+      border: 1px solid #555;
+      border-radius: 3px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+    }
+    .hero-meta .sev {
+      background: #e50914;
+      color: #fff;
+      padding: 2px 8px;
+      border-radius: 3px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+    .hero-description {
+      font-size: 1.15rem;
+      line-height: 1.6;
+      color: #b3b3b3;
+      max-width: 580px;
+      margin-bottom: 24px;
+    }
+    .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 28px;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.15s, opacity 0.15s;
+    }
+    .btn:hover { transform: scale(1.04); }
+    .btn-primary { background: #e50914; color: #fff; }
+    .btn-primary:hover { opacity: 0.9; }
+    .btn-secondary { background: rgba(255,255,255,0.1); color: #fff; }
+    .btn-secondary:hover { background: rgba(255,255,255,0.2); }
+
+    /* ===== ROWS ===== */
+    .rows { padding: 20px 60px 60px; position: relative; z-index: 2; }
+    .row { margin-bottom: 40px; }
+    .row-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .row-header h2 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+    .row-header .row-link {
+      font-size: 0.8rem;
+      color: #b3b3b3;
+      cursor: default;
+      transition: color 0.2s;
+    }
+    .row-header .row-link:hover { color: #fff; }
+
+    /* ===== CARDS CONTAINER ===== */
+    .cards {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      padding-bottom: 8px;
+    }
+    .cards::-webkit-scrollbar { height: 4px; }
+
+    /* ===== SINGLE CARD ===== */
+    .card {
+      flex: 0 0 auto;
+      width: 220px;
+      scroll-snap-align: start;
+      cursor: pointer;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      position: relative;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .card:hover {
+      transform: scale(1.08);
+      z-index: 10;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.7);
+    }
+    .card-poster {
+      width: 220px;
+      height: 330px;
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 14px;
+      position: relative;
+      overflow: hidden;
+      transition: border-radius 0.3s;
+    }
+    .card-poster .poster-emoji {
+      font-size: 3rem;
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      opacity: 0.5;
+      transition: opacity 0.3s, transform 0.3s;
+    }
+    .card:hover .poster-emoji { opacity: 0.9; transform: scale(1.15); }
+    .card-poster .poster-badge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      padding: 3px 8px;
+      border-radius: 3px;
+      font-size: 0.6rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      z-index: 2;
+    }
+    .card-poster .poster-info {
+      position: relative;
+      z-index: 1;
+    }
+    .card-poster .poster-info .title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      line-height: 1.2;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+      margin-bottom: 4px;
+    }
+    .card-poster .poster-info .meta-line {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.7rem;
+      color: #ccc;
+    }
+    .card-poster .poster-info .meta-line .match {
+      color: #46d369;
+      font-weight: 700;
+    }
+    .card-poster .poster-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(0deg, rgba(0,0,0,0.7) 0%, transparent 50%, rgba(0,0,0,0.2) 100%);
+      pointer-events: none;
+    }
+
+    /* ===== TOP 10 VARIANT ===== */
+    .card.top10 { width: 300px; }
+    .card.top10 .card-poster { width: 300px; }
+    .card.top10 .rank-number {
+      position: absolute;
+      bottom: -8px;
+      left: -18px;
+      font-size: 8rem;
+      font-weight: 900;
+      color: rgba(255,255,255,0.08);
+      line-height: 1;
+      letter-spacing: -6px;
+      pointer-events: none;
+      text-shadow: none;
+      transition: color 0.3s;
+    }
+    .card.top10:hover .rank-number { color: rgba(229,9,20,0.2); }
+
+    /* ===== CONTINUE DEBUGGING PROGRESS ===== */
+    .card .debug-progress {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: rgba(255,255,255,0.15);
+    }
+    .card .debug-progress .debug-bar {
+      height: 100%;
+      background: #e50914;
+      border-radius: 0 2px 2px 0;
+      transition: width 0.5s ease;
+    }
+
+    /* ===== MODAL ===== */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: rgba(0,0,0,0.85);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      backdrop-filter: blur(4px);
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: #1a1a1a;
+      border-radius: 12px;
+      max-width: 700px;
+      width: 100%;
+      max-height: 85vh;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.8);
+      animation: modal-in 0.3s ease;
+    }
+    @keyframes modal-in {
+      from { opacity: 0; transform: scale(0.92) translateY(20px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .modal-poster {
+      width: 100%;
+      height: 300px;
+      border-radius: 12px 12px 0 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 24px;
+      position: relative;
+    }
+    .modal-poster .modal-emoji {
+      font-size: 5rem;
+      position: absolute;
+      top: 24px;
+      right: 24px;
+      opacity: 0.4;
+    }
+    .modal-poster .modal-overlay-bg {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(0deg, rgba(0,0,0,0.85) 0%, transparent 60%);
+      border-radius: 12px 12px 0 0;
+      pointer-events: none;
+    }
+    .modal-poster .modal-title {
+      font-size: 2.2rem;
+      font-weight: 800;
+      position: relative;
+      z-index: 1;
+      line-height: 1.1;
+    }
+    .modal-body { padding: 24px; }
+    .modal-body .modal-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 16px;
+      font-size: 0.9rem;
+      color: #b3b3b3;
+    }
+    .modal-body .modal-meta .match { color: #46d369; font-weight: 700; }
+    .modal-body .modal-meta .badge {
+      background: rgba(229,9,20,0.2);
+      color: #e50914;
+      padding: 2px 10px;
+      border-radius: 4px;
+      font-weight: 600;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+    }
+    .modal-body .modal-desc {
+      font-size: 1rem;
+      line-height: 1.7;
+      color: #ccc;
+      margin-bottom: 20px;
+    }
+    .modal-body .modal-tagline {
+      font-size: 0.85rem;
+      color: #666;
+      font-style: italic;
+      margin-bottom: 20px;
+      padding: 12px 16px;
+      background: rgba(255,255,255,0.04);
+      border-radius: 6px;
+      border-left: 3px solid #e50914;
+    }
+    .modal-close {
+      align-self: flex-end;
+      margin: 16px 16px 0 0;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(0,0,0,0.6);
+      color: #fff;
+      font-size: 1.2rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+      position: relative;
+      z-index: 2;
+    }
+    .modal-close:hover { background: #e50914; }
+
+    /* ===== FOOTER ===== */
+    .footer {
+      padding: 40px 60px 30px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      text-align: center;
+      color: #555;
+      font-size: 0.85rem;
+      line-height: 1.8;
+    }
+    .footer .joke { color: #777; font-style: italic; }
+    .footer .joke .red { color: #e50914; }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 900px) {
+      .header { padding: 0 20px; }
+      .header-nav { display: none; }
+      .hero { padding: 0 20px 50px; min-height: 70vh; }
+      .hero h1 { font-size: 3rem; }
+      .hero-description { font-size: 1rem; }
+      .rows { padding: 20px; }
+      .card, .card .card-poster { width: 180px; }
+      .card .card-poster { height: 270px; }
+      .card.top10, .card.top10 .card-poster { width: 250px; }
+      .card.top10 .rank-number { font-size: 6rem; left: -12px; }
+      .modal-poster { height: 200px; }
+      .modal-poster .modal-title { font-size: 1.6rem; }
+    }
+    @media (max-width: 500px) {
+      .hero h1 { font-size: 2.2rem; }
+      .hero-meta { font-size: 0.8rem; }
+      .card, .card .card-poster { width: 150px; }
+      .card .card-poster { height: 225px; }
+      .card-poster .poster-emoji { font-size: 2rem; }
+      .card.top10, .card.top10 .card-poster { width: 200px; }
+      .card.top10 .rank-number { font-size: 4.5rem; left: -8px; }
+      .footer { padding: 30px 20px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== HEADER ===== -->
+  <header class="header" id="header">
+    <div class="header-brand">
+      <span class="brand-icon">&#x26A1;</span>
+      <span class="brand-text">DeployNight</span>
+    </div>
+    <nav class="header-nav">
+      <a href="#" class="active">Incidents</a>
+      <a href="#">Archive</a>
+      <a href="#">Logs</a>
+      <a href="#">Team</a>
+    </nav>
+    <div class="header-status">
+      <span class="status-dot"></span>
+      <span id="liveStatus">PRODUCTION: STABLE</span>
+      <span class="header-badge" id="alertBadge">0</span>
+    </div>
+  </header>
+
+  <!-- ===== HERO ===== -->
+  <section class="hero">
+    <div class="hero-bg" id="heroBg" style="position:absolute;inset:0;background-size:cover;background-position:center;opacity:0.4;"></div>
+    <div style="position:relative;z-index:1;">
+      <div class="hero-badge">&#x1F4FD; LEGACY ORIGINAL</div>
+      <h1>
+        <span class="accent">Legacy</span> Code
+      </h1>
+      <div class="hero-meta">
+        <span class="match">97% match</span>
+        <span>2004 — 2026</span>
+        <span class="tag">HORROR</span>
+        <span class="tag">MYSTERY</span>
+        <span class="sev">SEV-UNKNOWN</span>
+      </div>
+      <p class="hero-description">
+        Nobody knows who wrote it. Nobody knows why it works.
+        Everyone is afraid to touch it. But every month,
+        the whole business depends on it.
+      </p>
+      <div class="hero-actions">
+        <button class="btn btn-primary">&#x25B6; Investigate</button>
+        <button class="btn btn-secondary">&#x2139; More Info</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== ROWS ===== -->
+  <section class="rows" id="rows"></section>
+
+  <!-- ===== MODAL ===== -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal" id="modal">
+      <button class="modal-close" id="modalClose">&#x2715;</button>
+      <div class="modal-poster" id="modalPoster">
+        <div class="modal-overlay-bg"></div>
+        <span class="modal-emoji" id="modalEmoji"></span>
+        <div class="modal-title" id="modalTitle"></div>
+      </div>
+      <div class="modal-body">
+        <div class="modal-meta" id="modalMeta"></div>
+        <div class="modal-desc" id="modalDesc"></div>
+        <div class="modal-tagline" id="modalTagline"></div>
+        <div id="modalAttr" style="font-size:0.75rem;color:#666;margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.06);"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="footer">
+    <p class="joke">
+      &#x2615; DeployNight &mdash; Based on true production events.
+      <span class="red">99 little bugs</span> in the code,
+      <span class="red">99 little bugs</span> &hellip; fix one up, patch it around &hellip;
+      <span class="red">127 little bugs</span> in the code.
+    </p>
+    <p style="margin-top:8px;">&copy; 2026 DeployNight Archive &mdash; Every incident filed, no post-mortem forgotten.</p>
+    <p style="margin-top:4px;font-size:0.7rem;color:#444;">Poster images from <a href="https://unsplash.com/?utm_source=deploynight&utm_medium=referral" target="_blank" style="color:#666;text-decoration:none;">Unsplash</a></p>
+  </footer>
+
+  <script>
+    // ===== MOVIE DATABASE =====
+    const movies = [
+      // ---- CRITICAL INCIDENTS ----
+      {
+        id: 1,
+        title: 'Production Is Down',
+        year: '2026',
+        match: 99,
+        category: 'Critical Incidents',
+        genre: 'Disaster',
+        description: 'At 3:47 PM on a Friday, the entire payment pipeline went silent. No alerts. No logs. No idea. This is the story of the 47-minute outage that cost exactly one engineer their weekend.',
+        emoji: '\u{1F4A5}',
+        tagline: 'Based on true production events.',
+        badge: 'SEV-1',
+        runtime: '47 min outage',
+        poster: 'https://images.unsplash.com/photo-1680992046626-418f7e910589?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5ODAyNDJ8MHwxfHNlYXJjaHwxfHxzZXJ2ZXIlMjByb29tJTIwcmVkJTIwbGlnaHRzJTIwZW1lcmdlbmN5JTIwZGFya3xlbnwwfDB8Mnx8MTc4MTc4ODQ1Mnww&ixlib=rb-4.1.0&q=80&w=1080',
+        posterAttr: 'Photo by Tyler on Unsplash',
+        severity: 'critical'
+      },
+      {
+        id: 2,
+        title: 'Hotfix at Midnight',
+        year: '2025',
+        match: 97,
+        category: 'Critical Incidents',
+        genre: 'Thriller',
+        description: 'A single line of code deployed at 11:58 PM. No code review. No staging. Just a developer, a production DB, and the desperate hope that nothing else would break.',
+        emoji: '\u{1F52E}',
+        tagline: 'The scariest movies are the ones that actually happened.',
+        badge: 'SEV-1',
+        runtime: '11:58 PM — 3:14 AM',
+        poster: 'https://images.unsplash.com/photo-1781543718872-dfd4ed84c3fc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5ODAyNDJ8MHwxfHNlYXJjaHwxfHxsYXB0b3AlMjBzY3JlZW4lMjBnbG93JTIwZGFyayUyMHJvb20lMjBuaWdodCUyMGNvZGluZ3xlbnwwfDB8Mnx8MTc4MTc4ODQ1Mnww&ixlib=rb-4.1.0&q=80&w=1080',
+        posterAttr: 'Photo by Akinyemi Gbadamosi on Unsplash',
+        severity: 'critical'
+      },
+      {
+        id: 3,
+        title: 'Rollback Protocol',
+        year: '2025',
+        match: 94,
+        category: 'Critical Incidents',
+        genre: 'Action',
+        description: 'When the deploy went wrong, there was only one option: rollback. But the rollback script hadn\'t been tested either. What happens when the safety net has its own bugs?',
+        emoji: '\u{1F504}',
+        tagline: 'Nobody plans to rollback. But the rollback plans for you.',
+        badge: 'SEV-1',
+        runtime: '3 deploys, 2 rollbacks, 1 lesson',
+        poster: 'https://images.unsplash.com/photo-1773855136588-e21903394ca3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5ODAyNDJ8MHwxfHNlYXJjaHwxfHxlbWVyZ2VuY3klMjBidXR0b24lMjBjb250cm9sJTIwcGFuZWwlMjByZWQlMjBzd2l0Y2h8ZW58MHwwfDJ8fDE3ODE3ODg0NTJ8MA&ixlib=rb-4.1.0&q=80&w=1080',
+        posterAttr: 'Photo by Kamil Switalski on Unsplash',
+        severity: 'critical'
+      },
+      {
+        id: 4,
+        title: 'The Jira Awakens',
+        year: '2024',
+        match: 91,
+        category: 'Critical Incidents',
+        genre: 'Sci-Fi',
+        description: 'A ticket was created. Then another. Then the backlog reached terminal velocity. Soon the entire team was lost in a galaxy of subtasks, epics, and unresolved dependencies.',
+        emoji: '\u{1F680}',
+        tagline: 'Long ago in a sprint far, far away &hellip;',
+        badge: 'SEV-2',
+        runtime: '7 sprints of darkness',
+        poster: 'https://images.unsplash.com/photo-1764195287345-2086f504cb0b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5ODAyNDJ8MHwxfHNlYXJjaHwxfHxmdXR1cmlzdGljJTIwY29udHJvbCUyMHJvb20lMjBnbG93aW5nJTIwcGFuZWxzfGVufDB8MHwyfHwxNzgxNzg4NTQzfDA&ixlib=rb-4.1.0&q=80&w=1080',
+        posterAttr: 'Photo by Igor Saikin on Unsplash',
+        severity: 'critical'
+      },
+      {
+        id: 5,
+        title: 'Friday Deploy',
+        year: '2026',
+        match: 96,
+        category: 'Critical Incidents',
+        genre: 'Horror',
+        description: 'It was 4:55 PM. The team was already gone. But the PR looked clean. One merge. One deploy. One catastrophic cascade failure. They say you never deploy on Friday. He should have listened.',
+        emoji: '\u{2622}',
+        tagline: 'Never deploy on Friday. This is why.',
+        badge: 'SEV-1',
+        runtime: '5:00 PM — Monday morning',
+        poster: 'https://images.unsplash.com/photo-1781090421074-5d466342d6ac?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5ODAyNDJ8MHwxfHNlYXJjaHwxfHxlbXB0eSUyMG9mZmljZSUyMGxhdGUlMjBuaWdodCUyMGNpdHklMjBsaWdodHMlMjBkZXNrfGVufDB8MHwyfHwxNzgxNzg4NDc0fDA&ixlib=rb-4.1.0&q=80&w=1080',
+        posterAttr: 'Photo by MChe Lee on Unsplash',
+        severity: 'critical'
+      },
+
+      // ---- TOP 10 DEVELOPER NIGHTMARES ----
+      {
+        id: 6,
+        title: 'Merge Conflict',
+        year: 'Every Sprint',
+        match: 100,
+        category: 'Top 10 Developer Nightmares',
+        genre: 'Psychological Horror',
+        description: 'Two developers. One file. 300 lines of merge conflicts. No one remembers who wrote which block. Git is screaming. The PM is asking for a status update.',
+        emoji: '\u{1F4A2}',
+        tagline: 'The branch that ate itself.',
+        badge: 'NIGHTMARE',
+        runtime: '3 hours of <<<<<<<',
+        gradient: 'linear-gradient(135deg, #1a0a0a 0%, #660033 50%, #0a0000 100%)',
+        poster: 'https://images.unsplash.com/photo-1781674520637-37c566ff7bc7?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0',
+        posterAttr: 'Photo by Oskari Manninen on Unsplash',
+        severity: 'top10',
+        rank: 1
+      },
+      {
+        id: 7,
+        title: 'It Works on My Machine',
+        year: '2025',
+        match: 99,
+        category: 'Top 10 Developer Nightmares',
+        genre: 'Mystery',
+        description: 'The tests pass locally. CI fails. Always. Every single time. Is it the Docker image? The node version? A timezone thing? The answer will haunt you.',
+        emoji: '\u{1F5A5}',
+        tagline: 'The six most terrifying words in engineering.',
+        badge: 'NIGHTMARE',
+        runtime: '17 CI retries',
+        gradient: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0f1a 100%)',
+        poster: 'https://images.unsplash.com/photo-1780570751649-6867a5f49139?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5ODAyNDJ8MHwxfHNlYXJjaHwxfHxkZXZlbG9wZXIlMjBkZXNrJTIwZHVhbCUyMG1vbml0b3IlMjBzZXR1cCUyMGNsZWFufGVufDB8MHwyfHwxNzgxNzg4NTEwfDA&ixlib=rb-4.1.0&q=80&w=1080',
+        posterAttr: 'Photo by Grace Anne Bobadilla on Unsplash',
+        severity: 'top10',
+        rank: 2
+      },
+      {
+        id: 8,
+        title: 'Vibe Coder',
+        year: '2026',
+        match: 98,
+        category: 'Top 10 Developer Nightmares',
+        genre: 'Comedy / Thriller',
+        description: 'The code looks right. The vibes are immaculate. But somewhere in the depths of this AI-generated function lies a bug that will surface at the worst possible moment.',
+        emoji: '\u{2728}',
+        tagline: 'It compiles. But at what cost?',
+        badge: 'NIGHTMARE',
+        runtime: '10K tokens of regret',
+        gradient: 'linear-gradient(135deg, #1a0033 0%, #4a0080 40%, #0d0020 100%)',
+        poster: 'https://images.unsplash.com/photo-1781717592998-302dabc93cf4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5ODAyNDJ8MHwxfHNlYXJjaHwxfHxuZW9uJTIwZGVzayUyMGFlc3RoZXRpYyUyMGNvZGluZyUyMHB1cnBsZSUyMGJsdWUlMjBnbG93fGVufDB8MHwyfHwxNzgxNzg4NDcxfDA&ixlib=rb-4.1.0&q=80&w=1080',
+        posterAttr: 'Photo by Nigel Hoare on Unsplash',
+        severity: 'top10',
+        rank: 3
+      },
+      {
+        id: 9,
+        title: 'The Infinite Sprint',
+        year: '2024 — Present',
+        match: 100,
+        category: 'Top 10 Developer Nightmares',
+        genre: 'Psychological Drama',
+        description: 'The sprint started 47 weeks ago. Velocity is measured in resignation letters. The burndown chart goes up. No one remembers what "done" feels like.',
+        emoji: '\u{267B}',
+        tagline: 'There is no done. There is only “next sprint.”',
+        badge: 'NIGHTMARE',
+        runtime: '47 weeks and counting',
+        gradient: 'linear-gradient(135deg, #1a1a00 0%, #665500 50%, #0a0a00 100%)',
+        poster: 'https://images.unsplash.com/photo-1781696594088-2e8f82073bb4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5ODAyNDJ8MHwxfHNlYXJjaHw1fHxsb25nJTIwZW1wdHklMjByb2FkJTIwcnVubmluZyUyMGVuZGxlc3MlMjBtYXJhdGhvbnxlbnwwfDB8Mnx8MTc4MTc4ODkwN3ww&ixlib=rb-4.1.0&q=80&w=1080',
+        posterAttr: 'Photo by Vincent Tavernier on Unsplash',
+        severity: 'top10',
+        rank: 4
+      },
+      {
+        id: 10,
+        title: 'Null Pointer Romance',
+        year: '2025',
+        match: 95,
+        category: 'Top 10 Developer Nightmares',
+        genre: 'Tragicomedy',
+        description: 'The object was there. Then it wasn\'t. A love story about a developer and the null reference that destroyed three days of their life. Features a dramatic monologue with a stack trace.',
+        emoji: '\u{1F494}',
+        tagline: 'Sometimes love is null. But this time it threw an exception.',
+        badge: 'NIGHTMARE',
+        runtime: '72 hours of debugging',
+        gradient: 'linear-gradient(135deg, #2e0014 0%, #800040 50%, #1a000a 100%)',
+        poster: 'https://images.unsplash.com/photo-1781525674808-15f337fc4cd7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5ODAyNDJ8MHwxfHNlYXJjaHwxfHxsb25lbHklMjBicm9rZW4lMjBoZWFydCUyMG5lb24lMjBzaWduJTIwZGFyayUyMG5pZ2h0fGVufDB8MHwyfHwxNzgxNzg4NDYwfDA&ixlib=rb-4.1.0&q=80&w=1080',
+        posterAttr: 'Photo by Bohdan Hyrovych on Unsplash',
+        severity: 'top10',
+        rank: 5
+      },
+
+      // ---- CONTINUE DEBUGGING ----
+      {
+        id: 11,
+        title: 'The Last Console Log',
+        year: '2026',
+        match: 89,
+        category: 'Continue Debugging',
+        genre: 'Mystery',
+        description: 'Somewhere in a 12,000-line file is a single incorrect variable. The only tool: console.log. The only witness: a junior dev who said "it worked fine yesterday."',
+        emoji: '\u{1F50D}',
+        tagline: null,
+        badge: 'DEBUG',
+        runtime: 'Started debugging at 2 PM',
+        gradient: 'linear-gradient(135deg, #0d1a0d 0%, #1a4a1a 50%, #0a0f0a 100%)',
+        poster: 'https://images.unsplash.com/photo-1781491068172-ba658906eb00?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5ODAyNDJ8MHwxfHNlYXJjaHwxfHx0ZXJtaW5hbCUyMGRhcmslMjBkZXRlY3RpdmUlMjBub2lyJTIwYWxsZXklMjBsaWdodHxlbnwwfDB8Mnx8MTc4MTc4ODQ3Mnww&ixlib=rb-4.1.0&q=80&w=1080',
+        posterAttr: 'Photo by Christian Lue on Unsplash',
+        severity: 'debug',
+        progress: 0.73
+      },
+      {
+        id: 12,
+        title: 'One More Small Change',
+        year: '2026',
+        match: 92,
+        category: 'Continue Debugging',
+        genre: 'Horror Comedy',
+        description: '"It\'s just one line." Three hours later, the entire auth system has been rewritten, six tests are failing, and the original bug is still there.',
+        emoji: '\u{1F9F0}',
+        tagline: null,
+        badge: 'DEBUG',
+        runtime: 'Was "5 minutes" at 4 PM',
+        gradient: 'linear-gradient(135deg, #1a0d00 0%, #663300 50%, #0d0800 100%)',
+        poster: 'https://images.unsplash.com/photo-1779021874809-420451076ee1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5ODAyNDJ8MHwxfHNlYXJjaHwxfHxkb21pbm9lc3xlbnwwfDB8Mnx8MTc4MTc4ODUzNXww&ixlib=rb-4.1.0&q=80&w=1080',
+        posterAttr: 'Photo by Fachrizal Maulana on Unsplash',
+        severity: 'debug',
+        progress: 0.45
+      },
+      {
+        id: 13,
+        title: 'Standup: The Movie',
+        year: '2025',
+        match: 88,
+        category: 'Continue Debugging',
+        genre: 'Comedy',
+        description: 'Fifteen minutes of "yesterday I was blocked" followed by "today I\'ll unblock myself." One developer is still on mute. Another is in a different timezone. The scrum master is asking about story points.',
+        emoji: '\u{1F3A4}',
+        tagline: null,
+        badge: 'DEBUG',
+        runtime: '15 min daily, 5 days a week',
+        gradient: 'linear-gradient(135deg, #1a1a1a 0%, #333 50%, #111 100%)',
+        poster: 'https://images.unsplash.com/photo-1777264935754-aa53096c2d68?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5ODAyNDJ8MHwxfHNlYXJjaHwxfHxtZWV0aW5nJTIwcm9vbSUyMGVtcHR5JTIwY2hhaXJzJTIwY29uZmVyZW5jZSUyMHRhYmxlJTIwb2ZmaWNlfGVufDB8MHwyfHwxNzgxNzg4NDQwfDA&ixlib=rb-4.1.0&q=80&w=1080',
+        posterAttr: 'Photo by Aakriti Raina on Unsplash',
+        severity: 'debug',
+        progress: 0.62
+      },
+      {
+        id: 14,
+        title: '404: Weekend Not Found',
+        year: '2026',
+        match: 95,
+        category: 'Continue Debugging',
+        genre: 'Tragedy',
+        description: 'The weekend was right there. HTTP 200. But then the pager went off. The weekend returned 404. Try again next sprint.',
+        emoji: '\u{1F4F1}',
+        tagline: null,
+        badge: 'DEBUG',
+        runtime: 'On-call rotation: every other weekend',
+        gradient: 'linear-gradient(135deg, #0d0d2b 0%, #1a1a4a 50%, #08081a 100%)',
+        poster: 'https://images.unsplash.com/photo-1781507385125-aca3f6b6c83e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5ODAyNDJ8MHwxfHNlYXJjaHwxfHxlbXB0eSUyMG9mZmljZSUyMGRlc2slMjBsb25lbHklMjBuaWdodCUyMGxhcHRvcCUyMGRhcmt8ZW58MHwwfDJ8fDE3ODE3ODg1MDJ8MA&ixlib=rb-4.1.0&q=80&w=1080',
+        posterAttr: 'Photo by X F on Unsplash',
+        severity: 'debug',
+        progress: 0.88
+      },
+
+      // ---- FRESH RELEASES ----
+      {
+        id: 15,
+        title: 'The Refactor Nobody Asked For',
+        year: '2026',
+        match: 84,
+        category: 'Fresh Releases',
+        genre: 'Action / Drama',
+        description: 'One engineer decided the codebase needed "a little cleanup." The result: 47 files changed, 3 microservices extracted, and a CI pipeline that now runs in 14 minutes instead of 2.',
+        emoji: '\u{1F528}',
+        tagline: 'If it ain\'t broke, refactor it until it is.',
+        badge: 'REFACTOR CUT',
+        runtime: '2 weeks, 1 revert',
+        gradient: 'linear-gradient(135deg, #001a1a 0%, #004d4d 50%, #000d0d 100%)',
+        poster: 'https://images.unsplash.com/photo-1781629478993-1eb23999f624?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5ODAyNDJ8MHwxfHNlYXJjaHwxfHx0YW5nbGVkJTIwY2FibGVzJTIwbWVzcyUyMGNvbnN0cnVjdGlvbiUyMHJlbm92YXRpb24lMjBjaGFvc3xlbnwwfDB8Mnx8MTc4MTc4ODUwN3ww&ixlib=rb-4.1.0&q=80&w=1080',
+        posterAttr: 'Photo by emma soupart on Unsplash',
+        severity: 'fresh'
+      },
+      {
+        id: 16,
+        title: 'The Architecture Meeting',
+        year: '2026',
+        match: 82,
+        category: 'Fresh Releases',
+        genre: 'Thriller',
+        description: 'They booked a room. They drew a whiteboard. They talked about microservices, event sourcing, and CQRS. Two hours later, nobody could read the diagram. And the deadline moved.',
+        emoji: '\u{1F4CB}',
+        tagline: 'The whiteboard is written in a language only the architect speaks.',
+        badge: 'LEGACY ORIGINAL',
+        runtime: '2 hours, 0 decisions',
+        gradient: 'linear-gradient(135deg, #1a0d1a 0%, #4d004d 50%, #0d000d 100%)',
+        poster: 'https://images.unsplash.com/photo-1677506048892-edde55cf3277?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5ODAyNDJ8MHwxfHNlYXJjaHwxfHx3aGl0ZWJvYXJkJTIwbWVldGluZyUyMHJvb20lMjBkcmF3biUyMGRpYWdyYW0lMjBjaGFvc3xlbnwwfDB8Mnx8MTc4MTc4ODU1MXww&ixlib=rb-4.1.0&q=80&w=1080',
+        posterAttr: 'Photo by Paymo on Unsplash',
+        severity: 'fresh'
+      },
+      {
+        id: 17,
+        title: 'The Database Migration Diaries',
+        year: '2026',
+        match: 86,
+        category: 'Fresh Releases',
+        genre: 'Horror Documentary',
+        description: 'The production migration was scheduled for Sunday at 4 AM. Estimated downtime: 15 minutes. Actual downtime: 6 hours, 4 support tickets, and a very awkward Monday standup.',
+        emoji: '\u{1F4BE}',
+        tagline: '4 AM on a Sunday. What could possibly go wrong?',
+        badge: 'LIVE INCIDENT',
+        runtime: '6 hours of fear',
+        gradient: 'linear-gradient(135deg, #001a0d 0%, #00331a 50%, #000d05 100%)',
+        poster: 'https://images.unsplash.com/photo-1680691257251-5fead813b73e?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0',
+        posterAttr: 'Photo by Dimitri Karastelev on Unsplash',
+        severity: 'fresh'
+      },
+
+      // ---- CULT CLASSICS ----
+      {
+        id: 18,
+        title: 'The Intern Who Deleted the DB',
+        year: 'Anon',
+        match: 100,
+        category: 'Cult Classics',
+        genre: 'Legend',
+        description: 'It started with a simple query. It ended with a full production database restore. The intern is now a VP of Engineering at another company. The legend lives on.',
+        emoji: '\u{1F4DA}',
+        tagline: 'Every team has an intern story. This one is true.',
+        badge: 'CULT CLASSIC',
+        runtime: 'DROP TABLE IF EXISTS legacy',
+        gradient: 'linear-gradient(135deg, #2e0000 0%, #8b0000 40%, #1a0000 100%)',
+        poster: 'https://images.unsplash.com/photo-1781611805281-1fc52e77da3c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5ODAyNDJ8MHwxfHNlYXJjaHwxfHxtb3VudGFpbiUyMGNsaW1iZXIlMjBwZWFrJTIwYWNoaWV2ZW1lbnQlMjBkcmFtYXRpY3xlbnwwfDB8Mnx8MTc4MTc4ODUzNnww&ixlib=rb-4.1.0&q=80&w=1080',
+        posterAttr: 'Photo by Joshua Earle on Unsplash',
+        severity: 'cult'
+      },
+      {
+        id: 19,
+        title: 'The Legacy PHP Portal',
+        year: 'circa 2010',
+        match: 99,
+        category: 'Cult Classics',
+        genre: 'Archaeological Horror',
+        description: 'Deep beneath the modern API layer lies a PHP 5 portal. It still runs. No one knows why. It connects to the database directly. With root. In production.',
+        emoji: '\u{1F3F0}',
+        tagline: 'Some code is not meant to be understood.',
+        badge: 'CULT CLASSIC',
+        runtime: '15 years and still running',
+        gradient: 'linear-gradient(135deg, #1a0a00 0%, #4a2a00 50%, #0d0500 100%)',
+        poster: 'https://images.unsplash.com/photo-1781513568970-c27ca25a00ff?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5ODAyNDJ8MHwxfHNlYXJjaHwxfHxhbmNpZW50JTIwcnVpbnMlMjBhYmFuZG9uZWQlMjB0ZW1wbGUlMjBvdmVyZ3Jvd258ZW58MHwwfDJ8fDE3ODE3ODg1MDN8MA&ixlib=rb-4.1.0&q=80&w=1080',
+        posterAttr: 'Photo by Peter Herrmann on Unsplash',
+        severity: 'cult'
+      },
+      {
+        id: 20,
+        title: 'The Commit That Got Away',
+        year: '2023',
+        match: 97,
+        category: 'Cult Classics',
+        genre: 'Road Movie',
+        description: 'A developer committed directly to main. Not once. Not twice. For three months. The code review was an email. The CI was a dream. The production was a frontier.',
+        emoji: '\u{1F4E6}',
+        tagline: 'Before PRs, brave men pushed to main and the servers trembled.',
+        badge: 'CULT CLASSIC',
+        runtime: '3 months of freedom',
+        gradient: 'linear-gradient(135deg, #002020 0%, #004040 50%, #001010 100%)',
+        poster: 'https://images.unsplash.com/photo-1779804597890-69171e068a5f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5ODAyNDJ8MHwxfHNlYXJjaHwxfHxvcGVuJTIwcm9hZCUyMGhpZ2h3YXklMjBzdW5zZXQlMjBmcmVlZG9tJTIwZHJpdmV8ZW58MHwwfDJ8fDE3ODE3ODg1MTd8MA&ixlib=rb-4.1.0&q=80&w=1080',
+        posterAttr: 'Photo by ONUR KURT on Unsplash',
+        severity: 'cult'
+      },
+      {
+        id: 21,
+        title: 'The Programmer Who Knew COBOL',
+        year: '2004',
+        match: 100,
+        category: 'Cult Classics',
+        genre: 'Fantasy',
+        description: 'They called him from retirement. Twice. The mainframe still ran his code. No one else could read it. He charged double. He was worth every penny.',
+        emoji: '\u{1F9D1}',
+        tagline: 'Not all heroes wear capes. Some maintain legacy mainframes.',
+        badge: 'CULT CLASSIC',
+        runtime: '20 years of technical debt',
+        gradient: 'linear-gradient(135deg, #1a1a2e 0%, #2a2a4a 50%, #0f0f1a 100%)',
+        poster: 'https://images.unsplash.com/photo-1780245994167-cbb318c6660b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5ODAyNDJ8MHwxfHNlYXJjaHwxfHxvbGQlMjBsaWJyYXJ5JTIwdmludGFnZSUyMGRlc2slMjBhbmNpZW50JTIwYm9va3N8ZW58MHwwfDJ8fDE3ODE3ODg1MTd8MA&ixlib=rb-4.1.0&q=80&w=1080',
+        posterAttr: 'Photo by Magic Fan on Unsplash',
+        severity: 'cult'
+      },
+      // ---- LEGACY ORIGINALS ----
+      {
+        id: 22,
+        title: 'Legacy Code',
+        year: '2004 — 2026',
+        match: 97,
+        category: 'Legacy Originals',
+        genre: 'Horror',
+        description: 'Nobody knows who wrote it. Nobody knows why it works. Everyone is afraid to touch it. But every month, the whole business depends on it.',
+        emoji: '\u{1F3B5}',
+        tagline: 'The code that time forgot.',
+        badge: 'SEV-UNKNOWN',
+        runtime: '22 years of fear',
+        poster: 'https://images.unsplash.com/photo-1781513568970-c27ca25a00ff?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5ODAyNDJ8MHwxfHNlYXJjaHwxfHxvbGQlMjBzZXJ2ZXJzJTIwYWJhbmRvbmVkJTIwdGVjaG5vbG9neSUyMGRhcmslMjBteXN0ZXJpb3VzfGVufDB8MHwyfHwxNzgxNzg4NTE3fDA&ixlib=rb-4.1.0&q=80&w=1080',
+        posterAttr: 'Photo by Peter Herrmann on Unsplash',
+        severity: 'legacy'
+      }
+    ];
+
+    // ===== ROW DEFINITIONS =====
+    const rowConfig = [
+      { key: 'Critical Incidents', type: 'default', subtitle: 'Real incidents. Real fear. Real post-mortems.' },
+      { key: 'Top 10 Developer Nightmares', type: 'top10', subtitle: 'Every developer has experienced at least three of these.' },
+      { key: 'Continue Debugging', type: 'debug', subtitle: 'You started debugging yesterday. Keep going.' },
+      { key: 'Fresh Releases', type: 'default', subtitle: 'Brand new incidents, fresh out of production.' },
+      { key: 'Cult Classics', type: 'default', subtitle: 'Timeless developer horror stories passed down through generations.' },
+      { key: 'Legacy Originals', type: 'default', subtitle: 'The ones that started it all.' }
+    ];
+
+    // ===== GENERATE CARDS =====
+    function buildRow(rowName, type, subtitle) {
+      const items = movies.filter(m => m.category === rowName);
+      if (!items.length) return '';
+
+      const rowId = rowName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+
+      let cardsHTML = '';
+      items.forEach(item => {
+        const top10Class = type === 'top10' ? ' top10' : '';
+        const rankHTML = type === 'top10' ? `<div class="rank-number">${item.rank}</div>` : '';
+        const progressHTML = type === 'debug' ? `
+          <div class="debug-progress">
+            <div class="debug-bar" style="width:${Math.round(item.progress * 100)}%"></div>
+          </div>` : '';
+
+        const posterBg = item.poster
+          ? `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('${item.poster}') center/cover`
+          : item.gradient;
+
+        cardsHTML += `
+          <div class="card${top10Class}" data-id="${item.id}">
+            <div class="card-poster" style="background:${posterBg}">
+              <div class="poster-overlay"></div>
+              <span class="poster-emoji">${item.emoji}</span>
+              ${item.badge ? `<span class="poster-badge" style="background:${item.badge === 'SEV-1' ? '#e50914' : item.badge === 'NIGHTMARE' ? '#800080' : item.badge === 'CULT CLASSIC' ? '#b8860b' : '#333'}; color:#fff">${item.badge}</span>` : ''}
+              ${rankHTML}
+              <div class="poster-info">
+                <div class="title">${item.title}</div>
+                <div class="meta-line">
+                  <span class="match">${item.match}% match</span>
+                  <span>${item.genre}</span>
+                </div>
+              </div>
+              ${progressHTML}
+            </div>
+          </div>`;
+      });
+
+      return `
+        <div class="row" data-row="${rowId}">
+          <div class="row-header">
+            <div>
+              <h2>${rowName}</h2>
+              <span style="font-size:0.8rem;color:#666;">${subtitle}</span>
+            </div>
+            <span class="row-link">Browse All &rarr;</span>
+          </div>
+          <div class="cards">
+            ${cardsHTML}
+          </div>
+        </div>`;
+    }
+
+    function renderAll() {
+      const container = document.getElementById('rows');
+      container.innerHTML = rowConfig.map(r => buildRow(r.key, r.type, r.subtitle)).join('');
+      // attach click listeners
+      document.querySelectorAll('.card').forEach(card => {
+        card.addEventListener('click', () => {
+          const id = parseInt(card.dataset.id, 10);
+          const movie = movies.find(m => m.id === id);
+          if (movie) openModal(movie);
+        });
+      });
+    }
+
+    // ===== MODAL =====
+    function openModal(movie) {
+      document.getElementById('modalTitle').textContent = movie.title;
+      document.getElementById('modalEmoji').textContent = movie.emoji;
+      const posterBg = movie.poster
+        ? `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.7)), url('${movie.poster}') center/cover`
+        : movie.gradient;
+      document.getElementById('modalPoster').style.background = posterBg;
+
+      const meta = document.getElementById('modalMeta');
+      meta.innerHTML = `
+        <span class="match">${movie.match}% match</span>
+        <span>${movie.year}</span>
+        <span>${movie.genre}</span>
+        ${movie.badge ? `<span class="badge">${movie.badge}</span>` : ''}
+        ${movie.runtime ? `<span>${movie.runtime}</span>` : ''}
+      `;
+
+      document.getElementById('modalDesc').textContent = movie.description;
+      document.getElementById('modalTagline').textContent = movie.tagline || 'Based on true production events.';
+      const attrEl = document.getElementById('modalAttr');
+      if (movie.posterAttr) {
+        attrEl.innerHTML = `📷 ${movie.posterAttr} on <a href="https://unsplash.com/?utm_source=deploynight&utm_medium=referral" target="_blank" style="color:#e50914;text-decoration:none;">Unsplash</a>`;
+        attrEl.style.display = 'block';
+      } else {
+        attrEl.style.display = 'none';
+      }
+      document.getElementById('modalOverlay').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+      document.getElementById('modalOverlay').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    // ===== EVENT LISTENERS =====
+    document.getElementById('modalClose').addEventListener('click', closeModal);
+    document.getElementById('modalOverlay').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) closeModal();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeModal();
+    });
+
+    // ===== HEADER SCROLL EFFECT =====
+    window.addEventListener('scroll', () => {
+      const header = document.getElementById('header');
+      header.classList.toggle('scrolled', window.scrollY > 40);
+    });
+
+    // ===== ALERT BADGE =====
+    function updateAlertBadge() {
+      const criticalCount = movies.filter(m => m.severity === 'critical' || m.severity === 'top10' || m.severity === 'legacy').length;
+      const badge = document.getElementById('alertBadge');
+      badge.textContent = criticalCount;
+      badge.style.background = criticalCount > 0 ? '#e50914' : '#555';
+    }
+    updateAlertBadge();
+
+    // ===== LIVE STATUS ROTATOR =====
+    const statuses = [
+      'PRODUCTION: STABLE',
+      'PRODUCTION: DEGRADED',
+      'PRODUCTION: ON FIRE',
+      'PRODUCTION: STABLE (HOTFIX DEPLOYED)',
+      'PRODUCTION: FINE (DON\'T TOUCH IT)'
+    ];
+    let statusIdx = 0;
+    setInterval(() => {
+      statusIdx = (statusIdx + 1) % statuses.length;
+      document.getElementById('liveStatus').textContent = statuses[statusIdx];
+    }, 5000);
+
+    // ===== HERO BACKGROUND =====
+    const heroBg = document.getElementById('heroBg');
+    const legacyMovie = movies.find(m => m.title === 'Legacy Code');
+    if (legacyMovie && legacyMovie.poster) {
+      heroBg.style.backgroundImage = `url('${legacyMovie.poster}')`;
+    }
+
+    // ===== INIT =====
+    renderAll();
+  </script>
+</body>
+</html>
