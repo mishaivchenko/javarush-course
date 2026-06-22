@@ -611,7 +611,141 @@
      MODEL — State, Permutations, Strategy Engine
      ============================================================ */
 
-  // ===== PERMUTATION GENERATION =====
+  // ===== STRATEGY ENGINE =====
+  function getUnexplored() {
+    const unexplored = [];
+    for (let i = 0; i < 100; i++) {
+      if (!state.revealed[i]) unexplored.push(i);
+    }
+    return unexplored;
+  }
+
+  function findNextInLoop(prisonerId, currentBox) {
+    // If we're at the start of a loop, next box = box[prisonerId]
+    if (currentBox === null || currentBox === undefined) return state.boxes[prisonerId];
+    // Otherwise, follow the chain: boxes[currentBox]
+    return state.boxes[currentBox];
+    // Returns a value 0..99 — the number inside current box tells us which box to open next
+    // (because boxes[currentBox] contains the slip that points to the next box index)
+  }
+
+  function randomUnexplored() {
+    const u = getUnexplored();
+    if (u.length === 0) return null;
+    return u[Math.floor(Math.random() * u.length)];
+  }
+
+  const Strategies = {
+    // 1. The Loop Protocol — optimal cycle-following strategy
+    loop: {
+      name: 'The Loop Protocol',
+      mixers: { discipline: { min: 0, max: 1, default: 1.0, step: 0.05 } },
+      decide(prisonerId, currentBox, config, stepCount) {
+        const discipline = config.discipline;
+        if (Math.random() < discipline) {
+          // Follow the cycle
+          if (currentBox === null || currentBox === undefined) return state.boxes[prisonerId];
+          return state.boxes[currentBox];
+        } else {
+          // Random undiscovered box
+          return randomUnexplored();
+        }
+      }
+    },
+
+    // 2. Blind Panic — purely random
+    panic: {
+      name: 'Blind Panic',
+      mixers: { memory: { min: 0, max: 1, default: 0.5, step: 0.05 } },
+      decide(prisonerId, currentBox, config, stepCount) {
+        const memory = config.memory;
+        if (memory >= 0.8) {
+          // High memory: only unexplored boxes
+          return randomUnexplored();
+        } else if (memory <= 0.2) {
+          // Low memory: pure chaos, may repeat
+          return Math.floor(Math.random() * 100);
+        } else {
+          // Medium: mix of random among all vs unexplored
+          if (Math.random() < memory) return randomUnexplored();
+          return Math.floor(Math.random() * 100);
+        }
+      }
+    },
+
+    // 3. Hybrid Ritual — starts as Loop, panics after faith threshold
+    hybrid: {
+      name: 'Hybrid Ritual',
+      mixers: {
+        faith: { min: 1, max: 50, default: 25, step: 1 },
+        panicThreshold: { min: 1, max: 50, default: 10, step: 1 }
+      },
+      decide(prisonerId, currentBox, config, stepCount) {
+        const faith = config.faith;
+        const panicThreshold = config.panicThreshold;
+        if (stepCount > faith || stepCount > panicThreshold) {
+          // Switch to random (high memory)
+          return randomUnexplored();
+        }
+        // Follow the loop
+        if (currentBox === null || currentBox === undefined) return state.boxes[prisonerId];
+        return state.boxes[currentBox];
+      }
+    },
+
+    // 4. Lucky Sacrifice — coin flip between Loop and Panic at start of run
+    sacrifice: {
+      name: "Lucky Sacrifice",
+      mixers: { obedienceRate: { min: 0, max: 1, default: 0.5, step: 0.05 } },
+      _mode: {}, // { prisonerId: 'loop'|'panic' } — cached per prisoner run
+      decide(prisonerId, currentBox, config, stepCount) {
+        if (stepCount === 0) {
+          // Coin flip at start of prisoner's run
+          this._mode[prisonerId] = Math.random() < config.obedienceRate ? 'loop' : 'panic';
+        }
+        if (this._mode[prisonerId] === 'loop') {
+          if (currentBox === null || currentBox === undefined) return state.boxes[prisonerId];
+          return state.boxes[currentBox];
+        } else {
+          return randomUnexplored();
+        }
+      }
+    },
+
+    // 5. Warden's Mercy — Loop Protocol with extra attempts on failure
+    mercy: {
+      name: "Warden's Mercy",
+      mixers: {
+        mercyChance: { min: 0, max: 1, default: 0.1, step: 0.05 },
+        extraBoxes: { min: 1, max: 50, default: 10, step: 1 }
+      },
+      decide(prisonerId, currentBox, config, stepCount) {
+        const mercyChance = config.mercyChance;
+        const extraBoxes = config.extraBoxes;
+        // Normal loop logic
+        if (currentBox === null || currentBox === undefined) return state.boxes[prisonerId];
+        const nextBox = state.boxes[currentBox];
+        // If this would be step 50 (the limit), check for mercy
+        if (stepCount >= 49 && state.prisonerStep >= 49) {
+          if (Math.random() < mercyChance) {
+            // Grant extra boxes — return a random unexplored box
+            return randomUnexplored();
+          }
+        }
+        return nextBox;
+      }
+    }
+  };
+
+  // Initialize strategy config with defaults
+  function applyStrategyDefaults() {
+    const s = Strategies[state.strategy];
+    state.config = {};
+    for (const [key, mixer] of Object.entries(s.mixers)) {
+      state.config[key] = mixer.default;
+    }
+  }
+  applyStrategyDefaults(); =====
   function generatePermutation() {
     const arr = Array.from({ length: 100 }, (_, i) => i);
     for (let i = arr.length - 1; i > 0; i--) {
