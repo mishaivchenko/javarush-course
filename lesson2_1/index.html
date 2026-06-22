@@ -745,7 +745,114 @@
       state.config[key] = mixer.default;
     }
   }
-  applyStrategyDefaults(); =====
+  applyStrategyDefaults();
+
+  // ===== SIMULATION LOOP =====
+  let simulationAborted = false;
+
+  async function prisonerRun(prisonerId) {
+    state.currentPrisoner = prisonerId;
+    state.prisonerStep = 0;
+    state.prisonerPath = [];
+
+    const strategy = Strategies[state.strategy];
+    let currentBox = strategy.decide(prisonerId, null, state.config, 0);
+
+    while (currentBox !== null && currentBox !== undefined && state.prisonerStep < 50) {
+      if (!state.running || simulationAborted) return false;
+
+      // Open the box
+      state.revealed[currentBox] = true;
+      state.prisonerPath.push(currentBox);
+      const foundPrisoner = state.boxes[currentBox];
+      state.prisonerStep++;
+
+      renderAll();
+
+      if (foundPrisoner === prisonerId) {
+        // Found their number!
+        return true;
+      }
+
+      // Wait for visual
+      await sleep(state.speed);
+
+      // Decide next box
+      currentBox = strategy.decide(prisonerId, state.boxes[currentBox], state.config, state.prisonerStep);
+    }
+
+    return false;
+  }
+
+  async function runRound() {
+    if (simulationAborted) return;
+
+    state.roundState = 'RUNNING';
+    state.currentPrisoner = 0;
+    state.prisonerStep = 0;
+    state.prisonerPath = [];
+
+    generatePermutation();
+    renderAll();
+    await sleep(state.speed * 2);
+
+    let allFound = true;
+    for (let p = 0; p < 100; p++) {
+      if (!state.running || simulationAborted) return;
+
+      const found = await prisonerRun(p);
+      if (!found) {
+        allFound = false;
+        break;
+      }
+
+      // Brief pause between prisoners
+      await sleep(Math.min(state.speed, 30));
+    }
+
+    if (simulationAborted) return;
+
+    if (allFound) {
+      state.roundState = 'WIN';
+      state.totalWins++;
+      state.currentStreak++;
+      if (state.currentStreak > state.maxStreak) state.maxStreak = state.currentStreak;
+      state.history.push('WIN');
+    } else {
+      state.roundState = 'LOSE';
+      state.totalLosses++;
+      state.currentStreak = 0;
+      state.history.push('LOSE');
+    }
+
+    renderAll();
+  }
+
+  async function runLoop() {
+    simulationAborted = false;
+    state.running = true;
+    renderAll();
+
+    while (state.running && !simulationAborted) {
+      state.round++;
+      state.roundState = 'RUNNING';
+      renderAll();
+
+      await runRound();
+
+      if (!state.running || simulationAborted) break;
+
+      renderAll();
+
+      // Pause before next round
+      await sleep(2000);
+
+      if (!state.running || simulationAborted) break;
+    }
+
+    state.running = false;
+    renderAll();
+  } =====
   function generatePermutation() {
     const arr = Array.from({ length: 100 }, (_, i) => i);
     for (let i = arr.length - 1; i > 0; i--) {
