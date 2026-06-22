@@ -1,0 +1,16 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# Env / secrets
+.env
+
+# IDE
+.idea/
+*.iml
+
+# Unsplash scripts (external tool, not part of the project)
+.claude/skills/unsplash/
+
+# Claude memory / plugins (workspace-specific, not repo files)
+.claude/
