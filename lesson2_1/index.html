@@ -611,6 +611,18 @@
      MODEL — State, Permutations, Strategy Engine
      ============================================================ */
 
+  // ===== PERMUTATION GENERATION =====
+  function generatePermutation() {
+    const arr = Array.from({ length: 100 }, (_, i) => i);
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    state.boxes = arr;
+    state.revealed = new Array(100).fill(false);
+    return arr;
+  }
+
   // ===== CENTRAL STATE =====
   const state = {
     // Permutation
