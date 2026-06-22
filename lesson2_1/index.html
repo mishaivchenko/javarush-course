@@ -723,14 +723,18 @@
         const mercyChance = config.mercyChance;
         const extraBoxes = config.extraBoxes;
         // Normal loop logic
-        if (currentBox === null || currentBox === undefined) return state.boxes[prisonerId];
+        if (currentBox === null || currentBox === undefined) {
+          // First step: follow loop from prisoner's own number
+          return state.boxes[prisonerId];
+        }
         const nextBox = state.boxes[currentBox];
-        // If this would be step 50 (the limit), check for mercy
-        if (stepCount >= 49 && state.prisonerStep >= 49) {
+        // If we're at or past the normal limit, check for mercy
+        if (stepCount >= 50) {
           if (Math.random() < mercyChance) {
-            // Grant extra boxes — return a random unexplored box
+            // One more chance: random unexplored box
             return randomUnexplored();
           }
+          return null; // No mercy — give up
         }
         return nextBox;
       }
@@ -756,9 +760,27 @@
     state.prisonerPath = [];
 
     const strategy = Strategies[state.strategy];
+    const maxSteps = 50; // Standard limit
+
     let currentBox = strategy.decide(prisonerId, null, state.config, 0);
 
-    while (currentBox !== null && currentBox !== undefined && state.prisonerStep < 50) {
+    // Warden's Mercy may grant extra boxes past 50
+    let mercySteps = 0;
+
+    while (currentBox !== null && currentBox !== undefined) {
+      // Check standard step limit (minus mercy extras)
+      if (state.prisonerStep >= maxSteps + mercySteps) {
+        // At limit — mercy strategy may grant more
+        if (state.strategy === 'mercy') {
+          currentBox = strategy.decide(prisonerId, currentBox, state.config, state.prisonerStep);
+          if (currentBox === null) break; // No mercy granted
+          mercySteps += state.config.extraBoxes || 10;
+          if (state.prisonerStep >= maxSteps + mercySteps) break;
+        } else {
+          break;
+        }
+      }
+
       if (!state.running || simulationAborted) return false;
 
       // Open the box
@@ -770,7 +792,6 @@
       renderAll();
 
       if (foundPrisoner === prisonerId) {
-        // Found their number!
         return true;
       }
 
@@ -1131,6 +1152,105 @@
      CONTROLLER — Sleep, run loop, event handlers, init
      ============================================================ */
 
+  // ===== HELPERS =====
+  function sleep(ms) {
+    return new Promise(function(resolve) {
+      setTimeout(resolve, ms);
+    });
+  }
+
+  // ===== EVENT HANDLERS =====
+  function onRun() {
+    if (state.running) return;
+    // If we're starting fresh (not resuming after pause)
+    if (state.roundState === 'IDLE' || state.roundState === 'WIN' || state.roundState === 'LOSE') {
+      state.round = 0;
+      state.currentPrisoner = 0;
+      state.prisonerStep = 0;
+      state.prisonerPath = [];
+      state.roundState = 'IDLE';
+    }
+    simulationAborted = false;
+    runLoop();
+    updateButtonStates();
+  }
+
+  function onPause() {
+    state.running = false;
+    simulationAborted = true;
+    updateButtonStates();
+  }
+
+  function onReset() {
+    state.running = false;
+    simulationAborted = true;
+    state.round = 0;
+    state.currentPrisoner = 0;
+    state.prisonerStep = 0;
+    state.roundState = 'IDLE';
+    state.prisonerPath = [];
+    state.totalWins = 0;
+    state.totalLosses = 0;
+    state.maxStreak = 0;
+    state.currentStreak = 0;
+    state.history = [];
+    generatePermutation();
+    renderAll();
+    updateButtonStates();
+  }
+
+  function onStrategyChange(value) {
+    state.strategy = value;
+    applyStrategyDefaults();
+    renderMixerPanel();
+    renderAll();
+  }
+
+  function onSpeedChange(value) {
+    state.speed = parseInt(value, 10);
+    document.getElementById('speed-value').textContent = value;
+  }
+
+  function updateButtonStates() {
+    document.getElementById('btn-run').disabled = state.running;
+    document.getElementById('btn-pause').disabled = !state.running;
+  }
+
+  // ===== EVENT LISTENERS =====
+  function attachEventListeners() {
+    // Strategy selector
+    document.getElementById('strategy-select').addEventListener('change', function(e) {
+      onStrategyChange(e.target.value);
+    });
+
+    // Run button
+    document.getElementById('btn-run').addEventListener('click', onRun);
+
+    // Pause button
+    document.getElementById('btn-pause').addEventListener('click', onPause);
+
+    // Reset button
+    document.getElementById('btn-reset').addEventListener('click', onReset);
+
+    // Speed slider
+    document.getElementById('speed-slider').addEventListener('input', function(e) {
+      onSpeedChange(e.target.value);
+    });
+  }
+
+  // ===== INIT =====
+  function init() {
+    generatePermutation();
+    renderStrategySelector();
+    applyStrategyDefaults();
+    renderMixerPanel();
+    renderAll();
+    attachEventListeners();
+    updateButtonStates();
+  }
+
+  // Boot
+  document.addEventListener('DOMContentLoaded', init);
   </script>
 </body>
 </html>
