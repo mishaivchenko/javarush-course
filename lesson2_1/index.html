@@ -611,6 +611,34 @@
      MODEL — State, Permutations, Strategy Engine
      ============================================================ */
 
+  // ===== CENTRAL STATE =====
+  const state = {
+    // Permutation
+    boxes: new Array(100).fill(null),
+    revealed: new Array(100).fill(false),
+
+    // Round
+    round: 0,
+    currentPrisoner: 0,
+    prisonerStep: 0,
+    roundState: 'IDLE', // IDLE | RUNNING | WIN | LOSE
+    prisonerPath: [],
+
+    // Strategy
+    strategy: 'loop',
+    config: { discipline: 1.0 },
+
+    // Stats
+    totalWins: 0,
+    totalLosses: 0,
+    maxStreak: 0,
+    currentStreak: 0,
+    history: [],
+
+    // Simulation control
+    running: false,
+    speed: 50,
+  };
   </script>
 
   <!-- RENDERER — DOM rendering, animations -->
