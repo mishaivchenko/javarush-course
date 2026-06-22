@@ -666,9 +666,9 @@
       decide(prisonerId, currentBox, config, stepCount) {
         const discipline = config.discipline;
         if (Math.random() < discipline) {
-          // Follow the cycle: first box = prisonerId, then boxes[currentBox]
+          // Follow the cycle: first box = prisonerId, then currentBox (from the slip)
           if (stepCount === 0) return prisonerId;
-          return state.boxes[currentBox];
+          return currentBox;
         }
         return randomUnexplored();
       }
@@ -699,7 +699,7 @@
           return randomUnexplored();
         }
         if (stepCount === 0) return prisonerId;
-        return state.boxes[currentBox];
+        return currentBox;
       }
     },
 
@@ -714,7 +714,7 @@
         }
         if (this._mode[prisonerId] === 'loop') {
           if (stepCount === 0) return prisonerId;
-          return state.boxes[currentBox];
+          return currentBox;
         }
         return randomUnexplored();
       }
@@ -733,7 +733,7 @@
           if (Math.random() < config.mercyChance) return randomUnexplored();
           return null;
         }
-        return state.boxes[currentBox];
+        return currentBox;
       }
     }
   };
@@ -762,16 +762,18 @@
 
     const strategy = Strategies[state.strategy];
     const maxSteps = 50;
+    let effectiveMax = maxSteps;
     let currentBox = strategy.decide(prisonerId, null, state.config, 0);
-    let mercySteps = 0;
 
     while (currentBox !== null && currentBox !== undefined) {
-      if (state.prisonerStep >= maxSteps + mercySteps) {
+      if (state.prisonerStep >= effectiveMax) {
         if (state.strategy === 'mercy') {
+          // At standard limit: check mercy
           currentBox = strategy.decide(prisonerId, currentBox, state.config, state.prisonerStep);
           if (currentBox === null) break;
-          mercySteps += state.config.extraBoxes || 10;
-          if (state.prisonerStep >= maxSteps + mercySteps) break;
+          effectiveMax += state.config.extraBoxes || 10;
+          // Don't increment step for the mercy check itself
+          continue;
         } else {
           break;
         }
