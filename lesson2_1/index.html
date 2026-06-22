@@ -611,6 +611,38 @@
      MODEL — State, Permutations, Strategy Engine
      ============================================================ */
 
+  // ===== CENTRAL STATE =====
+  const state = {
+    boxes: new Array(100).fill(null),
+    revealed: new Array(100).fill(false),
+    round: 0,
+    currentPrisoner: 0,
+    prisonerStep: 0,
+    roundState: 'IDLE',
+    prisonerPath: [],
+    strategy: 'loop',
+    config: { discipline: 1.0 },
+    totalWins: 0,
+    totalLosses: 0,
+    maxStreak: 0,
+    currentStreak: 0,
+    history: [],
+    running: false,
+    speed: 50,
+  };
+
+  // ===== PERMUTATION GENERATION =====
+  function generatePermutation() {
+    const arr = Array.from({ length: 100 }, (_, i) => i);
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    state.boxes = arr;
+    state.revealed = new Array(100).fill(false);
+    return arr;
+  }
+
   // ===== STRATEGY ENGINE =====
   function getUnexplored() {
     const unexplored = [];
@@ -620,15 +652,6 @@
     return unexplored;
   }
 
-  function findNextInLoop(prisonerId, currentBox) {
-    // If we're at the start of a loop, next box = box[prisonerId]
-    if (currentBox === null || currentBox === undefined) return state.boxes[prisonerId];
-    // Otherwise, follow the chain: boxes[currentBox]
-    return state.boxes[currentBox];
-    // Returns a value 0..99 — the number inside current box tells us which box to open next
-    // (because boxes[currentBox] contains the slip that points to the next box index)
-  }
-
   function randomUnexplored() {
     const u = getUnexplored();
     if (u.length === 0) return null;
@@ -636,44 +659,35 @@
   }
 
   const Strategies = {
-    // 1. The Loop Protocol — optimal cycle-following strategy
+    // 1. The Loop Protocol
     loop: {
       name: 'The Loop Protocol',
       mixers: { discipline: { min: 0, max: 1, default: 1.0, step: 0.05 } },
       decide(prisonerId, currentBox, config, stepCount) {
         const discipline = config.discipline;
         if (Math.random() < discipline) {
-          // Follow the cycle
-          if (currentBox === null || currentBox === undefined) return state.boxes[prisonerId];
+          // Follow the cycle: first box = prisonerId, then boxes[currentBox]
+          if (stepCount === 0) return prisonerId;
           return state.boxes[currentBox];
-        } else {
-          // Random undiscovered box
-          return randomUnexplored();
         }
+        return randomUnexplored();
       }
     },
 
-    // 2. Blind Panic — purely random
+    // 2. Blind Panic
     panic: {
       name: 'Blind Panic',
       mixers: { memory: { min: 0, max: 1, default: 0.5, step: 0.05 } },
       decide(prisonerId, currentBox, config, stepCount) {
         const memory = config.memory;
-        if (memory >= 0.8) {
-          // High memory: only unexplored boxes
-          return randomUnexplored();
-        } else if (memory <= 0.2) {
-          // Low memory: pure chaos, may repeat
-          return Math.floor(Math.random() * 100);
-        } else {
-          // Medium: mix of random among all vs unexplored
-          if (Math.random() < memory) return randomUnexplored();
-          return Math.floor(Math.random() * 100);
-        }
+        if (memory >= 0.8) return randomUnexplored();
+        if (memory <= 0.2) return Math.floor(Math.random() * 100);
+        if (Math.random() < memory) return randomUnexplored();
+        return Math.floor(Math.random() * 100);
       }
     },
 
-    // 3. Hybrid Ritual — starts as Loop, panics after faith threshold
+    // 3. Hybrid Ritual
     hybrid: {
       name: 'Hybrid Ritual',
       mixers: {
@@ -681,38 +695,32 @@
         panicThreshold: { min: 1, max: 50, default: 10, step: 1 }
       },
       decide(prisonerId, currentBox, config, stepCount) {
-        const faith = config.faith;
-        const panicThreshold = config.panicThreshold;
-        if (stepCount > faith || stepCount > panicThreshold) {
-          // Switch to random (high memory)
+        if (stepCount > config.faith || stepCount > config.panicThreshold) {
           return randomUnexplored();
         }
-        // Follow the loop
-        if (currentBox === null || currentBox === undefined) return state.boxes[prisonerId];
+        if (stepCount === 0) return prisonerId;
         return state.boxes[currentBox];
       }
     },
 
-    // 4. Lucky Sacrifice — coin flip between Loop and Panic at start of run
+    // 4. Lucky Sacrifice
     sacrifice: {
       name: "Lucky Sacrifice",
       mixers: { obedienceRate: { min: 0, max: 1, default: 0.5, step: 0.05 } },
-      _mode: {}, // { prisonerId: 'loop'|'panic' } — cached per prisoner run
+      _mode: {},
       decide(prisonerId, currentBox, config, stepCount) {
         if (stepCount === 0) {
-          // Coin flip at start of prisoner's run
           this._mode[prisonerId] = Math.random() < config.obedienceRate ? 'loop' : 'panic';
         }
         if (this._mode[prisonerId] === 'loop') {
-          if (currentBox === null || currentBox === undefined) return state.boxes[prisonerId];
+          if (stepCount === 0) return prisonerId;
           return state.boxes[currentBox];
-        } else {
-          return randomUnexplored();
         }
+        return randomUnexplored();
       }
     },
 
-    // 5. Warden's Mercy — Loop Protocol with extra attempts on failure
+    // 5. Warden's Mercy
     mercy: {
       name: "Warden's Mercy",
       mixers: {
@@ -720,28 +728,16 @@
         extraBoxes: { min: 1, max: 50, default: 10, step: 1 }
       },
       decide(prisonerId, currentBox, config, stepCount) {
-        const mercyChance = config.mercyChance;
-        const extraBoxes = config.extraBoxes;
-        // Normal loop logic
-        if (currentBox === null || currentBox === undefined) {
-          // First step: follow loop from prisoner's own number
-          return state.boxes[prisonerId];
-        }
-        const nextBox = state.boxes[currentBox];
-        // If we're at or past the normal limit, check for mercy
+        if (stepCount === 0) return prisonerId;
         if (stepCount >= 50) {
-          if (Math.random() < mercyChance) {
-            // One more chance: random unexplored box
-            return randomUnexplored();
-          }
-          return null; // No mercy — give up
+          if (Math.random() < config.mercyChance) return randomUnexplored();
+          return null;
         }
-        return nextBox;
+        return state.boxes[currentBox];
       }
     }
   };
 
-  // Initialize strategy config with defaults
   function applyStrategyDefaults() {
     const s = Strategies[state.strategy];
     state.config = {};
@@ -749,10 +745,15 @@
       state.config[key] = mixer.default;
     }
   }
-  applyStrategyDefaults();
 
   // ===== SIMULATION LOOP =====
   let simulationAborted = false;
+
+  function sleep(ms) {
+    return new Promise(function(resolve) {
+      setTimeout(resolve, ms);
+    });
+  }
 
   async function prisonerRun(prisonerId) {
     state.currentPrisoner = prisonerId;
@@ -760,20 +761,15 @@
     state.prisonerPath = [];
 
     const strategy = Strategies[state.strategy];
-    const maxSteps = 50; // Standard limit
-
+    const maxSteps = 50;
     let currentBox = strategy.decide(prisonerId, null, state.config, 0);
-
-    // Warden's Mercy may grant extra boxes past 50
     let mercySteps = 0;
 
     while (currentBox !== null && currentBox !== undefined) {
-      // Check standard step limit (minus mercy extras)
       if (state.prisonerStep >= maxSteps + mercySteps) {
-        // At limit — mercy strategy may grant more
         if (state.strategy === 'mercy') {
           currentBox = strategy.decide(prisonerId, currentBox, state.config, state.prisonerStep);
-          if (currentBox === null) break; // No mercy granted
+          if (currentBox === null) break;
           mercySteps += state.config.extraBoxes || 10;
           if (state.prisonerStep >= maxSteps + mercySteps) break;
         } else {
@@ -783,7 +779,6 @@
 
       if (!state.running || simulationAborted) return false;
 
-      // Open the box
       state.revealed[currentBox] = true;
       state.prisonerPath.push(currentBox);
       const foundPrisoner = state.boxes[currentBox];
@@ -791,14 +786,9 @@
 
       renderAll();
 
-      if (foundPrisoner === prisonerId) {
-        return true;
-      }
+      if (foundPrisoner === prisonerId) return true;
 
-      // Wait for visual
       await sleep(state.speed);
-
-      // Decide next box
       currentBox = strategy.decide(prisonerId, state.boxes[currentBox], state.config, state.prisonerStep);
     }
 
@@ -813,6 +803,9 @@
     state.prisonerStep = 0;
     state.prisonerPath = [];
 
+    // Reset per-round strategy state
+    Strategies.sacrifice._mode = {};
+
     generatePermutation();
     renderAll();
     await sleep(state.speed * 2);
@@ -826,8 +819,6 @@
         allFound = false;
         break;
       }
-
-      // Brief pause between prisoners
       await sleep(Math.min(state.speed, 30));
     }
 
@@ -845,7 +836,6 @@
       state.currentStreak = 0;
       state.history.push('LOSE');
     }
-
     renderAll();
   }
 
@@ -858,61 +848,16 @@
       state.round++;
       state.roundState = 'RUNNING';
       renderAll();
-
       await runRound();
-
       if (!state.running || simulationAborted) break;
-
       renderAll();
-
-      // Pause before next round
       await sleep(2000);
-
       if (!state.running || simulationAborted) break;
     }
 
     state.running = false;
     renderAll();
-  } =====
-  function generatePermutation() {
-    const arr = Array.from({ length: 100 }, (_, i) => i);
-    for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-    state.boxes = arr;
-    state.revealed = new Array(100).fill(false);
-    return arr;
   }
-
-  // ===== CENTRAL STATE =====
-  const state = {
-    // Permutation
-    boxes: new Array(100).fill(null),
-    revealed: new Array(100).fill(false),
-
-    // Round
-    round: 0,
-    currentPrisoner: 0,
-    prisonerStep: 0,
-    roundState: 'IDLE', // IDLE | RUNNING | WIN | LOSE
-    prisonerPath: [],
-
-    // Strategy
-    strategy: 'loop',
-    config: { discipline: 1.0 },
-
-    // Stats
-    totalWins: 0,
-    totalLosses: 0,
-    maxStreak: 0,
-    currentStreak: 0,
-    history: [],
-
-    // Simulation control
-    running: false,
-    speed: 50,
-  };
   </script>
 
   <!-- RENDERER — DOM rendering, animations -->
@@ -1151,13 +1096,6 @@
   /* ============================================================
      CONTROLLER — Sleep, run loop, event handlers, init
      ============================================================ */
-
-  // ===== HELPERS =====
-  function sleep(ms) {
-    return new Promise(function(resolve) {
-      setTimeout(resolve, ms);
-    });
-  }
 
   // ===== EVENT HANDLERS =====
   function onRun() {
