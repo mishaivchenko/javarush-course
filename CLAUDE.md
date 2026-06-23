@@ -24,10 +24,18 @@
 - `docs/superpowers/specs/2026-06-22-dual-strategy-comparison.md` — dual strategy comparison spec
 - `docs/superpowers/specs/tasks/` — individual task specs
 
-## Active Tasks (current feature cycle: Dual Strategy Comparison)
+## Active Tasks (current feature cycle: Lose Reveal, Found Names, Blood Stone)
 | # | Task | File | Status |
 |---|---|---|---|
-| 030 | Dual Strategy Comparison | `tasks/030-dual-strategy-comparison.md` | 🔲 Pending |
+| 030 | Dual Strategy Comparison | `tasks/030-dual-strategy-comparison.md` | ✅ Done |
+| 031 | Unsplash API Setup & Search | `tasks/031-unsplash-api-setup.md` | ✅ Done |
+| 032 | Box Flip Animation (CSS + Renderer) | `tasks/032-box-flip-animation.md` | ✅ Done |
+| 033 | Prisoner Walk Animation | `tasks/033-prisoner-walk-animation.md` | ✅ Done |
+| 034 | Unsplash Background & Box Textures | `tasks/034-unsplash-background-integration.md` | ✅ Done |
+| 035 | YOU DIED — Dark Souls Lose Screen | `tasks/035-you-died-souls-screen.md` | 🔲 Pending |
+| 036 | Lose Reveal — All Boxes Reset to Closed | `tasks/036-lose-reveal-all-boxes.md` | 🔲 Pending |
+| 037 | Found Name — Prisoner Name Under Box | `tasks/037-found-name-under-box.md` | 🔲 Pending |
+| 038 | Dark Wood+Metal → Bloody Stone Textures | `tasks/038-dark-wood-and-blood-stone-textures.md` | 🔲 Pending |
 
 ## Task Archive (completed)
 | # | Task | File |
@@ -47,6 +55,7 @@
 | 027 | Telegram Path Stripe | `tasks/027-telegram-path-stripe.md` |
 | 028 | Lovecraftian Overlays | `tasks/028-lovecraftian-overlays.md` |
 | 029 | Proportion Fix (cancelled — superseded by 030) | `tasks/029-proportion-fix.md` |
+| 030 | Dual Strategy Comparison | `tasks/030-dual-strategy-comparison.md` |
 
 ## Architecture (single HTML file, 4 JS sections)
 1. **PRISONER DB** — name pool, pixel avatar generation (`generatePixelAvatar`), sprite generation

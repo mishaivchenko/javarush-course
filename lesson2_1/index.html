@@ -43,7 +43,7 @@
 
     body {
       font-family: 'VT323', 'Courier New', monospace;
-      background: var(--bg);
+      background: url('https://images.unsplash.com/photo-1720642436687-6969d99712f9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5ODAyNDJ8MHwxfHNlYXJjaHwxfHxob3Jyb3IlMjBwcmlzb24lMjBkdW5nZW9uJTIwZGFyayUyMGNvcnJpZG9yfGVufDB8MHwyfGJsYWNrX2FuZF93aGl0ZXwxNzgyMTk4MjMxfDA&ixlib=rb-4.1.0&q=80&w=1080') center/cover no-repeat fixed;
       color: var(--text);
       height: 100vh;
       overflow: hidden;
@@ -336,21 +336,61 @@
     .box {
       aspect-ratio: 1;
       background: var(--stone);
+      background-image: url('https://images.unsplash.com/photo-1781736712900-84d3e5823eea?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5ODAyNDJ8MHwxfHNlYXJjaHwxfHx3b29kJTIwdGV4dHVyZSUyMGRhcmt8ZW58MHwyfDJ8fDE3ODIxOTk2MDd8MA&ixlib=rb-4.1.0&q=80&w=400');
+      background-size: cover;
+      background-blend-mode: overlay;
       border: 1px solid var(--stone-light);
       border-top-color: #3d322a;
       border-left-color: #3d322a;
       border-bottom-color: #16120e;
       border-right-color: #16120e;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.8em;
-      font-family: 'VT323', monospace;
-      color: var(--text-dim);
       cursor: default;
       transition: background 0.12s, border-color 0.12s, color 0.12s;
       position: relative;
       user-select: none;
+    }
+
+    /* ===== FLIP ANIMATION ===== */
+    .box {
+      perspective: 600px;
+    }
+    .box .box-inner {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.2s ease;
+      transform-style: preserve-3d;
+    }
+    .box.flipped .box-inner {
+      transform: rotateY(180deg);
+    }
+    .box .box-front,
+    .box .box-back {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      color: inherit;
+    }
+    .box .box-front {
+      font-family: 'UnifrakturCook', 'Times New Roman', serif;
+      font-size: 1.1em;
+      font-weight: 700;
+      color: var(--gold);
+      text-shadow: 0 0 6px rgba(139, 115, 64, 0.4);
+    }
+    .box .box-back {
+      font-family: 'VT323', monospace;
+      font-size: 0.85em;
+      color: var(--text);
+      background-image: url('https://images.unsplash.com/photo-1737033764140-fcd66828325e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5ODAyNDJ8MHwxfHNlYXJjaHwxfHxzdG9uZSUyMHRleHR1cmV8ZW58MHwyfHx8MTc4MjE5ODI2MHww&ixlib=rb-4.1.0&q=80&w=400');
+      background-size: cover;
+      background-blend-mode: overlay;
+      transform: rotateY(180deg);
     }
 
     .box.revealed {
@@ -409,6 +449,42 @@
       border-color: var(--fail-bright);
       color: #aa3030;
       box-shadow: inset 0 0 8px rgba(106, 26, 26, 0.3);
+    }
+
+    /* ===== PRISONER WALKER — animated marker ===== */
+    .prisoner-walker {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      z-index: 5;
+      pointer-events: none;
+      transition: left 0.12s ease, top 0.12s ease;
+      box-shadow: 0 0 10px currentColor, 0 0 20px currentColor;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 8px;
+      font-family: 'VT323', monospace;
+      color: #fff;
+      line-height: 1;
+      text-shadow: 0 0 4px #000;
+      opacity: 0;
+    }
+    .prisoner-walker.active {
+      opacity: 1;
+    }
+    .prisoner-walker.win {
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+    .prisoner-walker.fail {
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .prisoner-walker .walker-initials {
+      position: relative;
+      z-index: 1;
     }
 
     /* ===== PATH CONNECTION LINES ===== */
@@ -868,9 +944,10 @@
           </div>
           <span class="round-badge" id="round-a">R:0</span>
         </div>
-        <div class="grid-wrapper">
+        <div class="grid-wrapper" id="grid-wrapper-a">
           <div class="grid" id="box-grid-a"></div>
           <svg class="path-lines" id="path-lines-a" preserveAspectRatio="xMidYMid meet"></svg>
+          <div class="prisoner-walker" id="walker-a"><span class="walker-initials"></span></div>
           <div class="overlay" id="overlay-a">
             <div class="overlay-text" id="overlay-text-a"></div>
           </div>
@@ -901,9 +978,10 @@
           </div>
           <span class="round-badge" id="round-b">R:0</span>
         </div>
-        <div class="grid-wrapper">
+        <div class="grid-wrapper" id="grid-wrapper-b">
           <div class="grid" id="box-grid-b"></div>
           <svg class="path-lines" id="path-lines-b" preserveAspectRatio="xMidYMid meet"></svg>
+          <div class="prisoner-walker" id="walker-b"><span class="walker-initials"></span></div>
           <div class="overlay" id="overlay-b">
             <div class="overlay-text" id="overlay-text-b"></div>
           </div>
@@ -925,6 +1003,7 @@
       <div class="cmp-item"><span class="cmp-key">Win Rate</span><span class="cmp-val-a" id="cmp-rate-a">0%</span><span class="cmp-delim">|</span><span class="cmp-val-b" id="cmp-rate-b">0%</span><span class="cmp-diff" id="cmp-rate-diff"></span></div>
       <div class="cmp-item"><span class="cmp-key">Avg Steps</span><span class="cmp-val-a" id="cmp-steps-a">—</span><span class="cmp-delim">|</span><span class="cmp-val-b" id="cmp-steps-b">—</span></div>
       <div class="cmp-item"><span class="cmp-key">Best Streak</span><span class="cmp-val-a" id="cmp-streak-a">0</span><span class="cmp-delim">|</span><span class="cmp-val-b" id="cmp-streak-b">0</span></div>
+      <span style="margin-left:auto;font-size:0.45em;color:var(--text-dim);opacity:0.4;white-space:nowrap;">Bg: Alan Pope. Wood: D.Lemesheva. Stone: Freddie. /Unsplash</span>
     </div>
   </div>
 
@@ -1284,6 +1363,9 @@
 
       renderAll();
 
+      // Allow walker CSS transition to play
+      await sleep(Math.min(s.speed * 0.2, 30));
+
       if (foundPrisoner === prisonerId) return true;
 
       await sleep(s.speed);
@@ -1376,6 +1458,21 @@
       const div = document.createElement('div');
       div.className = 'box';
       div.dataset.index = i;
+
+      const inner = document.createElement('div');
+      inner.className = 'box-inner';
+
+      const front = document.createElement('div');
+      front.className = 'box-front';
+      front.textContent = String(i + 1).padStart(2, '0');
+
+      const back = document.createElement('div');
+      back.className = 'box-back';
+      back.textContent = '';
+
+      inner.appendChild(front);
+      inner.appendChild(back);
+      div.appendChild(inner);
       grid.appendChild(div);
       els.push(div);
     }
@@ -1398,11 +1495,17 @@
       if (!el) continue;
       el.className = 'box';
 
+      const front = el.querySelector('.box-front');
+      const back = el.querySelector('.box-back');
+
       if (s.revealed[i]) {
-        el.classList.add('revealed');
-        el.textContent = s.boxes[i];
+        el.classList.add('revealed', 'flipped');
+        if (back) back.textContent = s.boxes[i];
+        if (front) front.textContent = '';
       } else {
-        el.textContent = '';
+        el.classList.remove('flipped', 'revealed');
+        if (front) front.textContent = String(i + 1).padStart(2, '0');
+        if (back) back.textContent = '';
       }
 
       const stepIdx = s.prisonerPath.indexOf(i);
@@ -1413,6 +1516,7 @@
           el.style.background = pColor + '33';
           el.style.color = pColor;
         }
+        if (front && s.revealed[i]) front.textContent = '';
         const oldLabel = el.querySelector('.step-label');
         if (oldLabel) oldLabel.remove();
         const label = document.createElement('span');
@@ -1505,7 +1609,7 @@
     if (s.roundState === 'WIN') {
       html += ' — <span class="found-text">◈ ALL 100 SURVIVED ◈</span>';
     } else if (s.roundState === 'LOSE') {
-      html += ' — <span class="fail-text">✖ EXECUTED</span>';
+      html += ' — <span class="fail-text">✖ YOU DIED</span>';
     }
 
     el.innerHTML = html;
@@ -1597,10 +1701,57 @@
       text.className = 'overlay-text win';
     } else if (s.roundState === 'LOSE') {
       overlay.classList.add('active');
-      text.textContent = 'EXECUTED';
+      text.textContent = 'YOU DIED';
       text.className = 'overlay-text lose';
     } else {
       overlay.classList.remove('active');
+    }
+  }
+
+  // ===== PRISONER WALKER — animated marker on grid =====
+  function updateWalkerPosition(s, walkerId, gridWrapperId, boxElements) {
+    const walker = document.getElementById(walkerId);
+    const wrapper = document.getElementById(gridWrapperId);
+    if (!walker || !wrapper) return;
+
+    const pid = s.currentPrisoner;
+    const p = prisoners[pid];
+
+    if (s.roundState === 'IDLE' || s.prisonerPath.length === 0) {
+      walker.classList.remove('active', 'win', 'fail');
+      return;
+    }
+
+    // Color + initials
+    const color = p ? p.color : '#888';
+    walker.style.color = color;
+    walker.style.background = color;
+    const initialsEl = walker.querySelector('.walker-initials');
+    if (initialsEl && p) {
+      initialsEl.textContent = p.firstName.charAt(0) + p.lastName.charAt(0);
+    }
+
+    // Position at the last visited box (the one the prisoner is currently at)
+    const lastBoxIdx = s.prisonerPath[s.prisonerPath.length - 1];
+    const boxEl = boxElements[lastBoxIdx];
+    if (!boxEl) return;
+
+    const wrapperRect = wrapper.getBoundingClientRect();
+    const boxRect = boxEl.getBoundingClientRect();
+
+    walker.style.left = (boxRect.left - wrapperRect.left + boxRect.width / 2 - 10) + 'px';
+    walker.style.top = (boxRect.top - wrapperRect.top + boxRect.height / 2 - 10) + 'px';
+
+    // Show/hide based on round state
+    if (s.roundState === 'WIN') {
+      walker.classList.remove('active');
+      walker.classList.add('win');
+    } else if (s.roundState === 'LOSE') {
+      walker.classList.remove('active');
+      walker.classList.add('fail');
+    } else {
+      walker.classList.add('active');
+      walker.classList.remove('win', 'fail');
     }
   }
 
@@ -1718,6 +1869,14 @@
     renderMugshot(stateB, 'mugshot-b', 'mugshot-badge-b');
   }
 
+  function renderWalkerA() {
+    updateWalkerPosition(stateA, 'walker-a', 'grid-wrapper-a', boxElementsA);
+  }
+
+  function renderWalkerB() {
+    updateWalkerPosition(stateB, 'walker-b', 'grid-wrapper-b', boxElementsB);
+  }
+
   // ===== MIXER PANEL (per column) =====
   function renderMixerPanel(s, containerId) {
     const container = document.getElementById(containerId);
@@ -1793,6 +1952,8 @@
     renderPathStripeB();
     renderPathLinesA();
     renderPathLinesB();
+    renderWalkerA();
+    renderWalkerB();
     renderStatsA();
     renderStatsB();
     renderOverlayA();
