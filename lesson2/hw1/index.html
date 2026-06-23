@@ -1238,7 +1238,7 @@
       history: [],
       totalSteps: 0,
       running: false,
-      speed: 50,
+      speed: 260,  // default slider 50 → delay 260ms (see sliderToDelay)
       _sacrificeMode: {},
     };
   }
@@ -1448,12 +1448,6 @@
   async function runRound(s) {
     if (simulationAborted) return;
 
-    // Reset revealed for new round (keep boxOwner — names persist across rounds)
-    for (let i = 0; i < 100; i++) {
-      s.revealed[i] = false;
-      s.visuallyClosed[i] = false;
-    }
-
     s.roundState = 'RUNNING';
     s.currentPrisoner = 0;
     s.prisonerStep = 0;
@@ -1506,6 +1500,12 @@
     renderAll();
 
     while (s.running && !simulationAborted) {
+      // New random permutation each round (shared between both columns)
+      sharedPerm = generatePermutation();
+      s.boxes = sharedPerm;
+      s.revealed = new Array(100).fill(false);
+      s.visuallyClosed = new Array(100).fill(false);
+
       s.round++;
       await runRound(s);
       if (!s.running || simulationAborted) break;
@@ -2254,9 +2254,8 @@
   function onRunColumn(s) {
     if (s.running) return;
     resetState(s);
-    if (!sharedPerm) {
-      sharedPerm = generatePermutation();
-    }
+    // New permutation each column run
+    sharedPerm = generatePermutation();
     s.boxes = [...sharedPerm];
     s.revealed = new Array(100).fill(false);
     simulationAborted = false;
@@ -2306,10 +2305,17 @@
     renderAll();
   }
 
+  // Convert speed slider value (10-300) to delay in ms — higher = faster
+  // 10 = slowest (~300ms), 300 = fastest (~1ms)
+  function sliderToDelay(v) {
+    return Math.max(1, Math.round(310 - v));
+  }
+
   function onSpeedChange(value) {
     const v = parseInt(value, 10);
-    stateA.speed = v;
-    stateB.speed = v;
+    const delay = sliderToDelay(v);
+    stateA.speed = delay;
+    stateB.speed = delay;
     document.getElementById('speed-value').textContent = value;
   }
 
@@ -2361,6 +2367,11 @@
 
     applyStrategyDefaults(stateA);
     applyStrategyDefaults(stateB);
+
+    // Sync speed from slider
+    const initialSpeed = parseInt(document.getElementById('speed-slider').value, 10);
+    stateA.speed = sliderToDelay(initialSpeed);
+    stateB.speed = sliderToDelay(initialSpeed);
 
     renderStrategySelector(stateA, 'strategy-a');
     renderStrategySelector(stateB, 'strategy-b');
