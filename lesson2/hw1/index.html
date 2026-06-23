@@ -2147,11 +2147,14 @@
     const select = document.getElementById(selectId);
     if (!select) return;
     select.innerHTML = '';
+    const other = (s === stateA) ? stateB : stateA;
+    const otherStrat = other.strategy;
     for (const [key, strat] of Object.entries(Strategies)) {
       const opt = document.createElement('option');
       opt.value = key;
       opt.textContent = strat.name;
       if (key === s.strategy) opt.selected = true;
+      if (key === otherStrat && key !== s.strategy) opt.disabled = true;
       select.appendChild(opt);
     }
   }
@@ -2282,7 +2285,23 @@
   // ===== STRATEGY CHANGE =====
   function onStrategyChange(s, selectId, containerId) {
     s.strategy = document.getElementById(selectId).value;
+
+    // Enforce unique strategies: if both columns now have the same strategy,
+    // switch the other column to the first available alternative
+    const other = (s === stateA) ? stateB : stateA;
+    if (s.strategy === other.strategy) {
+      const alt = Object.keys(Strategies).find(k => k !== s.strategy);
+      if (alt) {
+        other.strategy = alt;
+        applyStrategyDefaults(other);
+        renderStrategySelector(other, (other === stateA) ? 'strategy-a' : 'strategy-b');
+        renderMixerPanel(other, (other === stateA) ? 'mixers-a' : 'mixers-b');
+      }
+    }
+
     applyStrategyDefaults(s);
+    renderStrategySelector(stateA, 'strategy-a');
+    renderStrategySelector(stateB, 'strategy-b');
     renderMixerPanel(s, containerId);
     renderAll();
   }
