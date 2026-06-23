@@ -2206,29 +2206,8 @@
   async function onRunAll() {
     if (stateA.running || stateB.running) return;
 
-    // Ultra speed (slider > 250) → batch benchmark mode
-    if (stateA.sliderVal > 250) {
-      await onBenchmark();
-      return;
-    }
-
-    // Reset both
-    resetState(stateA);
-    resetState(stateB);
-
-    // Shared permutation
-    sharedPerm = generatePermutation();
-    stateA.boxes = sharedPerm;
-    stateB.boxes = [...sharedPerm];
-    stateA.revealed = new Array(100).fill(false);
-    stateB.revealed = new Array(100).fill(false);
-
-    simulationAborted = false;
-    renderAll();
-
-    // Run both loops in parallel (await both to complete)
-    await Promise.all([runLoop(stateA), runLoop(stateB)]);
-    updateButtonStates();
+    // Run All always runs batch benchmark (fastest way to see win rates)
+    await onBenchmark();
   }
 
   function onPauseAll() {
