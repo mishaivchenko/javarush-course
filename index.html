@@ -1199,6 +1199,14 @@
       const avatar = generatePixelAvatar(i * 777 + 13, color);
       prisoners.push({ id, firstName, lastName, color, avatar });
     }
+
+    // Pre-cache Image objects for mugshot rendering (avoid new Image() on hot path)
+    window._mugshotImages = [];
+    for (let i = 0; i < 100; i++) {
+      const img = new Image();
+      img.src = prisoners[i].avatar;
+      window._mugshotImages[i] = img;
+    }
   }
   </script>
 
@@ -1214,6 +1222,8 @@
       label: label,
       boxes: new Array(100).fill(null),
       revealed: new Array(100).fill(false),
+      visuallyClosed: new Array(100).fill(false), // visual-only: boxes that look closed but are still in play
+      boxOwner: new Array(100).fill(null),
       round: 0,
       currentPrisoner: 0,
       prisonerStep: 0,
@@ -1347,6 +1357,12 @@
   let simulationAborted = false;
 
   function sleep(ms) {
+    // Skip setTimeout for very short delays — just yield to the microtask queue
+    if (ms < 4) {
+      return new Promise(function(resolve) {
+        requestAnimationFrame(resolve);
+      });
+    }
     return new Promise(function(resolve) {
       setTimeout(resolve, ms);
     });
@@ -1385,39 +1401,44 @@
       const foundPrisoner = s.boxes[currentBox];
       s.prisonerStep++;
 
-      renderAll();
+      // Incremental render — only the box that just changed, walker, and SVG
+      renderSingleBox(s, boxElementsForState(s), currentBox);
+      updateWalkerPosition(s, walkerIdForState(s), gridWrapperForState(s), boxElementsForState(s));
+      renderPathLines(s, linesIdForState(s), gridIdForState(s));
+      renderPathStripe(s, stripeIdForState(s));
 
       // Allow walker CSS transition to play
       await sleep(Math.max(Math.min(s.speed * 0.3, 30), 8));
 
       if (foundPrisoner === prisonerId) {
-        // Close all boxes in this path except the winning one
+        // Mark the winning box with its owner
+        s.boxOwner[currentBox] = prisonerId;
+        // Visually close all boxes in this path except the winning one
+        // (revealed stays true so strategies know they've been seen)
         for (let j = 0; j < s.prisonerPath.length - 1; j++) {
-          s.revealed[s.prisonerPath[j]] = false;
+          s.visuallyClosed[s.prisonerPath[j]] = true;
+          // Incremental render for closed boxes
+          renderSingleBox(s, boxElementsForState(s), s.prisonerPath[j]);
         }
+        // Render the winning box one last time (shows found name)
+        renderSingleBox(s, boxElementsForState(s), currentBox);
+        // Update path lines to show only the final winning path
+        renderPathLines(s, linesIdForState(s), gridIdForState(s));
+        renderPathStripe(s, stripeIdForState(s));
+        // Brief pause to show the found name / green flash
+        await sleep(30);
         return true;
       }
 
       await sleep(s.speed);
-      // Если коробка выигрышная для другого (содержит свой номер) — не идти в тупик
-      const nextTarget = s.boxes[currentBox];
-      if (s.boxes[nextTarget] === nextTarget && nextTarget !== prisonerId) {
-        // Выбрать случайную неоткрытую коробку; если все открыты — любой невыигрышный
-        const explored = getUnexplored(s);
-        if (explored.length > 0) {
-          currentBox = explored[Math.floor(Math.random() * explored.length)];
-        } else {
-          // Все коробки открыты, но не все нашли свой номер — ищем любую не выигрышную
-          const nonWinning = [];
-          for (let j = 0; j < 100; j++) {
-            if (s.boxes[j] !== j) nonWinning.push(j);
-          }
-          currentBox = nonWinning.length > 0
-            ? nonWinning[Math.floor(Math.random() * nonWinning.length)]
-            : null;
-        }
+      // Если наступили на чужую выигрышную коробку (s.boxes[currentBox] === currentBox) — не идти в тупик
+      if (s.boxes[currentBox] === currentBox && currentBox !== prisonerId) {
+        const unexplored = getUnexplored(s);
+        currentBox = unexplored.length > 0
+          ? unexplored[Math.floor(Math.random() * unexplored.length)]
+          : null;
       } else {
-        currentBox = strategy.decide(prisonerId, nextTarget, s.config, s.prisonerStep, s);
+        currentBox = strategy.decide(prisonerId, s.boxes[currentBox], s.config, s.prisonerStep, s);
       }
     }
 
@@ -1427,9 +1448,10 @@
   async function runRound(s) {
     if (simulationAborted) return;
 
-    // Reset revealed for new round
+    // Reset revealed for new round (keep boxOwner — names persist across rounds)
     for (let i = 0; i < 100; i++) {
       s.revealed[i] = false;
+      s.visuallyClosed[i] = false;
     }
 
     s.roundState = 'RUNNING';
@@ -1440,18 +1462,24 @@
     s._sacrificeMode = {};
 
     renderAll();
-    await sleep(Math.max(s.speed * 2, 200));
+    await sleep(Math.max(s.speed * 2, 100));
 
     let allFound = true;
+    let prevPrisoner = -1;
     for (let p = 0; p < 100; p++) {
       if (!s.running || simulationAborted) return;
 
       const found = await prisonerRun(p, s);
+      // Render mugshot for this prisoner (skip on first — already rendered by renderAll above)
+      if (p !== prevPrisoner) {
+        renderMugshot(s, mugshotCanvasIdForState(s), mugshotBadgeIdForState(s));
+        prevPrisoner = p;
+      }
       if (!found) {
         allFound = false;
         break;
       }
-      await sleep(Math.min(s.speed, 30));
+      if (s.speed > 5) await sleep(Math.min(s.speed, 30));
     }
 
     if (simulationAborted) return;
@@ -1500,12 +1528,18 @@
 
   let boxElementsA = null;
   let boxElementsB = null;
+  // Cached DOM references — avoid querySelector on hot path
+  let boxFrontEls = null;  // array of 100 .box-front elements (for column A; B gets its own on ensure)
+  let boxBackEls = null;   // array of 100 .box-back elements
+  let boxGridColors = null; // cached inline style writes: [{borderColor, background, color}] per box
 
-  function ensureBoxElements(gridId, cache) {
+  function ensureBoxElements(gridId, cache, outCache) {
     if (cache) return cache;
     const grid = document.getElementById(gridId);
     grid.innerHTML = '';
     const els = [];
+    const fronts = [];
+    const backs = [];
     for (let i = 0; i < 100; i++) {
       const div = document.createElement('div');
       div.className = 'box';
@@ -1527,13 +1561,25 @@
       div.appendChild(inner);
       grid.appendChild(div);
       els.push(div);
+      fronts.push(front);
+      backs.push(back);
+    }
+    // Store cached refs on first call (column A); column B uses same refs
+    if (!outCache || !outCache.fronts) {
+      boxFrontEls = fronts;
+      boxBackEls = backs;
     }
     return els;
   }
 
+  // Track .found-name elements per box to avoid DOM queries
+  let foundNameEls = []; // array of 100 (null or element)
+
   // ===== GENERIC BOX GRID RENDERER =====
   function renderBoxGrid(s, boxElements, gridId, linesId) {
     if (!boxElements) return;
+    const fronts = boxFrontEls;
+    const backs = boxBackEls;
 
     // LOSE reveal: all boxes reset to closed state visually (model data preserved)
     if (s.roundState === 'LOSE') {
@@ -1541,14 +1587,11 @@
         const el = boxElements[i];
         if (!el) continue;
         el.className = 'box failed';
-        const front = el.querySelector('.box-front');
-        const back = el.querySelector('.box-back');
         el.classList.remove('flipped', 'revealed');
-        if (front) front.textContent = String(i + 1).padStart(2, '0');
-        if (back) back.textContent = '';
-        // Remove found names
-        const oldName = el.querySelector('.found-name');
-        if (oldName) oldName.remove();
+        if (fronts[i]) fronts[i].textContent = String(i + 1).padStart(2, '0');
+        if (backs[i]) backs[i].textContent = '';
+        // Remove found names via cache
+        if (foundNameEls[i]) { foundNameEls[i].remove(); foundNameEls[i] = null; }
       }
       // Clear SVG path lines
       const svgEl = document.getElementById(linesId);
@@ -1569,10 +1612,14 @@
       if (!el) continue;
       el.className = 'box';
 
-      const front = el.querySelector('.box-front');
-      const back = el.querySelector('.box-back');
+      const front = fronts[i];
+      const back = backs[i];
 
-      if (s.revealed[i]) {
+      if (s.visuallyClosed[i]) {
+        el.classList.remove('flipped', 'revealed');
+        if (front) front.textContent = String(i + 1).padStart(2, '0');
+        if (back) back.textContent = '';
+      } else if (s.revealed[i]) {
         el.classList.add('revealed', 'flipped');
         if (back) back.textContent = s.boxes[i];
         if (front) front.textContent = '';
@@ -1622,19 +1669,20 @@
         el.style.color = '';
       }
 
-      // Found name: when box contains the prisoner's own number, show their name
-      const ownerId = s.boxes[i];
-      const isOwnBox = s.revealed[i] && ownerId === i && prisoners[ownerId];
-      const oldName = el.querySelector('.found-name');
+      // Found name: use cached element
+      const ownerId = s.boxOwner[i];
+      const isOwnBox = s.revealed[i] && ownerId !== null && ownerId !== undefined && prisoners[ownerId];
       if (isOwnBox) {
-        if (!oldName) {
+        if (!foundNameEls[i]) {
           const nameEl = document.createElement('div');
           nameEl.className = 'found-name';
           el.appendChild(nameEl);
+          foundNameEls[i] = nameEl;
         }
-        el.querySelector('.found-name').textContent = prisoners[ownerId].firstName + ' ' + prisoners[ownerId].lastName;
-      } else if (oldName) {
-        oldName.remove();
+        foundNameEls[i].textContent = prisoners[ownerId].firstName + ' ' + prisoners[ownerId].lastName;
+      } else if (foundNameEls[i]) {
+        foundNameEls[i].remove();
+        foundNameEls[i] = null;
       }
     }
   }
@@ -1709,10 +1757,8 @@
 
     const grid = document.getElementById(gridId);
     if (!grid) return;
-    const gridRect = grid.getBoundingClientRect();
-    const svgRect = svg.getBoundingClientRect();
-    const cellW = gridRect.width / 10;
-    const cellH = gridRect.height / 10;
+    const cellW = grid.offsetWidth / 10;
+    const cellH = grid.offsetHeight / 10;
 
     const pid = s.currentPrisoner;
     const p = prisoners[pid];
@@ -1722,10 +1768,9 @@
     const showFrom = Math.max(0, s.prisonerPath.length - 9);
     const recentPath = s.prisonerPath.slice(showFrom);
 
-    const relX = gridRect.left - svgRect.left;
-    const relY = gridRect.top - svgRect.top;
-
-    let lines = '';
+    // Reuse SVG children — replace content via DOM (faster than innerHTML for many lines)
+    while (svg.firstChild) svg.removeChild(svg.lastChild);
+    const ns = 'http://www.w3.org/2000/svg';
     for (let i = 1; i < recentPath.length; i++) {
       const fromIdx = recentPath[i - 1];
       const toIdx = recentPath[i];
@@ -1734,17 +1779,24 @@
       const toCol = toIdx % 10;
       const toRow = Math.floor(toIdx / 10);
 
-      const x1 = relX + fromCol * cellW + cellW / 2;
-      const y1 = relY + fromRow * cellH + cellH / 2;
-      const x2 = relX + toCol * cellW + cellW / 2;
-      const y2 = relY + toRow * cellH + cellH / 2;
+      const x1 = fromCol * cellW + cellW / 2;
+      const y1 = fromRow * cellH + cellH / 2;
+      const x2 = toCol * cellW + cellW / 2;
+      const y2 = toRow * cellH + cellH / 2;
 
       const age = recentPath.length - 1 - i;
       const opacity = Math.max(0.2, 1 - age * 0.15);
-      lines += '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="' + pColor + '" stroke-width="2" stroke-opacity="' + (opacity * (isRunning ? 1 : 0.4)) + '" stroke-linecap="round" />';
+      const line = document.createElementNS(ns, 'line');
+      line.setAttribute('x1', x1);
+      line.setAttribute('y1', y1);
+      line.setAttribute('x2', x2);
+      line.setAttribute('y2', y2);
+      line.setAttribute('stroke', pColor);
+      line.setAttribute('stroke-width', '2');
+      line.setAttribute('stroke-opacity', opacity * (isRunning ? 1 : 0.4));
+      line.setAttribute('stroke-linecap', 'round');
+      svg.appendChild(line);
     }
-
-    svg.innerHTML = lines;
   }
 
   // ===== GENERIC STATS =====
@@ -1814,16 +1866,13 @@
       initialsEl.textContent = p.firstName.charAt(0) + p.lastName.charAt(0);
     }
 
-    // Position at the last visited box (the one the prisoner is currently at)
+    // Position at the last visited box using offsetLeft/offsetTop (no relayout)
     const lastBoxIdx = s.prisonerPath[s.prisonerPath.length - 1];
     const boxEl = boxElements[lastBoxIdx];
     if (!boxEl) return;
 
-    const wrapperRect = wrapper.getBoundingClientRect();
-    const boxRect = boxEl.getBoundingClientRect();
-
-    walker.style.left = (boxRect.left - wrapperRect.left + boxRect.width / 2 - 10) + 'px';
-    walker.style.top = (boxRect.top - wrapperRect.top + boxRect.height / 2 - 10) + 'px';
+    walker.style.left = (boxEl.offsetLeft + boxEl.offsetWidth / 2 - 10) + 'px';
+    walker.style.top = (boxEl.offsetTop + boxEl.offsetHeight / 2 - 10) + 'px';
 
     // Show/hide based on round state
     if (s.roundState === 'WIN') {
@@ -1892,17 +1941,97 @@
     const p = prisoners[pid];
     if (!p) return;
 
-    const img = new Image();
-    img.onload = function() {
-      ctx.drawImage(img, 0, 0, 32, 32);
-    };
-    img.src = p.avatar;
+    const cachedImg = window._mugshotImages && window._mugshotImages[pid];
+    if (cachedImg && cachedImg.complete && cachedImg.naturalWidth > 0) {
+      ctx.drawImage(cachedImg, 0, 0, 32, 32);
+    } else {
+      // Fallback: draw directly from avatar data URL
+      const fallbackImg = new Image();
+      fallbackImg.onload = function() {
+        ctx.drawImage(fallbackImg, 0, 0, 32, 32);
+        if (window._mugshotImages) window._mugshotImages[pid] = fallbackImg;
+      };
+      fallbackImg.src = p.avatar;
+    }
     if (badge) badge.style.borderColor = p.color;
+  }
+
+  // ===== STATE → DOM ID HELPERS (for incremental render) =====
+  function stateIsA(s) { return s === stateA; }
+  function boxElementsForState(s) { return stateIsA(s) ? boxElementsA : boxElementsB; }
+  function gridIdForState(s) { return stateIsA(s) ? 'box-grid-a' : 'box-grid-b'; }
+  function linesIdForState(s) { return stateIsA(s) ? 'path-lines-a' : 'path-lines-b'; }
+  function stripeIdForState(s) { return stateIsA(s) ? 'path-stripe-a' : 'path-stripe-b'; }
+  function walkerIdForState(s) { return stateIsA(s) ? 'walker-a' : 'walker-b'; }
+  function gridWrapperForState(s) { return stateIsA(s) ? 'grid-wrapper-a' : 'grid-wrapper-b'; }
+  function mugshotCanvasIdForState(s) { return stateIsA(s) ? 'mugshot-a' : 'mugshot-b'; }
+  function mugshotBadgeIdForState(s) { return stateIsA(s) ? 'mugshot-badge-a' : 'mugshot-badge-b'; }
+
+  // ===== INCREMENTAL: render a single box (no loop, no querySelector) =====
+  function renderSingleBox(s, boxElements, idx) {
+    const el = boxElements[idx];
+    if (!el) return;
+    const front = boxFrontEls[idx];
+    const back = boxBackEls[idx];
+    el.className = 'box';
+
+    if (s.visuallyClosed[idx]) {
+      el.classList.remove('flipped', 'revealed');
+      if (front) front.textContent = String(idx + 1).padStart(2, '0');
+      if (back) back.textContent = '';
+    } else if (s.revealed[idx]) {
+      el.classList.add('revealed', 'flipped');
+      if (back) back.textContent = s.boxes[idx];
+      if (front) front.textContent = '';
+    } else {
+      el.classList.remove('flipped', 'revealed');
+      if (front) front.textContent = String(idx + 1).padStart(2, '0');
+      if (back) back.textContent = '';
+    }
+
+    const pid = s.currentPrisoner;
+    const p = prisoners[pid];
+    const pColor = p ? p.color : null;
+    const current = s.prisonerPath.length > 0 ? s.prisonerPath[s.prisonerPath.length - 1] : -1;
+
+    if (idx === current && s.roundState === 'RUNNING') {
+      el.classList.add('current');
+      if (pColor) {
+        el.style.setProperty('--prisoner-glow', pColor);
+        el.style.setProperty('--prisoner-glow-dim', pColor + '44');
+        el.style.borderColor = pColor;
+        el.style.background = pColor + '22';
+        el.style.color = pColor;
+      }
+      if (s.boxes[current] === s.currentPrisoner) {
+        el.classList.add('flash-green');
+      }
+    } else {
+      el.style.borderColor = '';
+      el.style.background = '';
+      el.style.color = '';
+    }
+
+    // Found name overlay
+    const ownerId = s.boxOwner[idx];
+    const isOwnBox = s.revealed[idx] && ownerId !== null && ownerId !== undefined && prisoners[ownerId];
+    if (isOwnBox) {
+      if (!foundNameEls[idx]) {
+        const nameEl = document.createElement('div');
+        nameEl.className = 'found-name';
+        el.appendChild(nameEl);
+        foundNameEls[idx] = nameEl;
+      }
+      foundNameEls[idx].textContent = prisoners[ownerId].firstName + ' ' + prisoners[ownerId].lastName;
+    } else if (foundNameEls[idx]) {
+      foundNameEls[idx].remove();
+      foundNameEls[idx] = null;
+    }
   }
 
   // ===== COLUMN-A RENDERERS =====
   function renderBoxGridA() {
-    boxElementsA = ensureBoxElements('box-grid-a', boxElementsA);
+    boxElementsA = ensureBoxElements('box-grid-a', boxElementsA, {});
     renderBoxGrid(stateA, boxElementsA, 'box-grid-a', 'path-lines-a');
   }
 
@@ -1924,7 +2053,7 @@
 
   // ===== COLUMN-B RENDERERS =====
   function renderBoxGridB() {
-    boxElementsB = ensureBoxElements('box-grid-b', boxElementsB);
+    boxElementsB = ensureBoxElements('box-grid-b', boxElementsB, boxFrontEls ? {fronts: boxFrontEls, backs: boxBackEls} : {});
     renderBoxGrid(stateB, boxElementsB, 'box-grid-b', 'path-lines-b');
   }
 
@@ -2113,6 +2242,8 @@
     s._sacrificeMode = {};
     for (let i = 0; i < 100; i++) {
       s.revealed[i] = false;
+      s.visuallyClosed[i] = false;
+      s.boxOwner[i] = null;
     }
   }
 
