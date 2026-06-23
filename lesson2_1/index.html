@@ -3,29 +3,36 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>100 DEAD MEN — Prisoner Simulation</title>
+  <title>THE TOMB OF 100 DEAD MEN</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&family=VT323&display=swap" rel="stylesheet">
   <style>
     /* ============================================================
-       CSS THEME — Dark Pixel-Prison (Bloodborne-Inspired)
+       CSS THEME — The Tomb of 100 Dead Men (Lovecraftian Horror)
        ============================================================ */
     :root {
-      --bg: #0a0a0a;
-      --panel: #1a1a1a;
-      --stone: #2c2c2c;
-      --stone-light: #4a4a4a;
-      --text: #c8c8c8;
-      --text-dim: #666666;
-      --accent: #8b0000;
-      --accent-bright: #cc0000;
-      --found: #2a5a2a;
+      /* Void palette — blood, bone, rusted gold, tissue */
+      --bg: #0d0907;
+      --panel: #17120e;
+      --stone: #221c16;
+      --stone-light: #3d322a;
+      --text: #c4b8a8;
+      --text-dim: #7a6e5e;
+      --accent: #6b1414;
+      --accent-bright: #c92a2a;
+      --found: #1a3a1a;
       --found-text: #6aaa6a;
-      --fail: #3a1a1a;
+      --fail: #2d0a0a;
       --fail-bright: #6a1a1a;
+      --gold: #8b7340;
+      --gold-dim: #5a4a2a;
+      --vein: #2d1b1b;
       --border-px: 2px;
-      --header-h: 48px;
-      --bottom-h: 48px;
-      --sidebar-w: 175px;
-      --path-h: 32px;
+      --header-h: 52px;
+      --bottom-h: 52px;
+      --sidebar-w: 200px;
+      --path-h: 38px;
     }
 
     * {
@@ -35,7 +42,7 @@
     }
 
     body {
-      font-family: 'Courier New', Courier, monospace;
+      font-family: 'VT323', 'Courier New', monospace;
       background: var(--bg);
       color: var(--text);
       height: 100vh;
@@ -43,76 +50,114 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      padding: 8px;
+      padding: 6px;
+    }
+    @media (max-height: 760px), (max-width: 1023px) {
+      body { overflow-y: auto; align-items: flex-start; padding: 4px; }
     }
 
     /* ===== MAIN CONTAINER ===== */
     #app {
       width: 100%;
-      max-width: 1200px;
-      max-height: calc(100vh - 16px);
+      max-width: 1400px;
+      max-height: calc(100vh - 12px);
       height: 100%;
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 3px;
     }
 
-    /* ===== HEADER ROW ===== */
+    @media (max-height: 760px), (max-width: 1023px) {
+      #app { max-height: none; height: auto; }
+    }
+
+    /* ===== HEADER ROW — carved altar top ===== */
     .header-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
       height: var(--header-h);
       min-height: var(--header-h);
-      padding: 0 12px;
-      border-bottom: var(--border-px) double var(--stone);
+      padding: 0 14px;
+      border-bottom: 1px solid var(--vein);
+      position: relative;
+    }
+    .header-row::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 20%;
+      right: 20%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
     }
 
     .header-row h1 {
+      font-family: 'UnifrakturCook', 'Times New Roman', serif;
       font-size: 1.6em;
-      font-weight: bold;
-      letter-spacing: 0.3em;
-      text-transform: uppercase;
-      color: #8b0000;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      color: var(--accent);
       text-shadow:
-        0 0 10px rgba(139, 0, 0, 0.6),
-        0 0 20px rgba(139, 0, 0, 0.4);
-      animation: pulse-glow 3s ease-in-out infinite;
-      font-family: 'Courier New', Courier, monospace;
+        0 0 8px rgba(107, 20, 20, 0.5),
+        0 0 24px rgba(107, 20, 20, 0.25);
+      animation: pulse-glow 4s ease-in-out infinite;
       white-space: nowrap;
+      line-height: 1;
     }
 
     @keyframes pulse-glow {
-      0%, 100% { text-shadow: 0 0 10px rgba(139, 0, 0, 0.6), 0 0 20px rgba(139, 0, 0, 0.4); }
-      50% { text-shadow: 0 0 15px rgba(139, 0, 0, 0.9), 0 0 30px rgba(139, 0, 0, 0.6); }
+      0%, 100% { text-shadow: 0 0 8px rgba(107, 20, 20, 0.5), 0 0 24px rgba(107, 20, 20, 0.25); }
+      50% { text-shadow: 0 0 14px rgba(107, 20, 20, 0.7), 0 0 36px rgba(107, 20, 20, 0.4), 0 0 60px rgba(107, 20, 20, 0.15); }
     }
 
     .header-row .subtitle {
-      color: var(--text-dim);
+      font-family: 'VT323', monospace;
+      color: var(--gold-dim);
       font-size: 0.6em;
-      letter-spacing: 0.15em;
+      letter-spacing: 0.2em;
       text-transform: uppercase;
-      margin-left: 8px;
+      margin-left: 10px;
     }
 
-    /* ===== MUGSHOT CARD ===== */
-    .mugshot-card {
+    /* ===== DUAL-COLUMN AREA ===== */
+    .dual-area {
       display: flex;
-      align-items: center;
-      gap: 10px;
-      background: var(--panel);
-      border: 2px solid var(--stone);
-      padding: 6px 14px 6px 10px;
-      height: calc(var(--header-h) - 6px);
-      min-width: 240px;
-      position: relative;
+      gap: 5px;
+      flex: 1;
+      min-height: 0;
     }
 
-    .mugshot-card .mugshot-badge {
-      width: 36px;
-      height: 36px;
-      min-width: 36px;
-      border: 2px solid var(--stone-light);
+    @media (max-height: 760px), (max-width: 1023px) {
+      .dual-area { flex-direction: column; min-height: auto; }
+    }
+
+    .column {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      min-width: 0;
+      min-height: 0;
+    }
+
+    /* ===== COLUMN PANEL — strategy select + mixers + buttons ===== */
+    .col-panel {
+      background: var(--panel);
+      border: 1px solid var(--vein);
+      padding: 6px 10px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 5px;
+      min-height: 36px;
+    }
+
+    .mugshot-badge-sm {
+      width: 32px;
+      height: 32px;
+      min-width: 32px;
+      border: 1px solid var(--stone-light);
       background: var(--stone);
       display: flex;
       align-items: center;
@@ -120,258 +165,152 @@
       image-rendering: pixelated;
     }
 
-    .mugshot-card .mugshot-badge canvas {
+    .mugshot-badge-sm canvas {
       width: 100%;
       height: 100%;
       image-rendering: pixelated;
     }
 
-    .mugshot-card .mugshot-name {
-      font-size: 0.7em;
-      font-weight: bold;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      line-height: 1.2;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      max-width: 90px;
-    }
-
-    .mugshot-card .mugshot-number {
-      font-size: 0.6em;
-      color: var(--text-dim);
-    }
-
-    .mugshot-card .mugshot-status {
-      font-size: 0.55em;
-      text-transform: uppercase;
+    .col-panel .col-label {
+      font-family: 'UnifrakturCook', 'Times New Roman', serif;
+      font-size: 0.75em;
+      font-weight: 700;
+      color: var(--accent);
       letter-spacing: 0.1em;
-      margin-left: auto;
       white-space: nowrap;
+      margin-right: 4px;
     }
 
-    .mugshot-status.searching {
-      color: #aaaa00;
-      animation: blink 0.8s ease-in-out infinite;
-    }
-
-    .mugshot-status.found {
-      color: var(--found-text);
-    }
-
-    .mugshot-status.executed {
-      color: var(--accent-bright);
-      animation: blink 0.4s ease-in-out infinite;
-    }
-
-    .mugshot-status.idle {
-      color: var(--text-dim);
-    }
-
-    @keyframes blink {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.4; }
-    }
-
-    /* ===== MIDDLE AREA ===== */
-    .middle-area {
-      display: flex;
-      gap: 6px;
-      flex: 1;
-      min-height: 0;
-    }
-
-    /* ===== SIDEBAR ===== */
-    .sidebar {
-      width: var(--sidebar-w);
-      min-width: var(--sidebar-w);
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .sidebar::-webkit-scrollbar {
-      width: 4px;
-    }
-
-    .sidebar::-webkit-scrollbar-track {
-      background: var(--bg);
-    }
-
-    .sidebar::-webkit-scrollbar-thumb {
-      background: var(--stone);
-    }
-
-    .panel {
-      background: var(--panel);
-      border: var(--border-px) double var(--stone);
-      padding: 8px 10px;
-    }
-
-    .panel h2 {
-      font-size: 0.7em;
-      color: var(--text-dim);
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      margin-bottom: 6px;
-      border-bottom: 1px solid var(--stone);
-      padding-bottom: 4px;
-    }
-
-    .panel h3 {
-      font-size: 0.65em;
-      color: var(--text-dim);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-bottom: 4px;
-    }
-
-    /* ===== SELECT ===== */
-    select {
-      font-family: 'Courier New', Courier, monospace;
-      font-size: 0.7em;
-      padding: 4px 6px;
+    .col-panel select {
+      font-family: 'VT323', monospace;
+      font-size: 0.75em;
+      padding: 2px 5px;
       background: var(--stone);
       color: var(--text);
       border: 1px solid var(--stone-light);
       outline: none;
       cursor: pointer;
-      width: 100%;
+      flex: 1;
+      min-width: 80px;
+      max-width: 180px;
     }
 
-    select:focus {
+    .col-panel select:focus {
       border-color: var(--accent);
     }
 
-    /* ===== SLIDERS ===== */
-    .mixer-group {
-      margin-bottom: 4px;
-    }
-
-    .mixer-group:last-child {
-      margin-bottom: 0;
-    }
-
-    .mixer-label {
+    .col-panel .btn-row {
       display: flex;
-      justify-content: space-between;
-      font-size: 0.6em;
-      color: var(--text-dim);
-      margin-bottom: 2px;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
+      gap: 2px;
     }
 
-    .mixer-value {
-      color: var(--accent-bright);
-      font-weight: bold;
-    }
-
-    input[type="range"] {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 100%;
-      height: 6px;
-      background: var(--stone);
-      border: 1px solid var(--stone-light);
-      outline: none;
-      cursor: pointer;
-    }
-
-    input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 14px;
-      height: 14px;
-      background: var(--accent);
-      border: 2px solid var(--accent-bright);
-      cursor: pointer;
-    }
-
-    input[type="range"]::-moz-range-thumb {
-      width: 14px;
-      height: 14px;
-      background: var(--accent);
-      border: 2px solid var(--accent-bright);
-      cursor: pointer;
-    }
-
-    /* ===== BUTTONS ===== */
-    .btn-row {
-      display: flex;
-      gap: 4px;
-      flex-wrap: wrap;
-    }
-
-    .btn {
-      font-family: 'Courier New', Courier, monospace;
+    .col-panel .btn {
+      font-family: 'VT323', monospace;
       font-size: 0.65em;
-      padding: 5px 10px;
+      padding: 3px 7px;
       border: 1px solid var(--stone-light);
       background: var(--stone);
       color: var(--text);
       cursor: pointer;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      transition: background 0.15s, border-color 0.15s;
-      flex: 1;
-      min-width: 40px;
+      transition: background 0.12s, border-color 0.12s, color 0.12s;
       text-align: center;
     }
 
-    .btn:hover:not(:disabled) {
+    .col-panel .btn:hover:not(:disabled) {
       background: var(--stone-light);
       border-color: var(--text-dim);
       color: #fff;
     }
 
-    .btn:disabled {
-      opacity: 0.4;
+    .col-panel .btn:disabled {
+      opacity: 0.35;
       cursor: not-allowed;
     }
 
-    .btn-run { border-color: var(--accent); color: var(--accent-bright); }
-    .btn-run:hover:not(:disabled) { background: var(--accent); color: #fff; border-color: var(--accent-bright); }
-    .btn-pause { border-color: #8b8b00; color: #aaaa00; }
-    .btn-pause:hover:not(:disabled) { background: #6a6a00; color: #fff; border-color: #888800; }
-
-    .speed-group {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      width: 100%;
-      margin-top: 4px;
+    .col-panel .btn-run {
+      border-color: var(--accent);
+      color: var(--accent-bright);
+    }
+    .col-panel .btn-run:hover:not(:disabled) {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent-bright);
+      box-shadow: 0 0 8px rgba(201, 42, 42, 0.4);
+    }
+    .col-panel .btn-pause {
+      border-color: #5a4a2a;
+      color: var(--gold);
+    }
+    .col-panel .btn-pause:hover:not(:disabled) {
+      background: #3a3020;
+      color: #fff;
+      border-color: var(--gold);
     }
 
-    .speed-group label {
+    .col-panel .mixer-group {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-left: auto;
+    }
+
+    .col-panel .mixer-label {
       font-size: 0.6em;
       color: var(--text-dim);
       text-transform: uppercase;
       white-space: nowrap;
     }
 
-    .speed-group input[type="range"] {
-      flex: 1;
-    }
-
-    .speed-group .speed-value {
-      font-size: 0.65em;
+    .col-panel .mixer-value {
       color: var(--accent-bright);
+      font-size: 0.7em;
       min-width: 24px;
       text-align: right;
     }
 
-    /* ===== GRID AREA ===== */
-    .center-area {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      min-width: 0;
+    .col-panel input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 50px;
+      height: 5px;
+      background: var(--stone);
+      border: none;
+      outline: none;
+      cursor: pointer;
     }
 
+    .col-panel input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 12px;
+      height: 12px;
+      background: var(--accent);
+      border: 1px solid var(--accent-bright);
+      border-radius: 0;
+      cursor: pointer;
+    }
+
+    .col-panel input[type="range"]::-moz-range-thumb {
+      width: 12px;
+      height: 12px;
+      background: var(--accent);
+      border: 1px solid var(--accent-bright);
+      border-radius: 0;
+      cursor: pointer;
+    }
+
+    .col-panel .round-badge {
+      font-family: 'VT323', monospace;
+      font-size: 0.55em;
+      color: var(--gold-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+    }
+
+    /* ===== GRID AREA ===== */
     .grid-wrapper {
       flex: 1;
       display: flex;
@@ -384,71 +323,77 @@
     .grid {
       display: grid;
       grid-template-columns: repeat(10, 1fr);
-      gap: 3px;
+      gap: 1.5px;
       background: var(--panel);
-      border: var(--border-px) double var(--stone);
-      padding: 5px;
+      border: 1px solid var(--vein);
+      padding: 3px;
       width: 100%;
-      max-width: 560px;
       aspect-ratio: 1;
+      position: relative;
     }
 
+    /* ===== BOXES — stone trapdoors ===== */
     .box {
       aspect-ratio: 1;
       background: var(--stone);
       border: 1px solid var(--stone-light);
+      border-top-color: #3d322a;
+      border-left-color: #3d322a;
+      border-bottom-color: #16120e;
+      border-right-color: #16120e;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 0.55em;
-      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.8em;
+      font-family: 'VT323', monospace;
       color: var(--text-dim);
       cursor: default;
       transition: background 0.12s, border-color 0.12s, color 0.12s;
       position: relative;
+      user-select: none;
     }
 
     .box.revealed {
-      background: #1a1a2a;
+      background: #1a1410;
       border-color: var(--stone-light);
       color: var(--text);
     }
 
     .box.visited {
       background: var(--fail);
-      border-color: #5a2222;
-      color: #885555;
+      border-color: #4a1818;
+      color: #7a4a4a;
     }
 
     .box.visited.prisoner-colored {
-      filter: saturate(0.6) brightness(1.2);
+      filter: saturate(0.5) brightness(1.15);
     }
 
     .box.current {
-      background: #3a0000;
+      background: #2a0808;
       border-color: var(--accent-bright);
       color: var(--accent-bright);
-      box-shadow: 0 0 6px rgba(204, 0, 0, 0.5);
+      box-shadow: 0 0 8px rgba(201, 42, 42, 0.5), inset 0 0 12px rgba(201, 42, 42, 0.1);
       z-index: 2;
-      animation: current-pulse 0.6s ease-in-out infinite;
+      animation: current-pulse 0.5s ease-in-out infinite;
     }
 
     .box.current.flash-green {
       background: var(--found);
       border-color: var(--found-text);
       color: var(--found-text);
-      box-shadow: 0 0 10px rgba(106, 170, 106, 0.6);
+      box-shadow: 0 0 14px rgba(106, 170, 106, 0.6), inset 0 0 16px rgba(106, 170, 106, 0.15);
       animation: current-found 0.4s ease-in-out;
     }
 
     @keyframes current-pulse {
       0%, 100% { box-shadow: 0 0 4px var(--prisoner-glow); }
-      50% { box-shadow: 0 0 12px var(--prisoner-glow), 0 0 20px var(--prisoner-glow-dim); }
+      50% { box-shadow: 0 0 14px var(--prisoner-glow), 0 0 24px var(--prisoner-glow-dim); }
     }
 
     @keyframes current-found {
       0% { transform: scale(1); }
-      50% { transform: scale(1.15); }
+      50% { transform: scale(1.12); }
       100% { transform: scale(1); }
     }
 
@@ -456,13 +401,14 @@
       background: var(--found);
       border-color: var(--found-text);
       color: var(--found-text);
-      box-shadow: inset 0 0 6px rgba(106, 170, 106, 0.3);
+      box-shadow: inset 0 0 6px rgba(106, 170, 106, 0.25);
     }
 
     .box.failed {
-      background: #2a0000;
+      background: #1a0404;
       border-color: var(--fail-bright);
-      color: #aa3333;
+      color: #aa3030;
+      box-shadow: inset 0 0 8px rgba(106, 26, 26, 0.3);
     }
 
     /* ===== PATH CONNECTION LINES ===== */
@@ -478,31 +424,54 @@
 
     .box .step-label {
       position: absolute;
-      top: -2px;
-      right: -2px;
-      font-size: 0.5em;
-      color: var(--text-dim);
-      background: rgba(0,0,0,0.7);
+      top: -1px;
+      right: -1px;
+      font-size: 0.45em;
+      color: var(--gold);
+      background: rgba(0,0,0,0.75);
       padding: 0 2px;
       line-height: 1;
     }
 
-
-    /* ===== PATH STRIPE ===== */
+    /* ===== PATH STRIPE — telegram from the underworld ===== */
     .path-stripe {
       height: var(--path-h);
       min-height: var(--path-h);
       background: var(--panel);
-      border: var(--border-px) double var(--stone);
-      padding: 4px 10px;
-      font-size: 0.7em;
+      border: 1px solid var(--vein);
+      padding: 4px 12px;
+      font-size: 0.8em;
+      font-family: 'VT323', monospace;
       color: var(--text);
-      line-height: 1.4;
+      line-height: 1.5;
       display: flex;
       align-items: center;
       overflow: hidden;
       white-space: nowrap;
-      font-family: 'Courier New', Courier, monospace;
+      position: relative;
+    }
+    .path-stripe::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
+    }
+
+    /* ===== TELEGRAM TICKER — idle message ===== */
+    .path-stripe.idle-ticker {
+      color: var(--gold-dim);
+      letter-spacing: 0.06em;
+    }
+    .path-stripe.idle-ticker::after {
+      content: '■';
+      animation: ticker-blink 1s step-end infinite;
+      margin-left: 6px;
+      color: var(--accent);
+    }
+    @keyframes ticker-blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
     }
 
     .path-stripe .found-text {
@@ -516,12 +485,13 @@
     }
 
     .path-stripe .arrow {
-      color: var(--text-dim);
-      margin: 0 3px;
+      color: var(--gold-dim);
+      margin: 0 2px;
+      font-size: 0.75em;
     }
 
     .path-stripe .step-marker {
-      font-weight: bold;
+      font-weight: normal;
     }
 
     .pulse-name {
@@ -529,83 +499,241 @@
     }
 
     @keyframes name-pulse {
-      0%, 100% { opacity: 0.7; }
-      50% { opacity: 1; }
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; text-shadow: 0 0 6px currentColor; }
     }
 
-    /* ===== BOTTOM BAR ===== */
-    .bottom-bar {
-      height: var(--bottom-h);
-      min-height: var(--bottom-h);
+    /* "◈" rune marker before FOUND */
+    .rune-marker {
+      color: var(--accent);
+      font-size: 1em;
+      margin-right: 2px;
+      animation: rune-flash 0.3s ease-in-out 3;
+    }
+    @keyframes rune-flash {
+      0%, 100% { opacity: 1; text-shadow: 0 0 6px var(--accent); }
+      50% { opacity: 0.3; }
+    }
+
+    /* ===== GLOBAL CONTROLS ===== */
+    .global-controls {
       display: flex;
       align-items: center;
-      gap: 14px;
-      background: var(--panel);
-      border: var(--border-px) double var(--stone);
-      padding: 0 12px;
+      gap: 8px;
     }
 
-    .stat-item {
+    .global-controls .speed-group {
       display: flex;
       align-items: center;
       gap: 4px;
+    }
+
+    .global-controls .speed-group label {
+      font-size: 0.65em;
+      color: var(--text-dim);
+      text-transform: uppercase;
       white-space: nowrap;
     }
 
-    .stat-label {
+    .global-controls .speed-group input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 60px;
+      height: 5px;
+      background: var(--stone);
+      border: none;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .global-controls .speed-group input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 12px;
+      height: 12px;
+      background: var(--accent);
+      border: 1px solid var(--accent-bright);
+      border-radius: 0;
+      cursor: pointer;
+    }
+
+    .global-controls .speed-group input[type="range"]::-moz-range-thumb {
+      width: 12px;
+      height: 12px;
+      background: var(--accent);
+      border: 1px solid var(--accent-bright);
+      border-radius: 0;
+      cursor: pointer;
+    }
+
+    .global-controls .speed-group .speed-value {
+      font-size: 0.7em;
+      color: var(--accent-bright);
+      min-width: 20px;
+      text-align: right;
+    }
+
+    .global-controls .btn-global {
+      font-family: 'VT323', monospace;
+      font-size: 0.7em;
+      padding: 4px 10px;
+      border: 1px solid var(--stone-light);
+      background: var(--stone);
+      color: var(--text);
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      transition: background 0.12s, border-color 0.12s, color 0.12s;
+    }
+
+    .global-controls .btn-global:hover:not(:disabled) {
+      background: var(--stone-light);
+      border-color: var(--text-dim);
+      color: #fff;
+    }
+
+    .global-controls .btn-global:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    .global-controls .btn-run-all {
+      border-color: var(--accent);
+      color: var(--accent-bright);
+    }
+    .global-controls .btn-run-all:hover:not(:disabled) {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent-bright);
+      box-shadow: 0 0 8px rgba(201, 42, 42, 0.4);
+    }
+    .global-controls .btn-pause-all {
+      border-color: #5a4a2a;
+      color: var(--gold);
+    }
+    .global-controls .btn-pause-all:hover:not(:disabled) {
+      background: #3a3020;
+      color: #fff;
+      border-color: var(--gold);
+    }
+
+    /* ===== COLUMN STATS — per-column bottom stats ===== */
+    .col-stats {
+      height: 34px;
+      min-height: 34px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--panel);
+      border: 1px solid var(--vein);
+      padding: 0 8px;
+      position: relative;
+    }
+    .col-stats::before {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: 20%;
+      right: 20%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
+    }
+
+    .col-stats .stat-item {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      white-space: nowrap;
+    }
+
+    .col-stats .stat-label {
       font-size: 0.6em;
-      color: var(--text-dim);
+      color: var(--gold-dim);
       text-transform: uppercase;
       letter-spacing: 0.06em;
     }
 
-    .stat-value {
+    .col-stats .stat-value {
       font-size: 0.7em;
       color: var(--text);
       font-weight: bold;
-      min-width: 20px;
+      min-width: 14px;
     }
 
-    .stat-value.state-idle { color: var(--text-dim); }
-    .stat-value.state-running { color: #aaaa00; }
-    .stat-value.state-win { color: var(--found-text); }
-    .stat-value.state-lose { color: var(--accent-bright); }
+    .col-stats .stat-value.state-idle { color: var(--text-dim); }
+    .col-stats .stat-value.state-running { color: var(--gold); }
+    .col-stats .stat-value.state-win { color: var(--found-text); }
+    .col-stats .stat-value.state-lose { color: var(--accent-bright); }
 
-    .bottom-meter {
-      flex: 1;
-      height: 18px;
-      background: var(--stone);
-      border: 1px solid var(--stone-light);
+    /* ===== COMPARISON BAR ===== */
+    .comparison-bar {
+      height: 34px;
+      min-height: 34px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: var(--panel);
+      border: 1px solid var(--vein);
+      padding: 0 12px;
       position: relative;
-      overflow: hidden;
-      min-width: 80px;
-      max-width: 200px;
+    }
+    .comparison-bar::before {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: 20%;
+      right: 20%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
     }
 
-    .bottom-meter .meter-fill {
-      height: 100%;
-      background: var(--accent);
-      transition: width 0.4s ease, background 0.4s ease;
-      position: absolute;
-      left: 0;
-      top: 0;
+    .comparison-bar .cmp-label {
+      font-family: 'UnifrakturCook', 'Times New Roman', serif;
+      font-size: 0.65em;
+      color: var(--accent);
+      letter-spacing: 0.08em;
+      white-space: nowrap;
     }
 
-    .bottom-meter .meter-fill.low { background: #8b0000; }
-    .bottom-meter .meter-fill.mid { background: #cc0000; }
-    .bottom-meter .meter-fill.high { background: var(--found-text); }
+    .comparison-bar .cmp-item {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      white-space: nowrap;
+    }
 
-    .bottom-meter .meter-label {
-      position: absolute;
-      right: 4px;
-      top: 50%;
-      transform: translateY(-50%);
+    .comparison-bar .cmp-item .cmp-key {
       font-size: 0.6em;
-      font-weight: bold;
-      color: var(--text);
-      z-index: 1;
-      text-shadow: 0 0 3px rgba(0,0,0,0.9);
+      color: var(--gold-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
+
+    .comparison-bar .cmp-item .cmp-val-a {
+      font-size: 0.7em;
+      color: var(--accent-bright);
+      font-weight: bold;
+    }
+
+    .comparison-bar .cmp-item .cmp-delim {
+      font-size: 0.5em;
+      color: var(--text-dim);
+      margin: 0 1px;
+    }
+
+    .comparison-bar .cmp-item .cmp-val-b {
+      font-size: 0.7em;
+      color: var(--found-text);
+      font-weight: bold;
+    }
+
+    .comparison-bar .cmp-item .cmp-diff {
+      font-size: 0.6em;
+      color: var(--gold);
+    }
+
+    .comparison-bar .cmp-item .cmp-diff.diff-pos { color: var(--found-text); }
+    .comparison-bar .cmp-item .cmp-diff.diff-neg { color: var(--accent-bright); }
 
     /* ===== WIN/LOSE OVERLAY ===== */
     .overlay {
@@ -614,11 +742,11 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(0, 0, 0, 0.75);
+      background: rgba(5, 3, 2, 0.8);
       z-index: 10;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.3s ease;
+      transition: opacity 0.35s ease;
     }
 
     .overlay.active {
@@ -627,146 +755,176 @@
     }
 
     .overlay-text {
-      font-size: 2.5em;
-      font-weight: bold;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      animation: overlay-fade 0.5s ease-out;
+      font-family: 'UnifrakturCook', 'Times New Roman', serif;
+      font-size: 2.8em;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      line-height: 1.1;
+      animation: overlay-fade 0.6s ease-out;
+      position: relative;
+    }
+    .overlay-text::before,
+    .overlay-text::after {
+      content: '◈';
+      display: block;
+      font-size: 0.3em;
+      text-align: center;
+      margin: 0 auto;
+      letter-spacing: 0;
     }
 
     .overlay-text.win {
       color: var(--found-text);
-      text-shadow: 0 0 20px rgba(106, 170, 106, 0.8), 0 0 40px rgba(106, 170, 106, 0.4);
+      text-shadow: 0 0 20px rgba(106, 170, 106, 0.6), 0 0 40px rgba(106, 170, 106, 0.3);
     }
 
     .overlay-text.lose {
       color: var(--accent-bright);
-      text-shadow: 0 0 20px rgba(204, 0, 0, 0.8), 0 0 40px rgba(204, 0, 0, 0.4);
-      animation: overlay-fade 0.5s ease-out, lose-pulse 1s ease-in-out 0.5s infinite;
+      text-shadow: 0 0 20px rgba(201, 42, 42, 0.7), 0 0 40px rgba(201, 42, 42, 0.35);
+      animation: overlay-fade 0.6s ease-out, lose-pulse 1.2s ease-in-out 0.6s infinite;
     }
 
     @keyframes overlay-fade {
-      0% { opacity: 0; transform: scale(0.8); }
+      0% { opacity: 0; transform: scale(0.85); }
       100% { opacity: 1; transform: scale(1); }
     }
 
     @keyframes lose-pulse {
-      0%, 100% { text-shadow: 0 0 20px rgba(204, 0, 0, 0.8), 0 0 40px rgba(204, 0, 0, 0.4); }
-      50% { text-shadow: 0 0 30px rgba(204, 0, 0, 1), 0 0 60px rgba(204, 0, 0, 0.6); }
+      0%, 100% { text-shadow: 0 0 20px rgba(201, 42, 42, 0.7), 0 0 40px rgba(201, 42, 42, 0.35); }
+      50% { text-shadow: 0 0 30px rgba(201, 42, 42, 0.9), 0 0 60px rgba(201, 42, 42, 0.5), 0 0 80px rgba(201, 42, 42, 0.2); }
     }
 
     /* ===== SCROLLBAR ===== */
     ::-webkit-scrollbar {
-      width: 4px;
+      width: 3px;
     }
 
     ::-webkit-scrollbar-track {
-      background: var(--bg);
+      background: transparent;
     }
 
     ::-webkit-scrollbar-thumb {
       background: var(--stone);
-      border: 1px solid var(--stone-light);
+      border: none;
     }
 
-    /* ===== STATES ===== */
-    #mixer-panel {
-      min-height: 40px;
+    /* ===== STATES (removed mugshot, added dual) ===== */
+
+    /* ===== AMBIENT VIGNETTE ===== */
+    #app::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 999;
+      background: radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.5) 100%);
     }
 
-    .round-badge {
-      font-size: 0.55em;
-      color: var(--text-dim);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      margin-top: 2px;
+    /* reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
     }
   </style>
 </head>
 <body>
   <div id="app">
-    <!-- HEADER ROW -->
+    <!-- HEADER ROW — no mugshot, global controls -->
     <div class="header-row">
       <div style="display:flex;align-items:center;gap:12px;">
-        <h1>100 DEAD MEN</h1>
-        <span class="subtitle">Prisoner Simulation</span>
+        <h1>The Tomb of 100 Dead Men</h1>
+        <span class="subtitle">Ritual of the Boxes</span>
       </div>
-      <div class="mugshot-card" id="mugshot-card">
-        <div class="mugshot-badge" id="mugshot-badge">
-          <canvas id="mugshot-canvas" width="36" height="36"></canvas>
+      <div class="global-controls">
+        <button class="btn-global btn-run-all" id="btn-run-all">▶ Run All</button>
+        <button class="btn-global btn-pause-all" id="btn-pause-all" disabled>⏸ Pause All</button>
+        <button class="btn-global" id="btn-reset-all">↺ Reset</button>
+        <div class="speed-group">
+          <label for="speed-slider">Speed</label>
+          <input type="range" id="speed-slider" min="10" max="300" value="50">
+          <span class="speed-value" id="speed-value">50</span>
         </div>
-        <div>
-          <div class="mugshot-name" id="mugshot-name">—</div>
-          <div class="mugshot-number" id="mugshot-number">#—</div>
-        </div>
-        <div class="mugshot-status idle" id="mugshot-status">AWAITING ORDER</div>
       </div>
     </div>
 
-    <!-- MIDDLE AREA -->
-    <div class="middle-area">
-      <!-- SIDEBAR: Controls -->
-      <div class="sidebar">
-        <div class="panel" id="strategy-panel">
-          <h2>Strategy</h2>
-          <select id="strategy-select"></select>
-          <h2 style="margin-top:8px;">Mixers</h2>
-          <div id="mixer-panel"></div>
-        </div>
-        <div class="panel">
-          <div class="btn-row">
-            <button class="btn btn-run" id="btn-run">▶</button>
-            <button class="btn btn-pause" id="btn-pause" disabled>⏸</button>
-            <button class="btn btn-reset" id="btn-reset">↺</button>
+    <!-- DUAL AREA — two columns -->
+    <div class="dual-area">
+      <!-- COLUMN A -->
+      <div class="column" id="column-a">
+        <div class="col-panel" id="panel-a">
+          <span class="col-label">◈ A</span>
+          <div class="mugshot-badge-sm" id="mugshot-badge-a">
+            <canvas id="mugshot-a" width="32" height="32"></canvas>
           </div>
-          <div class="speed-group">
-            <label for="speed-slider">Speed</label>
-            <input type="range" id="speed-slider" min="10" max="300" value="50">
-            <span class="speed-value" id="speed-value">50</span>
+          <select id="strategy-a"></select>
+          <div id="mixers-a" style="display:flex;align-items:center;gap:4px;margin-left:auto;"></div>
+          <div class="btn-row" style="margin-left:4px;">
+            <button class="btn btn-run" id="btn-run-a">▶</button>
+            <button class="btn btn-pause" id="btn-pause-a" disabled>⏸</button>
+            <button class="btn" id="btn-reset-a">↺</button>
           </div>
-          <div class="round-badge" id="round-badge">Round: 0</div>
+          <span class="round-badge" id="round-a">R:0</span>
         </div>
-      </div>
-
-      <!-- CENTER: Box Grid + Path -->
-      <div class="center-area">
         <div class="grid-wrapper">
-          <div class="grid" id="box-grid"></div>
-          <svg class="path-lines" id="path-lines" preserveAspectRatio="xMidYMid meet"></svg>
-          <div class="overlay" id="overlay">
-            <div class="overlay-text" id="overlay-text"></div>
+          <div class="grid" id="box-grid-a"></div>
+          <svg class="path-lines" id="path-lines-a" preserveAspectRatio="xMidYMid meet"></svg>
+          <div class="overlay" id="overlay-a">
+            <div class="overlay-text" id="overlay-text-a"></div>
           </div>
         </div>
-        <div class="path-stripe" id="path-stripe">Awaiting execution order...</div>
+        <div class="path-stripe idle-ticker" id="path-stripe-a">Awaiting the warden's decree</div>
+        <div class="col-stats" id="stats-a">
+          <div class="stat-item"><span class="stat-label">Wins</span><span class="stat-value" id="stat-wins-a">0</span></div>
+          <div class="stat-item"><span class="stat-label">Losses</span><span class="stat-value" id="stat-losses-a">0</span></div>
+          <div class="stat-item"><span class="stat-label">Rate</span><span class="stat-value" id="stat-rate-a">0%</span></div>
+          <div class="stat-item"><span class="stat-label">Strk</span><span class="stat-value" id="stat-streak-a">0</span></div>
+          <div class="stat-item" style="margin-left:auto;"><span class="stat-label">State</span><span class="stat-value state-idle" id="stat-state-a">IDLE</span></div>
+        </div>
+      </div>
+
+      <!-- COLUMN B -->
+      <div class="column" id="column-b">
+        <div class="col-panel" id="panel-b">
+          <span class="col-label">◈ B</span>
+          <div class="mugshot-badge-sm" id="mugshot-badge-b">
+            <canvas id="mugshot-b" width="32" height="32"></canvas>
+          </div>
+          <select id="strategy-b"></select>
+          <div id="mixers-b" style="display:flex;align-items:center;gap:4px;margin-left:auto;"></div>
+          <div class="btn-row" style="margin-left:4px;">
+            <button class="btn btn-run" id="btn-run-b">▶</button>
+            <button class="btn btn-pause" id="btn-pause-b" disabled>⏸</button>
+            <button class="btn" id="btn-reset-b">↺</button>
+          </div>
+          <span class="round-badge" id="round-b">R:0</span>
+        </div>
+        <div class="grid-wrapper">
+          <div class="grid" id="box-grid-b"></div>
+          <svg class="path-lines" id="path-lines-b" preserveAspectRatio="xMidYMid meet"></svg>
+          <div class="overlay" id="overlay-b">
+            <div class="overlay-text" id="overlay-text-b"></div>
+          </div>
+        </div>
+        <div class="path-stripe idle-ticker" id="path-stripe-b">Awaiting the warden's decree</div>
+        <div class="col-stats" id="stats-b">
+          <div class="stat-item"><span class="stat-label">Wins</span><span class="stat-value" id="stat-wins-b">0</span></div>
+          <div class="stat-item"><span class="stat-label">Losses</span><span class="stat-value" id="stat-losses-b">0</span></div>
+          <div class="stat-item"><span class="stat-label">Rate</span><span class="stat-value" id="stat-rate-b">0%</span></div>
+          <div class="stat-item"><span class="stat-label">Strk</span><span class="stat-value" id="stat-streak-b">0</span></div>
+          <div class="stat-item" style="margin-left:auto;"><span class="stat-label">State</span><span class="stat-value state-idle" id="stat-state-b">IDLE</span></div>
+        </div>
       </div>
     </div>
 
-    <!-- BOTTOM BAR -->
-    <div class="bottom-bar">
-      <div class="stat-item">
-        <span class="stat-label">Wins</span>
-        <span class="stat-value" id="stat-wins">0</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-label">Losses</span>
-        <span class="stat-value" id="stat-losses">0</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-label">Rate</span>
-        <span class="stat-value" id="stat-rate">0%</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-label">Streak</span>
-        <span class="stat-value" id="stat-streak">0</span>
-      </div>
-      <div class="stat-item" style="margin-left:auto;">
-        <span class="stat-label">State</span>
-        <span class="stat-value state-idle" id="stat-state">IDLE</span>
-      </div>
-      <div class="bottom-meter">
-        <div class="meter-fill low" id="meter-fill" style="width:0%;"></div>
-        <span class="meter-label" id="meter-label">0%</span>
-      </div>
+    <!-- COMPARISON BAR -->
+    <div class="comparison-bar" id="comparison-bar">
+      <span class="cmp-label">◈ Verdict</span>
+      <div class="cmp-item"><span class="cmp-key">Win Rate</span><span class="cmp-val-a" id="cmp-rate-a">0%</span><span class="cmp-delim">|</span><span class="cmp-val-b" id="cmp-rate-b">0%</span><span class="cmp-diff" id="cmp-rate-diff"></span></div>
+      <div class="cmp-item"><span class="cmp-key">Avg Steps</span><span class="cmp-val-a" id="cmp-steps-a">—</span><span class="cmp-delim">|</span><span class="cmp-val-b" id="cmp-steps-b">—</span></div>
+      <div class="cmp-item"><span class="cmp-key">Best Streak</span><span class="cmp-val-a" id="cmp-streak-a">0</span><span class="cmp-delim">|</span><span class="cmp-val-b" id="cmp-streak-b">0</span></div>
     </div>
   </div>
 
@@ -929,10 +1087,10 @@
       [shuffledLast[i], shuffledLast[j]] = [shuffledLast[j], shuffledLast[i]];
     }
 
-    // Make 100 unique names by cycling
+    // Make 100 unique names — shuffle both pools and zip
     for (let i = 0; i < 100; i++) {
       const firstName = shuffledFirst[i % shuffledFirst.length];
-      const lastName = shuffledLast[Math.floor(i / shuffledFirst.length) % shuffledLast.length];
+      const lastName = shuffledLast[i % shuffledLast.length];
       const id = i;
       const color = prisonerColor(i);
       const avatar = generatePixelAvatar(i * 777 + 13, color);
@@ -944,28 +1102,40 @@
   <!-- MODEL — state, pure functions, strategy engine -->
   <script>
   /* ============================================================
-     MODEL — State, Permutations, Strategy Engine
+     MODEL — State, Permutations, Strategy Engine (Dual)
      ============================================================ */
 
-  // ===== CENTRAL STATE =====
-  const state = {
-    boxes: new Array(100).fill(null),
-    revealed: new Array(100).fill(false),
-    round: 0,
-    currentPrisoner: 0,
-    prisonerStep: 0,
-    roundState: 'IDLE',
-    prisonerPath: [],
-    strategy: 'loop',
-    config: { discipline: 1.0 },
-    totalWins: 0,
-    totalLosses: 0,
-    maxStreak: 0,
-    currentStreak: 0,
-    history: [],
-    running: false,
-    speed: 50,
-  };
+  // ===== STATE FACTORY =====
+  function createState(label) {
+    return {
+      label: label,
+      boxes: new Array(100).fill(null),
+      revealed: new Array(100).fill(false),
+      round: 0,
+      currentPrisoner: 0,
+      prisonerStep: 0,
+      roundState: 'IDLE',
+      prisonerPath: [],
+      strategy: 'loop',
+      config: { discipline: 1.0 },
+      totalWins: 0,
+      totalLosses: 0,
+      maxStreak: 0,
+      currentStreak: 0,
+      history: [],
+      totalSteps: 0,
+      running: false,
+      speed: 50,
+      _sacrificeMode: {},
+    };
+  }
+
+  const stateA = createState('A');
+  const stateB = createState('B');
+
+  // Shared permutation state
+  let sharedPerm = null;
+  let totalSimulationRounds = 0;
 
   // ===== PERMUTATION GENERATION =====
   function generatePermutation() {
@@ -974,22 +1144,20 @@
       const j = Math.floor(Math.random() * (i + 1));
       [arr[i], arr[j]] = [arr[j], arr[i]];
     }
-    state.boxes = arr;
-    state.revealed = new Array(100).fill(false);
     return arr;
   }
 
-  // ===== STRATEGY ENGINE =====
-  function getUnexplored() {
+  // ===== STRATEGY ENGINE (parameterized by state) =====
+  function getUnexplored(s) {
     const unexplored = [];
     for (let i = 0; i < 100; i++) {
-      if (!state.revealed[i]) unexplored.push(i);
+      if (!s.revealed[i]) unexplored.push(i);
     }
     return unexplored;
   }
 
-  function randomUnexplored() {
-    const u = getUnexplored();
+  function randomUnexplored(s) {
+    const u = getUnexplored(s);
     if (u.length === 0) return null;
     return u[Math.floor(Math.random() * u.length)];
   }
@@ -998,23 +1166,23 @@
     loop: {
       name: 'The Loop Protocol',
       mixers: { discipline: { min: 0, max: 1, default: 1.0, step: 0.05 } },
-      decide(prisonerId, currentBox, config, stepCount) {
+      decide(prisonerId, currentBox, config, stepCount, s) {
         const discipline = config.discipline;
         if (Math.random() < discipline) {
           if (stepCount === 0) return prisonerId;
           return currentBox;
         }
-        return randomUnexplored();
+        return randomUnexplored(s);
       }
     },
     panic: {
       name: 'Blind Panic',
       mixers: { memory: { min: 0, max: 1, default: 0.5, step: 0.05 } },
-      decide(prisonerId, currentBox, config, stepCount) {
+      decide(prisonerId, currentBox, config, stepCount, s) {
         const memory = config.memory;
-        if (memory >= 0.8) return randomUnexplored();
+        if (memory >= 0.8) return randomUnexplored(s);
         if (memory <= 0.2) return Math.floor(Math.random() * 100);
-        if (Math.random() < memory) return randomUnexplored();
+        if (Math.random() < memory) return randomUnexplored(s);
         return Math.floor(Math.random() * 100);
       }
     },
@@ -1024,9 +1192,9 @@
         faith: { min: 1, max: 50, default: 25, step: 1 },
         panicThreshold: { min: 1, max: 50, default: 10, step: 1 }
       },
-      decide(prisonerId, currentBox, config, stepCount) {
+      decide(prisonerId, currentBox, config, stepCount, s) {
         if (stepCount > config.faith || stepCount > config.panicThreshold) {
-          return randomUnexplored();
+          return randomUnexplored(s);
         }
         if (stepCount === 0) return prisonerId;
         return currentBox;
@@ -1035,16 +1203,16 @@
     sacrifice: {
       name: "Lucky Sacrifice",
       mixers: { obedienceRate: { min: 0, max: 1, default: 0.5, step: 0.05 } },
-      _mode: {},
-      decide(prisonerId, currentBox, config, stepCount) {
+      decide(prisonerId, currentBox, config, stepCount, s) {
         if (stepCount === 0) {
-          this._mode[prisonerId] = Math.random() < config.obedienceRate ? 'loop' : 'panic';
+          if (!s._sacrificeMode) s._sacrificeMode = {};
+          s._sacrificeMode[prisonerId] = Math.random() < config.obedienceRate ? 'loop' : 'panic';
         }
-        if (this._mode[prisonerId] === 'loop') {
+        if (s._sacrificeMode && s._sacrificeMode[prisonerId] === 'loop') {
           if (stepCount === 0) return prisonerId;
           return currentBox;
         }
-        return randomUnexplored();
+        return randomUnexplored(s);
       }
     },
     mercy: {
@@ -1053,10 +1221,10 @@
         mercyChance: { min: 0, max: 1, default: 0.1, step: 0.05 },
         extraBoxes: { min: 1, max: 50, default: 10, step: 1 }
       },
-      decide(prisonerId, currentBox, config, stepCount) {
+      decide(prisonerId, currentBox, config, stepCount, s) {
         if (stepCount === 0) return prisonerId;
         if (stepCount >= 50) {
-          if (Math.random() < config.mercyChance) return randomUnexplored();
+          if (Math.random() < config.mercyChance) return randomUnexplored(s);
           return null;
         }
         return currentBox;
@@ -1064,15 +1232,15 @@
     }
   };
 
-  function applyStrategyDefaults() {
-    const s = Strategies[state.strategy];
-    state.config = {};
-    for (const [key, mixer] of Object.entries(s.mixers)) {
-      state.config[key] = mixer.default;
+  function applyStrategyDefaults(s) {
+    const strat = Strategies[s.strategy];
+    s.config = {};
+    for (const [key, mixer] of Object.entries(strat.mixers)) {
+      s.config[key] = mixer.default;
     }
   }
 
-  // ===== SIMULATION LOOP =====
+  // ===== SIMULATION LOOP (parameterized by state + label) =====
   let simulationAborted = false;
 
   function sleep(ms) {
@@ -1081,207 +1249,163 @@
     });
   }
 
-  async function prisonerRun(prisonerId) {
-    state.currentPrisoner = prisonerId;
-    state.prisonerStep = 0;
-    state.prisonerPath = [];
+  // Speed slider is shared — both use stateA.speed. We keep them in sync.
+  // The global speed slider writes to stateA.speed and stateB.speed.
 
-    const strategy = Strategies[state.strategy];
+  async function prisonerRun(prisonerId, s) {
+    s.currentPrisoner = prisonerId;
+    s.prisonerStep = 0;
+    s.prisonerPath = [];
+
+    const strategy = Strategies[s.strategy];
     const maxSteps = 50;
     let effectiveMax = maxSteps;
-    let currentBox = strategy.decide(prisonerId, null, state.config, 0);
+    let currentBox = strategy.decide(prisonerId, null, s.config, 0, s);
 
     while (currentBox !== null && currentBox !== undefined) {
-      if (state.prisonerStep >= effectiveMax) {
-        if (state.strategy === 'mercy') {
-          currentBox = strategy.decide(prisonerId, currentBox, state.config, state.prisonerStep);
+      if (s.prisonerStep >= effectiveMax) {
+        if (s.strategy === 'mercy') {
+          currentBox = strategy.decide(prisonerId, currentBox, s.config, s.prisonerStep, s);
           if (currentBox === null) break;
-          effectiveMax += state.config.extraBoxes || 10;
+          effectiveMax += s.config.extraBoxes || 10;
           continue;
         } else {
           break;
         }
       }
 
-      if (!state.running || simulationAborted) return false;
+      if (!s.running || simulationAborted) return false;
 
-      state.revealed[currentBox] = true;
-      state.prisonerPath.push(currentBox);
-      const foundPrisoner = state.boxes[currentBox];
-      state.prisonerStep++;
+      s.revealed[currentBox] = true;
+      s.prisonerPath.push(currentBox);
+      s.totalSteps++;
+      const foundPrisoner = s.boxes[currentBox];
+      s.prisonerStep++;
 
       renderAll();
 
       if (foundPrisoner === prisonerId) return true;
 
-      await sleep(state.speed);
-      currentBox = strategy.decide(prisonerId, state.boxes[currentBox], state.config, state.prisonerStep);
+      await sleep(s.speed);
+      currentBox = strategy.decide(prisonerId, s.boxes[currentBox], s.config, s.prisonerStep, s);
     }
 
     return false;
   }
 
-  async function runRound() {
+  async function runRound(s) {
     if (simulationAborted) return;
 
-    state.roundState = 'RUNNING';
-    state.currentPrisoner = 0;
-    state.prisonerStep = 0;
-    state.prisonerPath = [];
+    s.roundState = 'RUNNING';
+    s.currentPrisoner = 0;
+    s.prisonerStep = 0;
+    s.prisonerPath = [];
 
-    Strategies.sacrifice._mode = {};
+    s._sacrificeMode = {};
 
-    generatePermutation();
     renderAll();
-    await sleep(state.speed * 2);
+    await sleep(s.speed * 2);
 
     let allFound = true;
     for (let p = 0; p < 100; p++) {
-      if (!state.running || simulationAborted) return;
+      if (!s.running || simulationAborted) return;
 
-      const found = await prisonerRun(p);
+      const found = await prisonerRun(p, s);
       if (!found) {
         allFound = false;
         break;
       }
-      await sleep(Math.min(state.speed, 30));
+      await sleep(Math.min(s.speed, 30));
     }
 
     if (simulationAborted) return;
 
     if (allFound) {
-      state.roundState = 'WIN';
-      state.totalWins++;
-      state.currentStreak++;
-      if (state.currentStreak > state.maxStreak) state.maxStreak = state.currentStreak;
-      state.history.push('WIN');
+      s.roundState = 'WIN';
+      s.totalWins++;
+      s.currentStreak++;
+      if (s.currentStreak > s.maxStreak) s.maxStreak = s.currentStreak;
+      s.history.push('WIN');
     } else {
-      state.roundState = 'LOSE';
-      state.totalLosses++;
-      state.currentStreak = 0;
-      state.history.push('LOSE');
+      s.roundState = 'LOSE';
+      s.totalLosses++;
+      s.currentStreak = 0;
+      s.history.push('LOSE');
     }
     renderAll();
   }
 
-  async function runLoop() {
+  async function runLoop(s) {
     simulationAborted = false;
-    state.running = true;
+    s.running = true;
+    updateButtonStates();
     renderAll();
 
-    while (state.running && !simulationAborted) {
-      state.round++;
-      state.roundState = 'RUNNING';
+    while (s.running && !simulationAborted) {
+      s.round++;
+      s.roundState = 'RUNNING';
       renderAll();
-      await runRound();
-      if (!state.running || simulationAborted) break;
+      await runRound(s);
+      if (!s.running || simulationAborted) break;
       renderAll();
       await sleep(2000);
-      if (!state.running || simulationAborted) break;
+      if (!s.running || simulationAborted) break;
     }
 
-    state.running = false;
+    s.running = false;
+    updateButtonStates();
     renderAll();
   }
   </script>
 
-  <!-- RENDERER — DOM rendering, mugshot, grid, path, stats -->
+  <!-- RENDERER — DOM rendering for dual columns -->
   <script>
   /* ============================================================
-     RENDERER — Box grid, mugshot card, path stripe, stats, meter
+     RENDERER — Dual column: grid, path stripe, stats, overlay
      ============================================================ */
 
-  let boxElements = null;
+  let boxElementsA = null;
+  let boxElementsB = null;
 
-  function ensureBoxElements() {
-    if (boxElements) return;
-    const grid = document.getElementById('box-grid');
+  function ensureBoxElements(gridId, cache) {
+    if (cache) return cache;
+    const grid = document.getElementById(gridId);
     grid.innerHTML = '';
-    boxElements = [];
+    const els = [];
     for (let i = 0; i < 100; i++) {
       const div = document.createElement('div');
       div.className = 'box';
       div.dataset.index = i;
       grid.appendChild(div);
-      boxElements.push(div);
+      els.push(div);
     }
+    return els;
   }
 
-  function renderMugshot() {
-    const canvas = document.getElementById('mugshot-canvas');
-    const nameEl = document.getElementById('mugshot-name');
-    const numEl = document.getElementById('mugshot-number');
-    const statusEl = document.getElementById('mugshot-status');
-    const card = document.getElementById('mugshot-card');
-
-    if (state.roundState === 'IDLE' && state.prisonerPath.length === 0) {
-      const ctx = canvas.getContext('2d');
-      ctx.fillStyle = '#1a1a1a';
-      ctx.fillRect(0, 0, 36, 36);
-      ctx.fillStyle = '#444';
-      ctx.font = '18px monospace';
-      ctx.textAlign = 'center';
-      ctx.fillText('?', 18, 24);
-      nameEl.textContent = '—';
-      numEl.textContent = '#—';
-      statusEl.textContent = 'AWAITING ORDER';
-      statusEl.className = 'mugshot-status idle';
-      card.style.borderColor = 'var(--stone)';
-      return;
-    }
-
-    const pid = state.currentPrisoner;
-    const p = prisoners[pid];
-    if (!p) return;
-
-    const ctx = canvas.getContext('2d');
-    const img = new Image();
-    img.onload = function() {
-      ctx.drawImage(img, 0, 0, 36, 36);
-    };
-    img.src = p.avatar;
-
-    nameEl.textContent = p.lastName + ', ' + p.firstName;
-    numEl.textContent = '#' + String(pid + 1).padStart(2, '0');
-    card.style.borderColor = p.color;
-
-    if (state.roundState === 'RUNNING') {
-      statusEl.textContent = 'SEARCHING';
-      statusEl.className = 'mugshot-status searching';
-    } else if (state.roundState === 'WIN') {
-      statusEl.textContent = 'SURVIVED';
-      statusEl.className = 'mugshot-status found';
-    } else if (state.roundState === 'LOSE') {
-      statusEl.textContent = 'EXECUTED';
-      statusEl.className = 'mugshot-status executed';
-    } else {
-      statusEl.textContent = 'AWAITING ORDER';
-      statusEl.className = 'mugshot-status idle';
-    }
-  }
-
-  function renderBoxGrid() {
-    ensureBoxElements();
-    const current = state.prisonerPath.length > 0
-      ? state.prisonerPath[state.prisonerPath.length - 1]
+  // ===== GENERIC BOX GRID RENDERER =====
+  function renderBoxGrid(s, boxElements, gridId, linesId) {
+    if (!boxElements) return;
+    const current = s.prisonerPath.length > 0
+      ? s.prisonerPath[s.prisonerPath.length - 1]
       : -1;
-    const pathSet = new Set(state.prisonerPath);
-    const pid = state.currentPrisoner;
+    const pathSet = new Set(s.prisonerPath);
+    const pid = s.currentPrisoner;
     const p = prisoners[pid];
     const pColor = p ? p.color : null;
 
     for (let i = 0; i < 100; i++) {
       const el = boxElements[i];
+      if (!el) continue;
       el.className = 'box';
 
-      if (state.revealed[i]) {
+      if (s.revealed[i]) {
         el.classList.add('revealed');
-        el.textContent = state.boxes[i];
+        el.textContent = s.boxes[i];
       } else {
         el.textContent = '';
       }
 
-      const stepIdx = state.prisonerPath.indexOf(i);
+      const stepIdx = s.prisonerPath.indexOf(i);
       if (stepIdx !== -1 && i !== current) {
         el.classList.add('visited');
         if (pColor) {
@@ -1295,13 +1419,13 @@
         label.className = 'step-label';
         label.textContent = stepIdx + 1;
         el.appendChild(label);
-      } else if (stepIdx === -1 && !state.revealed[i]) {
+      } else if (stepIdx === -1 && !s.revealed[i]) {
         el.style.borderColor = '';
         el.style.background = '';
         el.style.color = '';
       }
 
-      if (i === current && state.roundState === 'RUNNING') {
+      if (i === current && s.roundState === 'RUNNING') {
         el.classList.add('current');
         if (pColor) {
           el.style.setProperty('--prisoner-glow', pColor);
@@ -1310,8 +1434,8 @@
           el.style.background = pColor + '22';
           el.style.color = pColor;
         }
-        const prisonerVal = state.boxes[current];
-        if (prisonerVal === state.currentPrisoner) {
+        const prisonerVal = s.boxes[current];
+        if (prisonerVal === s.currentPrisoner) {
           el.classList.add('flash-green');
           el.style.borderColor = '';
           el.style.background = '';
@@ -1319,7 +1443,7 @@
         }
       }
 
-      if (state.roundState === 'LOSE' && pathSet.has(i) && i === current) {
+      if (s.roundState === 'LOSE' && pathSet.has(i) && i === current) {
         el.classList.add('failed');
         el.style.borderColor = '';
         el.style.background = '';
@@ -1328,36 +1452,38 @@
     }
   }
 
-  function renderPathStripe() {
-    const el = document.getElementById('path-stripe');
-    if (state.roundState === 'IDLE' && state.prisonerPath.length === 0) {
-      el.innerHTML = 'Awaiting execution order...';
+  // ===== GENERIC PATH STRIPE =====
+  function renderPathStripe(s, stripeId) {
+    const el = document.getElementById(stripeId);
+    if (!el) return;
+    if (s.roundState === 'IDLE' && s.prisonerPath.length === 0) {
+      el.innerHTML = "Awaiting the warden's decree";
+      el.classList.add('idle-ticker');
       return;
     }
-    if (state.prisonerPath.length === 0) {
-      const p = prisoners[state.currentPrisoner];
-      const name = p ? p.lastName + ', ' + p.firstName : 'Prisoner #' + state.currentPrisoner;
+    el.classList.remove('idle-ticker');
+    if (s.prisonerPath.length === 0) {
+      const p = prisoners[s.currentPrisoner];
+      const name = p ? p.lastName + ', ' + p.firstName : 'Prisoner #' + s.currentPrisoner;
       el.innerHTML = '<span style="color:' + (p ? p.color : '#888') + ';">' + name + '</span>' + ' — preparing...';
       return;
     }
 
-    const path = state.prisonerPath;
-    const prisonerId = state.currentPrisoner;
+    const path = s.prisonerPath;
+    const prisonerId = s.currentPrisoner;
     const p = prisoners[prisonerId];
     const pColor = p ? p.color : '#888';
 
-    // Show last 8 steps
     const showFrom = Math.max(0, path.length - 8);
     let html = '';
 
-    // Prisoner name at start — pulsing during RUNNING
     const name = p ? p.lastName + ', ' + p.firstName : '#' + prisonerId;
-    const pulseClass = state.roundState === 'RUNNING' ? ' class="pulse-name"' : '';
+    const pulseClass = s.roundState === 'RUNNING' ? ' class="pulse-name"' : '';
     html += '<span style="color:' + pColor + ';"' + pulseClass + '>' + name + '</span> ';
 
     for (let i = showFrom; i < path.length; i++) {
       const boxIdx = path[i];
-      const foundVal = state.boxes[boxIdx];
+      const foundVal = s.boxes[boxIdx];
       const isFound = foundVal === prisonerId;
       const isLast = i === path.length - 1;
 
@@ -1365,8 +1491,8 @@
 
       if (isFound && isLast) {
         html += '<span class="step-marker">box#' + String(boxIdx).padStart(2, '0') + ' [' + foundVal + ']</span>';
-        html += ' <span class="found-text">✓ FOUND</span>';
-      } else if (isLast && state.roundState === 'LOSE') {
+        html += ' <span class="rune-marker">◈</span><span class="found-text">FOUND</span>';
+      } else if (isLast && s.roundState === 'LOSE') {
         html += '<span class="step-marker">box#' + String(boxIdx).padStart(2, '0') + ' [' + foundVal + ']</span>';
         html += ' <span class="fail-text">✗ FAIL</span>';
       } else if (isLast) {
@@ -1376,62 +1502,38 @@
       }
     }
 
-    if (state.roundState === 'WIN') {
+    if (s.roundState === 'WIN') {
       html += ' — <span class="found-text">◈ ALL 100 SURVIVED ◈</span>';
-    } else if (state.roundState === 'LOSE') {
+    } else if (s.roundState === 'LOSE') {
       html += ' — <span class="fail-text">✖ EXECUTED</span>';
     }
 
     el.innerHTML = html;
   }
 
-  function renderBottomBar() {
-    document.getElementById('stat-wins').textContent = state.totalWins;
-    document.getElementById('stat-losses').textContent = state.totalLosses;
-
-    const total = state.totalWins + state.totalLosses;
-    const rate = total === 0 ? 0 : (state.totalWins / total) * 100;
-    document.getElementById('stat-rate').textContent = rate.toFixed(1) + '%';
-    document.getElementById('stat-streak').textContent = state.maxStreak;
-
-    const stateEl = document.getElementById('stat-state');
-    stateEl.textContent = state.roundState;
-    stateEl.className = 'stat-value';
-    stateEl.classList.add('state-' + state.roundState.toLowerCase());
-
-    // Meter
-    const fill = document.getElementById('meter-fill');
-    fill.style.width = rate + '%';
-    fill.className = 'meter-fill';
-    if (rate < 30) fill.classList.add('low');
-    else if (rate <= 50) fill.classList.add('mid');
-    else fill.classList.add('high');
-
-    document.getElementById('meter-label').textContent = rate.toFixed(1) + '%';
-    document.getElementById('round-badge').textContent = 'Round: ' + state.round;
-  }
-
-  function renderPathLines() {
-    const svg = document.getElementById('path-lines');
+  // ===== GENERIC PATH LINES (SVG) =====
+  function renderPathLines(s, linesId, gridId) {
+    const svg = document.getElementById(linesId);
     if (!svg) return;
-    if (state.prisonerPath.length < 2 || state.roundState === 'IDLE') {
+    if (s.prisonerPath.length < 2 || s.roundState === 'IDLE') {
       svg.innerHTML = '';
       return;
     }
 
-    const grid = document.getElementById('box-grid');
+    const grid = document.getElementById(gridId);
+    if (!grid) return;
     const gridRect = grid.getBoundingClientRect();
     const svgRect = svg.getBoundingClientRect();
     const cellW = gridRect.width / 10;
     const cellH = gridRect.height / 10;
 
-    const pid = state.currentPrisoner;
+    const pid = s.currentPrisoner;
     const p = prisoners[pid];
     const pColor = p ? p.color : '#666';
-    const isRunning = state.roundState === 'RUNNING';
+    const isRunning = s.roundState === 'RUNNING';
 
-    const showFrom = Math.max(0, state.prisonerPath.length - 9);
-    const recentPath = state.prisonerPath.slice(showFrom);
+    const showFrom = Math.max(0, s.prisonerPath.length - 9);
+    const recentPath = s.prisonerPath.slice(showFrom);
 
     const relX = gridRect.left - svgRect.left;
     const relY = gridRect.top - svgRect.top;
@@ -1450,26 +1552,50 @@
       const x2 = relX + toCol * cellW + cellW / 2;
       const y2 = relY + toRow * cellH + cellH / 2;
 
-      // Dimmer for older steps, bright for latest
       const age = recentPath.length - 1 - i;
       const opacity = Math.max(0.2, 1 - age * 0.15);
-      lines += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"
-        stroke="${pColor}" stroke-width="2" stroke-opacity="${opacity * (isRunning ? 1 : 0.4)}"
-        stroke-linecap="round" />`;
+      lines += '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="' + pColor + '" stroke-width="2" stroke-opacity="' + (opacity * (isRunning ? 1 : 0.4)) + '" stroke-linecap="round" />';
     }
 
     svg.innerHTML = lines;
   }
 
-  function renderOverlay() {
-    const overlay = document.getElementById('overlay');
-    const text = document.getElementById('overlay-text');
+  // ===== GENERIC STATS =====
+  function renderStats(s, prefix) {
+    const winsEl = document.getElementById('stat-wins-' + prefix);
+    const lossesEl = document.getElementById('stat-losses-' + prefix);
+    const rateEl = document.getElementById('stat-rate-' + prefix);
+    const streakEl = document.getElementById('stat-streak-' + prefix);
+    const stateEl = document.getElementById('stat-state-' + prefix);
+    const roundEl = document.getElementById('round-' + prefix);
 
-    if (state.roundState === 'WIN') {
+    if (winsEl) winsEl.textContent = s.totalWins;
+    if (lossesEl) lossesEl.textContent = s.totalLosses;
+
+    const total = s.totalWins + s.totalLosses;
+    const rate = total === 0 ? 0 : (s.totalWins / total) * 100;
+    if (rateEl) rateEl.textContent = rate.toFixed(1) + '%';
+    if (streakEl) streakEl.textContent = s.maxStreak;
+    if (roundEl) roundEl.textContent = 'R:' + s.round;
+
+    if (stateEl) {
+      stateEl.textContent = s.roundState;
+      stateEl.className = 'stat-value';
+      stateEl.classList.add('state-' + s.roundState.toLowerCase());
+    }
+  }
+
+  // ===== GENERIC OVERLAY =====
+  function renderOverlay(s, overlayId, textId) {
+    const overlay = document.getElementById(overlayId);
+    const text = document.getElementById(textId);
+    if (!overlay || !text) return;
+
+    if (s.roundState === 'WIN') {
       overlay.classList.add('active');
       text.textContent = 'ALL SURVIVED';
       text.className = 'overlay-text win';
-    } else if (state.roundState === 'LOSE') {
+    } else if (s.roundState === 'LOSE') {
       overlay.classList.add('active');
       text.textContent = 'EXECUTED';
       text.className = 'overlay-text lose';
@@ -1478,48 +1604,145 @@
     }
   }
 
-  function renderAll() {
-    renderBoxGrid();
-    renderMugshot();
-    renderPathStripe();
-    renderPathLines();
-    renderBottomBar();
-    renderOverlay();
-  }
+  // ===== COMPARISON BAR =====
+  function renderComparisonBar() {
+    const totalA = stateA.totalWins + stateA.totalLosses;
+    const totalB = stateB.totalWins + stateB.totalLosses;
+    const rateA = totalA === 0 ? 0 : (stateA.totalWins / totalA) * 100;
+    const rateB = totalB === 0 ? 0 : (stateB.totalWins / totalB) * 100;
 
-  function renderStrategySelector() {
-    const select = document.getElementById('strategy-select');
-    select.innerHTML = '';
-    for (const [key, s] of Object.entries(Strategies)) {
-      const opt = document.createElement('option');
-      opt.value = key;
-      opt.textContent = s.name;
-      if (key === state.strategy) opt.selected = true;
-      select.appendChild(opt);
+    document.getElementById('cmp-rate-a').textContent = rateA.toFixed(1) + '%';
+    document.getElementById('cmp-rate-b').textContent = rateB.toFixed(1) + '%';
+
+    const diff = rateA - rateB;
+    const diffEl = document.getElementById('cmp-rate-diff');
+    if (totalA > 0 || totalB > 0) {
+      diffEl.textContent = (diff > 0 ? '+' : '') + diff.toFixed(1) + '%';
+      diffEl.className = 'cmp-diff ' + (diff >= 0 ? 'diff-pos' : 'diff-neg');
+    } else {
+      diffEl.textContent = '';
     }
+
+    const stepsA = stateA.totalSteps || 0;
+    const stepsB = stateB.totalSteps || 0;
+    const winsA = stateA.totalWins || 0;
+    const winsB = stateB.totalWins || 0;
+    const avgStepsA = winsA > 0 ? (stepsA / winsA).toFixed(1) : '—';
+    const avgStepsB = winsB > 0 ? (stepsB / winsB).toFixed(1) : '—';
+    document.getElementById('cmp-steps-a').textContent = avgStepsA;
+    document.getElementById('cmp-steps-b').textContent = avgStepsB;
+
+    document.getElementById('cmp-streak-a').textContent = stateA.maxStreak;
+    document.getElementById('cmp-streak-b').textContent = stateB.maxStreak;
   }
 
-  function renderMixerPanel() {
-    const panel = document.getElementById('mixer-panel');
-    const strategy = Strategies[state.strategy];
-    panel.innerHTML = '';
+  // ===== MUGSHOT RENDER (per column) =====
+  function renderMugshot(s, canvasId, badgeId) {
+    const canvas = document.getElementById(canvasId);
+    const badge = document.getElementById(badgeId);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    if (s.roundState === 'IDLE' && s.prisonerPath.length === 0) {
+      ctx.fillStyle = '#1a1a1a';
+      ctx.fillRect(0, 0, 32, 32);
+      ctx.fillStyle = '#555';
+      ctx.font = '16px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('?', 16, 22);
+      if (badge) badge.style.borderColor = 'var(--stone-light)';
+      return;
+    }
+
+    const pid = s.currentPrisoner;
+    const p = prisoners[pid];
+    if (!p) return;
+
+    const img = new Image();
+    img.onload = function() {
+      ctx.drawImage(img, 0, 0, 32, 32);
+    };
+    img.src = p.avatar;
+    if (badge) badge.style.borderColor = p.color;
+  }
+
+  // ===== COLUMN-A RENDERERS =====
+  function renderBoxGridA() {
+    boxElementsA = ensureBoxElements('box-grid-a', boxElementsA);
+    renderBoxGrid(stateA, boxElementsA, 'box-grid-a', 'path-lines-a');
+  }
+
+  function renderPathLinesA() {
+    renderPathLines(stateA, 'path-lines-a', 'box-grid-a');
+  }
+
+  function renderPathStripeA() {
+    renderPathStripe(stateA, 'path-stripe-a');
+  }
+
+  function renderStatsA() {
+    renderStats(stateA, 'a');
+  }
+
+  function renderOverlayA() {
+    renderOverlay(stateA, 'overlay-a', 'overlay-text-a');
+  }
+
+  // ===== COLUMN-B RENDERERS =====
+  function renderBoxGridB() {
+    boxElementsB = ensureBoxElements('box-grid-b', boxElementsB);
+    renderBoxGrid(stateB, boxElementsB, 'box-grid-b', 'path-lines-b');
+  }
+
+  function renderPathLinesB() {
+    renderPathLines(stateB, 'path-lines-b', 'box-grid-b');
+  }
+
+  function renderPathStripeB() {
+    renderPathStripe(stateB, 'path-stripe-b');
+  }
+
+  function renderStatsB() {
+    renderStats(stateB, 'b');
+  }
+
+  function renderOverlayB() {
+    renderOverlay(stateB, 'overlay-b', 'overlay-text-b');
+  }
+
+  function renderMugshotA() {
+    renderMugshot(stateA, 'mugshot-a', 'mugshot-badge-a');
+  }
+
+  function renderMugshotB() {
+    renderMugshot(stateB, 'mugshot-b', 'mugshot-badge-b');
+  }
+
+  // ===== MIXER PANEL (per column) =====
+  function renderMixerPanel(s, containerId) {
+    const container = document.getElementById(containerId);
+    const strategy = Strategies[s.strategy];
+    if (!container) return;
+    container.innerHTML = '';
 
     for (const [key, mixer] of Object.entries(strategy.mixers)) {
       const group = document.createElement('div');
       group.className = 'mixer-group';
+      group.style.display = 'flex';
+      group.style.alignItems = 'center';
+      group.style.gap = '3px';
 
-      const labelRow = document.createElement('div');
-      labelRow.className = 'mixer-label';
       const label = document.createElement('span');
-      label.textContent = key.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase());
+      label.className = 'mixer-label';
+      const labelText = key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1');
+      label.textContent = labelText;
+      label.style.fontSize = '0.55em';
+
       const val = document.createElement('span');
       val.className = 'mixer-value';
-      val.id = 'mixer-val-' + key;
-      const currentVal = state.config[key] !== undefined ? state.config[key] : mixer.default;
+      val.id = 'mixer-val-' + s.label + '-' + key;
+      const currentVal = s.config[key] !== undefined ? s.config[key] : mixer.default;
       val.textContent = mixer.step >= 1 ? currentVal : currentVal.toFixed(2);
-
-      labelRow.appendChild(label);
-      labelRow.appendChild(val);
 
       const input = document.createElement('input');
       input.type = 'range';
@@ -1527,89 +1750,208 @@
       input.max = mixer.max;
       input.step = mixer.step;
       input.value = currentVal;
+      input.dataset.stateLabel = s.label;
       input.dataset.mixerKey = key;
+      input.style.width = '40px';
+      input.style.height = '4px';
 
-      input.addEventListener('input', function(e) {
-        const v = parseFloat(e.target.value);
-        state.config[key] = v;
-        document.getElementById('mixer-val-' + key).textContent = mixer.step >= 1 ? v : v.toFixed(2);
-      });
+      input.addEventListener('input', (function(s, key, mixer) {
+        return function(e) {
+          const v = parseFloat(e.target.value);
+          s.config[key] = v;
+          const valEl = document.getElementById('mixer-val-' + s.label + '-' + key);
+          if (valEl) valEl.textContent = mixer.step >= 1 ? v : v.toFixed(2);
+        };
+      })(s, key, mixer));
 
-      group.appendChild(labelRow);
+      group.appendChild(label);
       group.appendChild(input);
-      panel.appendChild(group);
+      group.appendChild(val);
+      container.appendChild(group);
     }
+  }
+
+  // ===== STRATEGY SELECTOR (per column) =====
+  function renderStrategySelector(s, selectId) {
+    const select = document.getElementById(selectId);
+    if (!select) return;
+    select.innerHTML = '';
+    for (const [key, strat] of Object.entries(Strategies)) {
+      const opt = document.createElement('option');
+      opt.value = key;
+      opt.textContent = strat.name;
+      if (key === s.strategy) opt.selected = true;
+      select.appendChild(opt);
+    }
+  }
+
+  // ===== MASTER RENDER =====
+  function renderAll() {
+    renderBoxGridA();
+    renderBoxGridB();
+    renderPathStripeA();
+    renderPathStripeB();
+    renderPathLinesA();
+    renderPathLinesB();
+    renderStatsA();
+    renderStatsB();
+    renderOverlayA();
+    renderOverlayB();
+    renderMugshotA();
+    renderMugshotB();
+    renderComparisonBar();
   }
   </script>
 
-  <!-- CONTROLLER — event listeners, simulation loop, init -->
+  <!-- CONTROLLER — dual-strategy lifecycle, events, init -->
   <script>
   /* ============================================================
-     CONTROLLER — Event handlers, init
+     CONTROLLER — Event handlers, dual-strategy lifecycle, init
      ============================================================ */
 
-  function onRun() {
-    if (state.running) return;
-    if (state.roundState === 'IDLE' || state.roundState === 'WIN' || state.roundState === 'LOSE') {
-      state.round = 0;
-      state.currentPrisoner = 0;
-      state.prisonerStep = 0;
-      state.prisonerPath = [];
-      state.roundState = 'IDLE';
-    }
+  // ===== GLOBAL CONTROL =====
+  async function onRunAll() {
+    if (stateA.running || stateB.running) return;
+
+    // Reset both
+    resetState(stateA);
+    resetState(stateB);
+
+    // Shared permutation
+    sharedPerm = generatePermutation();
+    stateA.boxes = sharedPerm;
+    stateB.boxes = [...sharedPerm];
+    stateA.revealed = new Array(100).fill(false);
+    stateB.revealed = new Array(100).fill(false);
+
     simulationAborted = false;
-    runLoop();
+    renderAll();
+
+    // Run both loops in parallel (await both to complete)
+    await Promise.all([runLoop(stateA), runLoop(stateB)]);
     updateButtonStates();
   }
 
-  function onPause() {
-    state.running = false;
+  function onPauseAll() {
+    stateA.running = false;
+    stateB.running = false;
     simulationAborted = true;
     updateButtonStates();
   }
 
-  function onReset() {
-    state.running = false;
+  function onResetAll() {
+    stateA.running = false;
+    stateB.running = false;
     simulationAborted = true;
-    state.round = 0;
-    state.currentPrisoner = 0;
-    state.prisonerStep = 0;
-    state.roundState = 'IDLE';
-    state.prisonerPath = [];
-    state.totalWins = 0;
-    state.totalLosses = 0;
-    state.maxStreak = 0;
-    state.currentStreak = 0;
-    state.history = [];
-    generatePermutation();
+    resetState(stateA);
+    resetState(stateB);
+    sharedPerm = generatePermutation();
+    stateA.boxes = sharedPerm;
+    stateB.boxes = [...sharedPerm];
+    stateA.revealed = new Array(100).fill(false);
+    stateB.revealed = new Array(100).fill(false);
     renderAll();
     updateButtonStates();
   }
 
-  function onStrategyChange(value) {
-    state.strategy = value;
-    applyStrategyDefaults();
-    renderMixerPanel();
+  function resetState(s) {
+    s.round = 0;
+    s.currentPrisoner = 0;
+    s.prisonerStep = 0;
+    s.roundState = 'IDLE';
+    s.prisonerPath = [];
+    s.totalWins = 0;
+    s.totalLosses = 0;
+    s.maxStreak = 0;
+    s.currentStreak = 0;
+    s.history = [];
+    s.totalSteps = 0;
+    s._sacrificeMode = {};
+    for (let i = 0; i < 100; i++) {
+      s.revealed[i] = false;
+    }
+  }
+
+  // ===== PER-COLUMN CONTROLS =====
+  function onRunColumn(s) {
+    if (s.running) return;
+    resetState(s);
+    if (!sharedPerm) {
+      sharedPerm = generatePermutation();
+    }
+    s.boxes = [...sharedPerm];
+    s.revealed = new Array(100).fill(false);
+    simulationAborted = false;
+    runLoop(s);
+    updateButtonStates();
+  }
+
+  function onPauseColumn(s) {
+    s.running = false;
+    simulationAborted = true;
+    updateButtonStates();
+  }
+
+  function onResetColumn(s) {
+    s.running = false;
+    simulationAborted = true;
+    resetState(s);
+    if (sharedPerm) {
+      s.boxes = [...sharedPerm];
+      s.revealed = new Array(100).fill(false);
+    }
+    renderAll();
+    updateButtonStates();
+  }
+
+  // ===== STRATEGY CHANGE =====
+  function onStrategyChange(s, selectId, containerId) {
+    s.strategy = document.getElementById(selectId).value;
+    applyStrategyDefaults(s);
+    renderMixerPanel(s, containerId);
     renderAll();
   }
 
   function onSpeedChange(value) {
-    state.speed = parseInt(value, 10);
+    const v = parseInt(value, 10);
+    stateA.speed = v;
+    stateB.speed = v;
     document.getElementById('speed-value').textContent = value;
   }
 
   function updateButtonStates() {
-    document.getElementById('btn-run').disabled = state.running;
-    document.getElementById('btn-pause').disabled = !state.running;
+    const anyRunning = stateA.running || stateB.running;
+    document.getElementById('btn-run-all').disabled = anyRunning;
+    document.getElementById('btn-pause-all').disabled = !anyRunning;
+    document.getElementById('btn-run-a').disabled = stateA.running;
+    document.getElementById('btn-pause-a').disabled = !stateA.running;
+    document.getElementById('btn-run-b').disabled = stateB.running;
+    document.getElementById('btn-pause-b').disabled = !stateB.running;
   }
 
   function attachEventListeners() {
-    document.getElementById('strategy-select').addEventListener('change', function(e) {
-      onStrategyChange(e.target.value);
+    // Global
+    document.getElementById('btn-run-all').addEventListener('click', function() { onRunAll(); });
+    document.getElementById('btn-pause-all').addEventListener('click', function() { onPauseAll(); });
+    document.getElementById('btn-reset-all').addEventListener('click', function() { onResetAll(); });
+
+    // Column A
+    document.getElementById('strategy-a').addEventListener('change', function(e) {
+      onStrategyChange(stateA, 'strategy-a', 'mixers-a');
     });
-    document.getElementById('btn-run').addEventListener('click', onRun);
-    document.getElementById('btn-pause').addEventListener('click', onPause);
-    document.getElementById('btn-reset').addEventListener('click', onReset);
+    document.getElementById('btn-run-a').addEventListener('click', function() { onRunColumn(stateA); });
+    document.getElementById('btn-pause-a').addEventListener('click', function() { onPauseColumn(stateA); });
+    document.getElementById('btn-reset-a').addEventListener('click', function() { onResetColumn(stateA); });
+
+    // Column B
+    document.getElementById('strategy-b').addEventListener('change', function(e) {
+      onStrategyChange(stateB, 'strategy-b', 'mixers-b');
+    });
+    document.getElementById('btn-run-b').addEventListener('click', function() { onRunColumn(stateB); });
+    document.getElementById('btn-pause-b').addEventListener('click', function() { onPauseColumn(stateB); });
+    document.getElementById('btn-reset-b').addEventListener('click', function() { onResetColumn(stateB); });
+
+    // Speed
     document.getElementById('speed-slider').addEventListener('input', function(e) {
       onSpeedChange(e.target.value);
     });
@@ -1617,16 +1959,27 @@
 
   function init() {
     initPrisoners();
-    generatePermutation();
-    renderStrategySelector();
-    applyStrategyDefaults();
-    renderMixerPanel();
+    sharedPerm = generatePermutation();
+    stateA.boxes = sharedPerm;
+    stateB.boxes = [...sharedPerm];
+    stateA.revealed = new Array(100).fill(false);
+    stateB.revealed = new Array(100).fill(false);
+
+    applyStrategyDefaults(stateA);
+    applyStrategyDefaults(stateB);
+
+    renderStrategySelector(stateA, 'strategy-a');
+    renderStrategySelector(stateB, 'strategy-b');
+    renderMixerPanel(stateA, 'mixers-a');
+    renderMixerPanel(stateB, 'mixers-b');
     renderAll();
-    attachEventListeners();
     updateButtonStates();
+    attachEventListeners();
+
     // Re-render path lines on resize
     window.addEventListener('resize', function() {
-      if (state.prisonerPath.length > 0) renderPathLines();
+      if (stateA.prisonerPath.length > 0) renderPathLinesA();
+      if (stateB.prisonerPath.length > 0) renderPathLinesB();
     });
   }
 
