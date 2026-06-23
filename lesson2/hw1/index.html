@@ -942,6 +942,7 @@
         <button class="btn-global btn-run-all" id="btn-run-all">▶ Run All</button>
         <button class="btn-global btn-pause-all" id="btn-pause-all" disabled>⏸ Pause All</button>
         <button class="btn-global" id="btn-reset-all">↺ Reset</button>
+        <button class="btn-global" id="btn-benchmark" style="background:var(--gold-dim);border-color:var(--gold);font-size:0.55em;">◈ Benchmark 10k</button>
         <div class="speed-group">
           <label for="speed-slider">Speed</label>
           <input type="range" id="speed-slider" min="10" max="300" value="50">
@@ -2319,6 +2320,71 @@
     document.getElementById('speed-value').textContent = value;
   }
 
+  async function onBenchmark() {
+    if (stateA.running || stateB.running) return;
+    document.getElementById('btn-benchmark').disabled = true;
+    document.getElementById('btn-benchmark').textContent = '◈ Running...';
+
+    await sleep(50); // let UI update
+
+    function perm() {
+      const a = Array.from({length:100}, (_,i)=>i);
+      for (let i=99; i>0; i--) { const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]] = [a[j],a[i]]; }
+      return a;
+    }
+
+    const N = 10000;
+    let loopWins = 0, sacWins = 0;
+
+    for (let r = 0; r < N; r++) {
+      const b = perm();
+      // Loop Protocol
+      let ok = true;
+      for (let p = 0; p < 100 && ok; p++) {
+        let c = p, found = false;
+        for (let s = 0; s < 50; s++) {
+          if (c == null) break;
+          if (b[c] === p) { found = true; break; }
+          c = b[c];
+        }
+        if (!found) ok = false;
+      }
+      if (ok) loopWins++;
+
+      // Lucky Sacrifice
+      ok = true;
+      const sm = {};
+      for (let p = 0; p < 100 && ok; p++) {
+        sm[p] = Math.random() < 0.5 ? 'loop' : 'panic';
+        let c = sm[p] === 'loop' ? p : Math.floor(Math.random()*100);
+        let found = false;
+        for (let s = 0; s < 50; s++) {
+          if (c == null) break;
+          if (b[c] === p) { found = true; break; }
+          if (sm[p] === 'loop') { c = b[c]; }
+          else { const u = []; for (let i=0; i<100; i++) if (c !== i) u.push(i); c = u[Math.floor(Math.random()*u.length)]; }
+        }
+        if (!found) ok = false;
+      }
+      if (ok) sacWins++;
+    }
+
+    const loopPct = (loopWins/N*100).toFixed(1);
+    const sacPct = (sacWins/N*100).toFixed(1);
+
+    // Show result in comparison bar
+    document.getElementById('cmp-rate-a').textContent = loopPct + '%';
+    document.getElementById('cmp-rate-b').textContent = sacPct + '%';
+    document.getElementById('cmp-rate-diff').textContent = (loopWins - sacWins > 0 ? '+' : '') + (loopPct - sacPct).toFixed(1) + '%';
+    document.getElementById('cmp-rate-diff').className = 'cmp-diff ' + (loopWins >= sacWins ? 'diff-pos' : 'diff-neg');
+
+    document.getElementById('btn-benchmark').textContent = '◈ Done!';
+    setTimeout(function() {
+      document.getElementById('btn-benchmark').textContent = '◈ Benchmark 10k';
+      document.getElementById('btn-benchmark').disabled = false;
+    }, 3000);
+  }
+
   function updateButtonStates() {
     const anyRunning = stateA.running || stateB.running;
     document.getElementById('btn-run-all').disabled = anyRunning;
@@ -2334,6 +2400,7 @@
     document.getElementById('btn-run-all').addEventListener('click', function() { onRunAll(); });
     document.getElementById('btn-pause-all').addEventListener('click', function() { onPauseAll(); });
     document.getElementById('btn-reset-all').addEventListener('click', function() { onResetAll(); });
+    document.getElementById('btn-benchmark').addEventListener('click', function() { onBenchmark(); });
 
     // Column A
     document.getElementById('strategy-a').addEventListener('change', function(e) {
