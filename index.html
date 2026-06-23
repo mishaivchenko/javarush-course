@@ -1,0 +1,2233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>THE TOMB OF 100 DEAD MEN</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&family=VT323&display=swap" rel="stylesheet">
+  <style>
+    /* ============================================================
+       CSS THEME — The Tomb of 100 Dead Men (Lovecraftian Horror)
+       ============================================================ */
+    :root {
+      /* Void palette — blood, bone, rusted gold, tissue */
+      --bg: #0d0907;
+      --panel: #17120e;
+      --stone: #221c16;
+      --stone-light: #3d322a;
+      --text: #c4b8a8;
+      --text-dim: #7a6e5e;
+      --accent: #6b1414;
+      --accent-bright: #c92a2a;
+      --found: #1a3a1a;
+      --found-text: #6aaa6a;
+      --fail: #2d0a0a;
+      --fail-bright: #6a1a1a;
+      --gold: #8b7340;
+      --gold-dim: #5a4a2a;
+      --vein: #2d1b1b;
+      --border-px: 2px;
+      --header-h: 52px;
+      --bottom-h: 52px;
+      --sidebar-w: 200px;
+      --path-h: 38px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'VT323', 'Courier New', monospace;
+      background: url('https://images.unsplash.com/photo-1720642436687-6969d99712f9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5ODAyNDJ8MHwxfHNlYXJjaHwxfHxob3Jyb3IlMjBwcmlzb24lMjBkdW5nZW9uJTIwZGFyayUyMGNvcnJpZG9yfGVufDB8MHwyfGJsYWNrX2FuZF93aGl0ZXwxNzgyMTk4MjMxfDA&ixlib=rb-4.1.0&q=80&w=1080') center/cover no-repeat fixed;
+      color: var(--text);
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 6px;
+    }
+    @media (max-height: 760px), (max-width: 1023px) {
+      body { overflow-y: auto; align-items: flex-start; padding: 4px; }
+    }
+
+    /* ===== MAIN CONTAINER ===== */
+    #app {
+      width: 100%;
+      max-width: 1400px;
+      max-height: calc(100vh - 12px);
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    @media (max-height: 760px), (max-width: 1023px) {
+      #app { max-height: none; height: auto; }
+    }
+
+    /* ===== HEADER ROW — carved altar top ===== */
+    .header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: var(--header-h);
+      min-height: var(--header-h);
+      padding: 0 14px;
+      border-bottom: 1px solid var(--vein);
+      position: relative;
+    }
+    .header-row::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 20%;
+      right: 20%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
+    }
+
+    .header-row h1 {
+      font-family: 'UnifrakturCook', 'Times New Roman', serif;
+      font-size: 1.6em;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      color: var(--accent);
+      text-shadow:
+        0 0 8px rgba(107, 20, 20, 0.5),
+        0 0 24px rgba(107, 20, 20, 0.25);
+      animation: pulse-glow 4s ease-in-out infinite;
+      white-space: nowrap;
+      line-height: 1;
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% { text-shadow: 0 0 8px rgba(107, 20, 20, 0.5), 0 0 24px rgba(107, 20, 20, 0.25); }
+      50% { text-shadow: 0 0 14px rgba(107, 20, 20, 0.7), 0 0 36px rgba(107, 20, 20, 0.4), 0 0 60px rgba(107, 20, 20, 0.15); }
+    }
+
+    .header-row .subtitle {
+      font-family: 'VT323', monospace;
+      color: var(--gold-dim);
+      font-size: 0.6em;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-left: 10px;
+    }
+
+    /* ===== DUAL-COLUMN AREA ===== */
+    .dual-area {
+      display: flex;
+      gap: 5px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    @media (max-height: 760px), (max-width: 1023px) {
+      .dual-area { flex-direction: column; min-height: auto; }
+    }
+
+    .column {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      min-width: 0;
+      min-height: 0;
+    }
+
+    /* ===== COLUMN PANEL — strategy select + mixers + buttons ===== */
+    .col-panel {
+      background: var(--panel);
+      border: 1px solid var(--vein);
+      padding: 6px 10px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 5px;
+      min-height: 36px;
+    }
+
+    .mugshot-badge-sm {
+      width: 32px;
+      height: 32px;
+      min-width: 32px;
+      border: 1px solid var(--stone-light);
+      background: var(--stone);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      image-rendering: pixelated;
+    }
+
+    .mugshot-badge-sm canvas {
+      width: 100%;
+      height: 100%;
+      image-rendering: pixelated;
+    }
+
+    .col-panel .col-label {
+      font-family: 'UnifrakturCook', 'Times New Roman', serif;
+      font-size: 0.75em;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.1em;
+      white-space: nowrap;
+      margin-right: 4px;
+    }
+
+    .col-panel select {
+      font-family: 'VT323', monospace;
+      font-size: 0.75em;
+      padding: 2px 5px;
+      background: var(--stone);
+      color: var(--text);
+      border: 1px solid var(--stone-light);
+      outline: none;
+      cursor: pointer;
+      flex: 1;
+      min-width: 80px;
+      max-width: 180px;
+    }
+
+    .col-panel select:focus {
+      border-color: var(--accent);
+    }
+
+    .col-panel .btn-row {
+      display: flex;
+      gap: 2px;
+    }
+
+    .col-panel .btn {
+      font-family: 'VT323', monospace;
+      font-size: 0.65em;
+      padding: 3px 7px;
+      border: 1px solid var(--stone-light);
+      background: var(--stone);
+      color: var(--text);
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      transition: background 0.12s, border-color 0.12s, color 0.12s;
+      text-align: center;
+    }
+
+    .col-panel .btn:hover:not(:disabled) {
+      background: var(--stone-light);
+      border-color: var(--text-dim);
+      color: #fff;
+    }
+
+    .col-panel .btn:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    .col-panel .btn-run {
+      border-color: var(--accent);
+      color: var(--accent-bright);
+    }
+    .col-panel .btn-run:hover:not(:disabled) {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent-bright);
+      box-shadow: 0 0 8px rgba(201, 42, 42, 0.4);
+    }
+    .col-panel .btn-pause {
+      border-color: #5a4a2a;
+      color: var(--gold);
+    }
+    .col-panel .btn-pause:hover:not(:disabled) {
+      background: #3a3020;
+      color: #fff;
+      border-color: var(--gold);
+    }
+
+    .col-panel .mixer-group {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-left: auto;
+    }
+
+    .col-panel .mixer-label {
+      font-size: 0.6em;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .col-panel .mixer-value {
+      color: var(--accent-bright);
+      font-size: 0.7em;
+      min-width: 24px;
+      text-align: right;
+    }
+
+    .col-panel input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 50px;
+      height: 5px;
+      background: var(--stone);
+      border: none;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .col-panel input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 12px;
+      height: 12px;
+      background: var(--accent);
+      border: 1px solid var(--accent-bright);
+      border-radius: 0;
+      cursor: pointer;
+    }
+
+    .col-panel input[type="range"]::-moz-range-thumb {
+      width: 12px;
+      height: 12px;
+      background: var(--accent);
+      border: 1px solid var(--accent-bright);
+      border-radius: 0;
+      cursor: pointer;
+    }
+
+    .col-panel .round-badge {
+      font-family: 'VT323', monospace;
+      font-size: 0.55em;
+      color: var(--gold-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+    }
+
+    /* ===== GRID AREA ===== */
+    .grid-wrapper {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 0;
+      position: relative;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 1.5px;
+      background: var(--panel);
+      border: 1px solid var(--vein);
+      padding: 3px;
+      width: 100%;
+      aspect-ratio: 1;
+      position: relative;
+    }
+
+    /* ===== BOXES — stone trapdoors ===== */
+    .box {
+      aspect-ratio: 1;
+      background: var(--stone);
+      background-image: url('https://images.unsplash.com/photo-1698746396053-ce2807d855e3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400');
+      background-size: cover;
+      background-blend-mode: overlay;
+      border: 1px solid var(--stone-light);
+      border-top-color: #3d322a;
+      border-left-color: #3d322a;
+      border-bottom-color: #16120e;
+      border-right-color: #16120e;
+      cursor: default;
+      transition: background 0.12s, border-color 0.12s, color 0.12s;
+      position: relative;
+      user-select: none;
+    }
+
+    /* ===== FLIP ANIMATION ===== */
+    .box {
+      perspective: 600px;
+    }
+    .box .box-inner {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.2s ease;
+      transform-style: preserve-3d;
+    }
+    .box.flipped .box-inner {
+      transform: rotateY(180deg);
+    }
+    .box .box-front,
+    .box .box-back {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      color: inherit;
+    }
+    .box .box-front {
+      font-family: 'UnifrakturCook', 'Times New Roman', serif;
+      font-size: 1.1em;
+      font-weight: 700;
+      color: var(--gold);
+      text-shadow: 0 0 6px rgba(139, 115, 64, 0.4);
+    }
+    .box .box-back {
+      font-family: 'VT323', monospace;
+      font-size: 0.85em;
+      color: var(--text);
+      background-image: url('https://images.unsplash.com/photo-1639907087057-971905eeda58?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400');
+      background-size: cover;
+      background-blend-mode: overlay;
+      transform: rotateY(180deg);
+    }
+
+    .box.revealed {
+      background: #1a1410;
+      border-color: var(--stone-light);
+      color: var(--text);
+    }
+
+    .box.visited {
+      background: var(--fail);
+      border-color: #4a1818;
+      color: #7a4a4a;
+    }
+
+    .box.visited.prisoner-colored {
+      filter: saturate(0.5) brightness(1.15);
+    }
+
+    .box.current {
+      background: #2a0808;
+      border-color: var(--accent-bright);
+      color: var(--accent-bright);
+      box-shadow: 0 0 8px rgba(201, 42, 42, 0.5), inset 0 0 12px rgba(201, 42, 42, 0.1);
+      z-index: 2;
+      animation: current-pulse 0.5s ease-in-out infinite;
+    }
+
+    .box.current.flash-green {
+      background: var(--found);
+      border-color: var(--found-text);
+      color: var(--found-text);
+      box-shadow: 0 0 14px rgba(106, 170, 106, 0.6), inset 0 0 16px rgba(106, 170, 106, 0.15);
+      animation: current-found 0.4s ease-in-out;
+    }
+
+    @keyframes current-pulse {
+      0%, 100% { box-shadow: 0 0 4px var(--prisoner-glow); }
+      50% { box-shadow: 0 0 14px var(--prisoner-glow), 0 0 24px var(--prisoner-glow-dim); }
+    }
+
+    @keyframes current-found {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.12); }
+      100% { transform: scale(1); }
+    }
+
+    .box.found {
+      background: var(--found);
+      border-color: var(--found-text);
+      color: var(--found-text);
+      box-shadow: inset 0 0 6px rgba(106, 170, 106, 0.25);
+    }
+
+    .box.failed {
+      background: #1a0404;
+      border-color: var(--fail-bright);
+      color: #aa3030;
+      box-shadow: inset 0 0 8px rgba(106, 26, 26, 0.3);
+    }
+
+    /* ===== FOUND NAME — prisoner name under flipped box ===== */
+    .box .found-name {
+      position: absolute;
+      bottom: 1px;
+      left: 0;
+      right: 0;
+      font-size: 0.45em;
+      font-family: 'VT323', monospace;
+      color: var(--found-text);
+      text-align: center;
+      line-height: 1;
+      pointer-events: none;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* ===== PRISONER WALKER — animated marker ===== */
+    .prisoner-walker {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      z-index: 5;
+      pointer-events: none;
+      transition: left 0.12s ease, top 0.12s ease;
+      box-shadow: 0 0 10px currentColor, 0 0 20px currentColor;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 8px;
+      font-family: 'VT323', monospace;
+      color: #fff;
+      line-height: 1;
+      text-shadow: 0 0 4px #000;
+      opacity: 0;
+    }
+    .prisoner-walker.active {
+      opacity: 1;
+    }
+    .prisoner-walker.win {
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+    .prisoner-walker.fail {
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .prisoner-walker .walker-initials {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ===== PATH CONNECTION LINES ===== */
+    .path-lines {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 3;
+      overflow: visible;
+    }
+
+    /* ===== PATH STRIPE — telegram from the underworld ===== */
+    .path-stripe {
+      height: var(--path-h);
+      min-height: var(--path-h);
+      background: var(--panel);
+      border: 1px solid var(--vein);
+      padding: 4px 12px;
+      font-size: 0.8em;
+      font-family: 'VT323', monospace;
+      color: var(--text);
+      line-height: 1.5;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      white-space: nowrap;
+      position: relative;
+    }
+    .path-stripe::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
+    }
+
+    /* ===== TELEGRAM TICKER — idle message ===== */
+    .path-stripe.idle-ticker {
+      color: var(--gold-dim);
+      letter-spacing: 0.06em;
+    }
+    .path-stripe.idle-ticker::after {
+      content: '■';
+      animation: ticker-blink 1s step-end infinite;
+      margin-left: 6px;
+      color: var(--accent);
+    }
+    @keyframes ticker-blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    .path-stripe .found-text {
+      color: var(--found-text);
+      font-weight: bold;
+    }
+
+    .path-stripe .fail-text {
+      color: var(--accent-bright);
+      font-weight: bold;
+    }
+
+    .path-stripe .arrow {
+      color: var(--gold-dim);
+      margin: 0 2px;
+      font-size: 0.75em;
+    }
+
+    .path-stripe .step-marker {
+      font-weight: normal;
+    }
+
+    .pulse-name {
+      animation: name-pulse 0.9s ease-in-out infinite;
+    }
+
+    @keyframes name-pulse {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; text-shadow: 0 0 6px currentColor; }
+    }
+
+    /* "◈" rune marker before FOUND */
+    .rune-marker {
+      color: var(--accent);
+      font-size: 1em;
+      margin-right: 2px;
+      animation: rune-flash 0.3s ease-in-out 3;
+    }
+    @keyframes rune-flash {
+      0%, 100% { opacity: 1; text-shadow: 0 0 6px var(--accent); }
+      50% { opacity: 0.3; }
+    }
+
+    /* ===== GLOBAL CONTROLS ===== */
+    .global-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .global-controls .speed-group {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .global-controls .speed-group label {
+      font-size: 0.65em;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .global-controls .speed-group input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 60px;
+      height: 5px;
+      background: var(--stone);
+      border: none;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .global-controls .speed-group input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 12px;
+      height: 12px;
+      background: var(--accent);
+      border: 1px solid var(--accent-bright);
+      border-radius: 0;
+      cursor: pointer;
+    }
+
+    .global-controls .speed-group input[type="range"]::-moz-range-thumb {
+      width: 12px;
+      height: 12px;
+      background: var(--accent);
+      border: 1px solid var(--accent-bright);
+      border-radius: 0;
+      cursor: pointer;
+    }
+
+    .global-controls .speed-group .speed-value {
+      font-size: 0.7em;
+      color: var(--accent-bright);
+      min-width: 20px;
+      text-align: right;
+    }
+
+    .global-controls .btn-global {
+      font-family: 'VT323', monospace;
+      font-size: 0.7em;
+      padding: 4px 10px;
+      border: 1px solid var(--stone-light);
+      background: var(--stone);
+      color: var(--text);
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      transition: background 0.12s, border-color 0.12s, color 0.12s;
+    }
+
+    .global-controls .btn-global:hover:not(:disabled) {
+      background: var(--stone-light);
+      border-color: var(--text-dim);
+      color: #fff;
+    }
+
+    .global-controls .btn-global:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    .global-controls .btn-run-all {
+      border-color: var(--accent);
+      color: var(--accent-bright);
+    }
+    .global-controls .btn-run-all:hover:not(:disabled) {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent-bright);
+      box-shadow: 0 0 8px rgba(201, 42, 42, 0.4);
+    }
+    .global-controls .btn-pause-all {
+      border-color: #5a4a2a;
+      color: var(--gold);
+    }
+    .global-controls .btn-pause-all:hover:not(:disabled) {
+      background: #3a3020;
+      color: #fff;
+      border-color: var(--gold);
+    }
+
+    /* ===== COLUMN STATS — per-column bottom stats ===== */
+    .col-stats {
+      height: 34px;
+      min-height: 34px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--panel);
+      border: 1px solid var(--vein);
+      padding: 0 8px;
+      position: relative;
+    }
+    .col-stats::before {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: 20%;
+      right: 20%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
+    }
+
+    .col-stats .stat-item {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      white-space: nowrap;
+    }
+
+    .col-stats .stat-label {
+      font-size: 0.6em;
+      color: var(--gold-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .col-stats .stat-value {
+      font-size: 0.7em;
+      color: var(--text);
+      font-weight: bold;
+      min-width: 14px;
+    }
+
+    .col-stats .stat-value.state-idle { color: var(--text-dim); }
+    .col-stats .stat-value.state-running { color: var(--gold); }
+    .col-stats .stat-value.state-win { color: var(--found-text); }
+    .col-stats .stat-value.state-lose { color: var(--accent-bright); }
+
+    /* ===== COMPARISON BAR ===== */
+    .comparison-bar {
+      height: 34px;
+      min-height: 34px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: var(--panel);
+      border: 1px solid var(--vein);
+      padding: 0 12px;
+      position: relative;
+    }
+    .comparison-bar::before {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: 20%;
+      right: 20%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
+    }
+
+    .comparison-bar .cmp-label {
+      font-family: 'UnifrakturCook', 'Times New Roman', serif;
+      font-size: 0.65em;
+      color: var(--accent);
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+    }
+
+    .comparison-bar .cmp-item {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      white-space: nowrap;
+    }
+
+    .comparison-bar .cmp-item .cmp-key {
+      font-size: 0.6em;
+      color: var(--gold-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .comparison-bar .cmp-item .cmp-val-a {
+      font-size: 0.7em;
+      color: var(--accent-bright);
+      font-weight: bold;
+    }
+
+    .comparison-bar .cmp-item .cmp-delim {
+      font-size: 0.5em;
+      color: var(--text-dim);
+      margin: 0 1px;
+    }
+
+    .comparison-bar .cmp-item .cmp-val-b {
+      font-size: 0.7em;
+      color: var(--found-text);
+      font-weight: bold;
+    }
+
+    .comparison-bar .cmp-item .cmp-diff {
+      font-size: 0.6em;
+      color: var(--gold);
+    }
+
+    .comparison-bar .cmp-item .cmp-diff.diff-pos { color: var(--found-text); }
+    .comparison-bar .cmp-item .cmp-diff.diff-neg { color: var(--accent-bright); }
+
+    /* ===== WIN/LOSE OVERLAY ===== */
+    .overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(5, 3, 2, 0.8);
+      z-index: 10;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.35s ease;
+    }
+
+    .overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .overlay-text {
+      font-family: 'UnifrakturCook', 'Times New Roman', serif;
+      font-size: 2.8em;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      line-height: 1.1;
+      animation: overlay-fade 0.6s ease-out;
+      position: relative;
+    }
+    .overlay-text::before,
+    .overlay-text::after {
+      content: '◈';
+      display: block;
+      font-size: 0.3em;
+      text-align: center;
+      margin: 0 auto;
+      letter-spacing: 0;
+    }
+
+    .overlay-text.win {
+      color: var(--found-text);
+      text-shadow: 0 0 20px rgba(106, 170, 106, 0.6), 0 0 40px rgba(106, 170, 106, 0.3);
+    }
+
+    .overlay-text.lose {
+      color: var(--accent-bright);
+      text-shadow: 0 0 20px rgba(201, 42, 42, 0.7), 0 0 40px rgba(201, 42, 42, 0.35);
+      animation: overlay-fade 0.6s ease-out, lose-pulse 1.2s ease-in-out 0.6s infinite;
+    }
+    .overlay-text.lose::after {
+      content: '';
+      display: block;
+      width: 60%;
+      height: 1px;
+      margin: 8px auto 0;
+      background: linear-gradient(90deg, transparent, var(--accent-bright), transparent);
+      box-shadow: 0 0 6px rgba(201, 42, 42, 0.5);
+    }
+    .overlay-text.lose::before {
+      content: '';
+      display: block;
+      width: 60%;
+      height: 1px;
+      margin: 0 auto 8px;
+      background: linear-gradient(90deg, transparent, var(--accent-bright), transparent);
+      box-shadow: 0 0 6px rgba(201, 42, 42, 0.5);
+    }
+
+    @keyframes overlay-fade {
+      0% { opacity: 0; transform: scale(0.85); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes lose-pulse {
+      0%, 100% { text-shadow: 0 0 20px rgba(201, 42, 42, 0.7), 0 0 40px rgba(201, 42, 42, 0.35); }
+      50% { text-shadow: 0 0 30px rgba(201, 42, 42, 0.9), 0 0 60px rgba(201, 42, 42, 0.5), 0 0 80px rgba(201, 42, 42, 0.2); }
+    }
+
+    /* ===== SCROLLBAR ===== */
+    ::-webkit-scrollbar {
+      width: 3px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--stone);
+      border: none;
+    }
+
+    /* ===== STATES (removed mugshot, added dual) ===== */
+
+    /* ===== AMBIENT VIGNETTE ===== */
+    #app::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 999;
+      background: radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.5) 100%);
+    }
+
+    /* reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- HEADER ROW — no mugshot, global controls -->
+    <div class="header-row">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <h1>The Tomb of 100 Dead Men</h1>
+        <span class="subtitle">Ritual of the Boxes</span>
+      </div>
+      <div class="global-controls">
+        <button class="btn-global btn-run-all" id="btn-run-all">▶ Run All</button>
+        <button class="btn-global btn-pause-all" id="btn-pause-all" disabled>⏸ Pause All</button>
+        <button class="btn-global" id="btn-reset-all">↺ Reset</button>
+        <div class="speed-group">
+          <label for="speed-slider">Speed</label>
+          <input type="range" id="speed-slider" min="10" max="300" value="50">
+          <span class="speed-value" id="speed-value">50</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- DUAL AREA — two columns -->
+    <div class="dual-area">
+      <!-- COLUMN A -->
+      <div class="column" id="column-a">
+        <div class="col-panel" id="panel-a">
+          <span class="col-label">◈ A</span>
+          <div class="mugshot-badge-sm" id="mugshot-badge-a">
+            <canvas id="mugshot-a" width="32" height="32"></canvas>
+          </div>
+          <select id="strategy-a"></select>
+          <div id="mixers-a" style="display:flex;align-items:center;gap:4px;margin-left:auto;"></div>
+          <div class="btn-row" style="margin-left:4px;">
+            <button class="btn btn-run" id="btn-run-a">▶</button>
+            <button class="btn btn-pause" id="btn-pause-a" disabled>⏸</button>
+            <button class="btn" id="btn-reset-a">↺</button>
+          </div>
+          <span class="round-badge" id="round-a">R:0</span>
+        </div>
+        <div class="grid-wrapper" id="grid-wrapper-a">
+          <div class="grid" id="box-grid-a"></div>
+          <svg class="path-lines" id="path-lines-a" preserveAspectRatio="xMidYMid meet"></svg>
+          <div class="prisoner-walker" id="walker-a"><span class="walker-initials"></span></div>
+          <div class="overlay" id="overlay-a">
+            <div class="overlay-text" id="overlay-text-a"></div>
+          </div>
+        </div>
+        <div class="path-stripe idle-ticker" id="path-stripe-a">Awaiting the warden's decree</div>
+        <div class="col-stats" id="stats-a">
+          <div class="stat-item"><span class="stat-label">Wins</span><span class="stat-value" id="stat-wins-a">0</span></div>
+          <div class="stat-item"><span class="stat-label">Losses</span><span class="stat-value" id="stat-losses-a">0</span></div>
+          <div class="stat-item"><span class="stat-label">Rate</span><span class="stat-value" id="stat-rate-a">0%</span></div>
+          <div class="stat-item"><span class="stat-label">Strk</span><span class="stat-value" id="stat-streak-a">0</span></div>
+          <div class="stat-item" style="margin-left:auto;"><span class="stat-label">State</span><span class="stat-value state-idle" id="stat-state-a">IDLE</span></div>
+        </div>
+      </div>
+
+      <!-- COLUMN B -->
+      <div class="column" id="column-b">
+        <div class="col-panel" id="panel-b">
+          <span class="col-label">◈ B</span>
+          <div class="mugshot-badge-sm" id="mugshot-badge-b">
+            <canvas id="mugshot-b" width="32" height="32"></canvas>
+          </div>
+          <select id="strategy-b"></select>
+          <div id="mixers-b" style="display:flex;align-items:center;gap:4px;margin-left:auto;"></div>
+          <div class="btn-row" style="margin-left:4px;">
+            <button class="btn btn-run" id="btn-run-b">▶</button>
+            <button class="btn btn-pause" id="btn-pause-b" disabled>⏸</button>
+            <button class="btn" id="btn-reset-b">↺</button>
+          </div>
+          <span class="round-badge" id="round-b">R:0</span>
+        </div>
+        <div class="grid-wrapper" id="grid-wrapper-b">
+          <div class="grid" id="box-grid-b"></div>
+          <svg class="path-lines" id="path-lines-b" preserveAspectRatio="xMidYMid meet"></svg>
+          <div class="prisoner-walker" id="walker-b"><span class="walker-initials"></span></div>
+          <div class="overlay" id="overlay-b">
+            <div class="overlay-text" id="overlay-text-b"></div>
+          </div>
+        </div>
+        <div class="path-stripe idle-ticker" id="path-stripe-b">Awaiting the warden's decree</div>
+        <div class="col-stats" id="stats-b">
+          <div class="stat-item"><span class="stat-label">Wins</span><span class="stat-value" id="stat-wins-b">0</span></div>
+          <div class="stat-item"><span class="stat-label">Losses</span><span class="stat-value" id="stat-losses-b">0</span></div>
+          <div class="stat-item"><span class="stat-label">Rate</span><span class="stat-value" id="stat-rate-b">0%</span></div>
+          <div class="stat-item"><span class="stat-label">Strk</span><span class="stat-value" id="stat-streak-b">0</span></div>
+          <div class="stat-item" style="margin-left:auto;"><span class="stat-label">State</span><span class="stat-value state-idle" id="stat-state-b">IDLE</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COMPARISON BAR -->
+    <div class="comparison-bar" id="comparison-bar">
+      <span class="cmp-label">◈ Verdict</span>
+      <div class="cmp-item"><span class="cmp-key">Win Rate</span><span class="cmp-val-a" id="cmp-rate-a">0%</span><span class="cmp-delim">|</span><span class="cmp-val-b" id="cmp-rate-b">0%</span><span class="cmp-diff" id="cmp-rate-diff"></span></div>
+      <div class="cmp-item"><span class="cmp-key">Avg Steps</span><span class="cmp-val-a" id="cmp-steps-a">—</span><span class="cmp-delim">|</span><span class="cmp-val-b" id="cmp-steps-b">—</span></div>
+      <div class="cmp-item"><span class="cmp-key">Best Streak</span><span class="cmp-val-a" id="cmp-streak-a">0</span><span class="cmp-delim">|</span><span class="cmp-val-b" id="cmp-streak-b">0</span></div>
+      <span style="margin-left:auto;font-size:0.45em;color:var(--text-dim);opacity:0.4;white-space:nowrap;">Bg: Alan Pope. Metal: O.Kilpi. Stone: W.Gunkel. /Unsplash</span>
+    </div>
+  </div>
+
+  <!-- ===== PRISONER DB & AVATAR GENERATION ===== -->
+  <script>
+  /* ============================================================
+     PRISONER IDENTITY — Name pool, pixel avatar generation
+     ============================================================ */
+
+  const FIRST_NAMES = [
+    'Ivan','Dmitri','Alexei','Nikolai','Vladimir','Boris','Sergei','Mikhail','Pavel','Yuri',
+    'Andrei','Konstantin','Oleg','Maxim','Viktor','Grigori','Anton','Valentin','Roman','Eduard',
+    'Semyon','Ignat','Arkadi','Leonid','Vasili','Fyodor','Gennadi','Stepan','Yaroslav','Taras',
+    'Bogdan','Zakhar','Artem','Danil','Makar','Timur','Ruslan','Marat','David','Daniel'
+  ];
+
+  const LAST_NAMES = [
+    'Volkov','Morozov','Kozlov','Petrov','Sokolov','Romanov','Fedorov','Ivanov','Smirnov','Kuznetsov',
+    'Popov','Lebedev','Novikov','Zaitsev','Baranov','Sorokin','Belyaev','Titov','Gromov','Alexandrov',
+    'Chernov','Orlov','Yakovlev','Vorobiev','Vinogradov','Karpov','Mironov','Lavrov','Timofeev','Matveev',
+    'Scheglov','Astakhov','Zolotov','Krutov','Serebrov','Belov','Isaev','Medvedev','Voropaev','Sudakov'
+  ];
+
+  // Earth/blood/slate color gamut for prisoner unique colors
+  function prisonerColor(index) {
+    const hue = ((index * 137.508) % 360 + 360) % 360; // golden angle distribution
+    // Clamp to earth/blood/slate range: 0-30 (reds), 200-280 (blues), 340-360 (purples)
+    let h = hue;
+    if (h > 30 && h < 200) h = ((h - 30) / 170) * 60 + 200; // squeeze into blue range
+    if (h > 280 && h < 340) h = ((h - 280) / 60) * 20 + 340; // squeeze into purple range
+    return `hsl(${h}, 45%, 45%)`;
+  }
+
+  function seededRandom(seed) {
+    let s = seed;
+    return function() {
+      s = (s * 16807 + 0) % 2147483647;
+      return (s - 1) / 2147483646;
+    };
+  }
+
+  function generatePixelAvatar(seed, color) {
+    const size = 30;
+    const scale = 4;
+    const canvas = document.createElement('canvas');
+    canvas.width = size * scale;
+    canvas.height = size * scale;
+    const ctx = canvas.getContext('2d');
+
+    // Draw at pixel resolution then scale up
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = size;
+    tempCanvas.height = size;
+    const tctx = tempCanvas.getContext('2d');
+
+    const rng = seededRandom(seed);
+
+    // Skin tone (dark/morbid palette)
+    const skinTones = [
+      '#8B7355','#7A6B4E','#6B5B45','#5C4D3B','#4D4032',
+      '#9E7E5C','#8E7050','#7E6244','#6E553A','#A08060'
+    ];
+    const skin = skinTones[Math.floor(rng() * skinTones.length)];
+
+    // Hair color
+    const hairColors = ['#1a1a1a','#2a2a2a','#3a3028','#4a3a28','#222222','#332211','#2a1a0a','#444444'];
+    const hair = hairColors[Math.floor(rng() * hairColors.length)];
+
+    // Hair style (bald, short, receding, mohawk, messy)
+    const hairStyle = Math.floor(rng() * 5);
+
+    // Clear
+    tctx.fillStyle = 'transparent';
+    tctx.clearRect(0, 0, size, size);
+
+    // Head shape (oval)
+    tctx.fillStyle = skin;
+    tctx.beginPath();
+    tctx.ellipse(15, 17, 8, 11, 0, 0, Math.PI * 2);
+    tctx.fill();
+
+    // Hair
+    tctx.fillStyle = hair;
+    if (hairStyle === 0) {
+      // Bald — nothing
+    } else if (hairStyle === 1) {
+      // Short buzz
+      tctx.fillRect(7, 4, 16, 6);
+      tctx.fillRect(6, 6, 18, 4);
+    } else if (hairStyle === 2) {
+      // Receding
+      tctx.fillRect(8, 4, 14, 5);
+      tctx.fillRect(7, 6, 6, 3);
+      tctx.fillRect(17, 6, 6, 3);
+    } else if (hairStyle === 3) {
+      // Mohawk
+      tctx.fillRect(12, 2, 6, 8);
+      tctx.fillRect(11, 5, 8, 4);
+    } else if (hairStyle === 4) {
+      // Messy
+      tctx.fillRect(6, 4, 18, 5);
+      tctx.fillRect(5, 6, 5, 3);
+      tctx.fillRect(20, 6, 5, 3);
+      tctx.fillRect(10, 3, 10, 4);
+    }
+
+    // Eyes
+    tctx.fillStyle = '#222';
+    const eyeL = 10 + (rng() > 0.5 ? 1 : 0);
+    const eyeR = 18 + (rng() > 0.5 ? 1 : 0);
+    const eyeY = 16 + (rng() > 0.5 ? 1 : 0);
+    tctx.fillRect(eyeL, eyeY, 2, 2);
+    tctx.fillRect(eyeR, eyeY, 2, 2);
+
+    // Eyebrows
+    tctx.fillStyle = hair;
+    tctx.fillRect(eyeL - 1, eyeY - 3, 4, 1);
+    tctx.fillRect(eyeR - 1, eyeY - 3, 4, 1);
+
+    // Nose
+    tctx.fillStyle = skin.replace('#', '#7'); // darker skin
+    tctx.fillRect(14, 19, 2, 3);
+
+    // Mouth
+    tctx.fillStyle = '#442222';
+    const mouthOpen = rng() > 0.6;
+    if (mouthOpen) {
+      tctx.fillRect(11, 23, 8, 2);
+    } else {
+      tctx.fillRect(12, 23, 6, 1);
+    }
+
+    // Prison uniform collar
+    tctx.fillStyle = color;
+    tctx.fillRect(8, 26, 14, 4);
+    tctx.fillStyle = '#222';
+    tctx.fillRect(13, 26, 4, 4);
+
+    // Scale up
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(tempCanvas, 0, 0, size * scale, size * scale);
+
+    return canvas.toDataURL();
+  }
+
+  // Build prisoner database
+  let prisoners = [];
+
+  function initPrisoners() {
+    prisoners = [];
+    const shuffledFirst = [...FIRST_NAMES];
+    const shuffledLast = [...LAST_NAMES];
+    // Fisher-Yates shuffle
+    for (let i = shuffledFirst.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffledFirst[i], shuffledFirst[j]] = [shuffledFirst[j], shuffledFirst[i]];
+    }
+    for (let i = shuffledLast.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffledLast[i], shuffledLast[j]] = [shuffledLast[j], shuffledLast[i]];
+    }
+
+    // Make 100 unique names — shuffle both pools and zip
+    for (let i = 0; i < 100; i++) {
+      const firstName = shuffledFirst[i % shuffledFirst.length];
+      const lastName = shuffledLast[i % shuffledLast.length];
+      const id = i;
+      const color = prisonerColor(i);
+      const avatar = generatePixelAvatar(i * 777 + 13, color);
+      prisoners.push({ id, firstName, lastName, color, avatar });
+    }
+  }
+  </script>
+
+  <!-- MODEL — state, pure functions, strategy engine -->
+  <script>
+  /* ============================================================
+     MODEL — State, Permutations, Strategy Engine (Dual)
+     ============================================================ */
+
+  // ===== STATE FACTORY =====
+  function createState(label) {
+    return {
+      label: label,
+      boxes: new Array(100).fill(null),
+      revealed: new Array(100).fill(false),
+      round: 0,
+      currentPrisoner: 0,
+      prisonerStep: 0,
+      roundState: 'IDLE',
+      prisonerPath: [],
+      strategy: 'loop',
+      config: { discipline: 1.0 },
+      totalWins: 0,
+      totalLosses: 0,
+      maxStreak: 0,
+      currentStreak: 0,
+      history: [],
+      totalSteps: 0,
+      running: false,
+      speed: 50,
+      _sacrificeMode: {},
+    };
+  }
+
+  const stateA = createState('A');
+  const stateB = createState('B');
+
+  // Shared permutation state
+  let sharedPerm = null;
+  let totalSimulationRounds = 0;
+
+  // ===== PERMUTATION GENERATION =====
+  function generatePermutation() {
+    const arr = Array.from({ length: 100 }, (_, i) => i);
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  // ===== STRATEGY ENGINE (parameterized by state) =====
+  function getUnexplored(s) {
+    const unexplored = [];
+    for (let i = 0; i < 100; i++) {
+      if (!s.revealed[i]) unexplored.push(i);
+    }
+    return unexplored;
+  }
+
+  function randomUnexplored(s) {
+    const u = getUnexplored(s);
+    if (u.length === 0) return null;
+    return u[Math.floor(Math.random() * u.length)];
+  }
+
+  const Strategies = {
+    loop: {
+      name: 'The Loop Protocol',
+      mixers: { discipline: { min: 0, max: 1, default: 1.0, step: 0.05 } },
+      decide(prisonerId, currentBox, config, stepCount, s) {
+        const discipline = config.discipline;
+        if (Math.random() < discipline) {
+          if (stepCount === 0) return prisonerId;
+          return currentBox;
+        }
+        return randomUnexplored(s);
+      }
+    },
+    panic: {
+      name: 'Blind Panic',
+      mixers: { memory: { min: 0, max: 1, default: 0.5, step: 0.05 } },
+      decide(prisonerId, currentBox, config, stepCount, s) {
+        const memory = config.memory;
+        if (memory >= 0.8) return randomUnexplored(s);
+        if (memory <= 0.2) return Math.floor(Math.random() * 100);
+        if (Math.random() < memory) return randomUnexplored(s);
+        return Math.floor(Math.random() * 100);
+      }
+    },
+    hybrid: {
+      name: 'Hybrid Ritual',
+      mixers: {
+        faith: { min: 1, max: 50, default: 25, step: 1 },
+        panicThreshold: { min: 1, max: 50, default: 10, step: 1 }
+      },
+      decide(prisonerId, currentBox, config, stepCount, s) {
+        if (stepCount > config.faith || stepCount > config.panicThreshold) {
+          return randomUnexplored(s);
+        }
+        if (stepCount === 0) return prisonerId;
+        return currentBox;
+      }
+    },
+    sacrifice: {
+      name: "Lucky Sacrifice",
+      mixers: { obedienceRate: { min: 0, max: 1, default: 0.5, step: 0.05 } },
+      decide(prisonerId, currentBox, config, stepCount, s) {
+        if (stepCount === 0) {
+          if (!s._sacrificeMode) s._sacrificeMode = {};
+          s._sacrificeMode[prisonerId] = Math.random() < config.obedienceRate ? 'loop' : 'panic';
+        }
+        if (s._sacrificeMode && s._sacrificeMode[prisonerId] === 'loop') {
+          if (stepCount === 0) return prisonerId;
+          return currentBox;
+        }
+        return randomUnexplored(s);
+      }
+    },
+    mercy: {
+      name: "Warden's Mercy",
+      mixers: {
+        mercyChance: { min: 0, max: 1, default: 0.1, step: 0.05 },
+        extraBoxes: { min: 1, max: 50, default: 10, step: 1 }
+      },
+      decide(prisonerId, currentBox, config, stepCount, s) {
+        if (stepCount === 0) return prisonerId;
+        if (stepCount >= 50) {
+          if (Math.random() < config.mercyChance) return randomUnexplored(s);
+          return null;
+        }
+        return currentBox;
+      }
+    }
+  };
+
+  function applyStrategyDefaults(s) {
+    const strat = Strategies[s.strategy];
+    s.config = {};
+    for (const [key, mixer] of Object.entries(strat.mixers)) {
+      s.config[key] = mixer.default;
+    }
+  }
+
+  // ===== SIMULATION LOOP (parameterized by state + label) =====
+  let simulationAborted = false;
+
+  function sleep(ms) {
+    return new Promise(function(resolve) {
+      setTimeout(resolve, ms);
+    });
+  }
+
+  // Speed slider is shared — both use stateA.speed. We keep them in sync.
+  // The global speed slider writes to stateA.speed and stateB.speed.
+
+  async function prisonerRun(prisonerId, s) {
+    s.currentPrisoner = prisonerId;
+    s.prisonerStep = 0;
+    s.prisonerPath = [];
+
+    const strategy = Strategies[s.strategy];
+    const maxSteps = 50;
+    let effectiveMax = maxSteps;
+    let currentBox = strategy.decide(prisonerId, null, s.config, 0, s);
+
+    while (currentBox !== null && currentBox !== undefined) {
+      if (s.prisonerStep >= effectiveMax) {
+        if (s.strategy === 'mercy') {
+          currentBox = strategy.decide(prisonerId, currentBox, s.config, s.prisonerStep, s);
+          if (currentBox === null) break;
+          effectiveMax += s.config.extraBoxes || 10;
+          continue;
+        } else {
+          break;
+        }
+      }
+
+      if (!s.running || simulationAborted) return false;
+
+      s.revealed[currentBox] = true;
+      s.prisonerPath.push(currentBox);
+      s.totalSteps++;
+      const foundPrisoner = s.boxes[currentBox];
+      s.prisonerStep++;
+
+      renderAll();
+
+      // Allow walker CSS transition to play
+      await sleep(Math.max(Math.min(s.speed * 0.3, 30), 8));
+
+      if (foundPrisoner === prisonerId) {
+        // Close all boxes in this path except the winning one
+        for (let j = 0; j < s.prisonerPath.length - 1; j++) {
+          s.revealed[s.prisonerPath[j]] = false;
+        }
+        return true;
+      }
+
+      await sleep(s.speed);
+      // Если коробка выигрышная для другого (содержит свой номер) — не идти в тупик
+      const nextTarget = s.boxes[currentBox];
+      if (s.boxes[nextTarget] === nextTarget && nextTarget !== prisonerId) {
+        // Выбрать случайную неоткрытую коробку; если все открыты — любой невыигрышный
+        const explored = getUnexplored(s);
+        if (explored.length > 0) {
+          currentBox = explored[Math.floor(Math.random() * explored.length)];
+        } else {
+          // Все коробки открыты, но не все нашли свой номер — ищем любую не выигрышную
+          const nonWinning = [];
+          for (let j = 0; j < 100; j++) {
+            if (s.boxes[j] !== j) nonWinning.push(j);
+          }
+          currentBox = nonWinning.length > 0
+            ? nonWinning[Math.floor(Math.random() * nonWinning.length)]
+            : null;
+        }
+      } else {
+        currentBox = strategy.decide(prisonerId, nextTarget, s.config, s.prisonerStep, s);
+      }
+    }
+
+    return false;
+  }
+
+  async function runRound(s) {
+    if (simulationAborted) return;
+
+    // Reset revealed for new round
+    for (let i = 0; i < 100; i++) {
+      s.revealed[i] = false;
+    }
+
+    s.roundState = 'RUNNING';
+    s.currentPrisoner = 0;
+    s.prisonerStep = 0;
+    s.prisonerPath = [];
+
+    s._sacrificeMode = {};
+
+    renderAll();
+    await sleep(Math.max(s.speed * 2, 200));
+
+    let allFound = true;
+    for (let p = 0; p < 100; p++) {
+      if (!s.running || simulationAborted) return;
+
+      const found = await prisonerRun(p, s);
+      if (!found) {
+        allFound = false;
+        break;
+      }
+      await sleep(Math.min(s.speed, 30));
+    }
+
+    if (simulationAborted) return;
+
+    if (allFound) {
+      s.roundState = 'WIN';
+      s.totalWins++;
+      s.currentStreak++;
+      if (s.currentStreak > s.maxStreak) s.maxStreak = s.currentStreak;
+      s.history.push('WIN');
+    } else {
+      s.roundState = 'LOSE';
+      s.totalLosses++;
+      s.currentStreak = 0;
+      s.history.push('LOSE');
+    }
+    renderAll();
+  }
+
+  async function runLoop(s) {
+    simulationAborted = false;
+    s.running = true;
+    updateButtonStates();
+    renderAll();
+
+    while (s.running && !simulationAborted) {
+      s.round++;
+      await runRound(s);
+      if (!s.running || simulationAborted) break;
+      // Wait before next round (no extra renderAll — already done in runRound)
+      await sleep(2000);
+      if (!s.running || simulationAborted) break;
+    }
+
+    s.running = false;
+    updateButtonStates();
+    renderAll();
+  }
+  </script>
+
+  <!-- RENDERER — DOM rendering for dual columns -->
+  <script>
+  /* ============================================================
+     RENDERER — Dual column: grid, path stripe, stats, overlay
+     ============================================================ */
+
+  let boxElementsA = null;
+  let boxElementsB = null;
+
+  function ensureBoxElements(gridId, cache) {
+    if (cache) return cache;
+    const grid = document.getElementById(gridId);
+    grid.innerHTML = '';
+    const els = [];
+    for (let i = 0; i < 100; i++) {
+      const div = document.createElement('div');
+      div.className = 'box';
+      div.dataset.index = i;
+
+      const inner = document.createElement('div');
+      inner.className = 'box-inner';
+
+      const front = document.createElement('div');
+      front.className = 'box-front';
+      front.textContent = String(i + 1).padStart(2, '0');
+
+      const back = document.createElement('div');
+      back.className = 'box-back';
+      back.textContent = '';
+
+      inner.appendChild(front);
+      inner.appendChild(back);
+      div.appendChild(inner);
+      grid.appendChild(div);
+      els.push(div);
+    }
+    return els;
+  }
+
+  // ===== GENERIC BOX GRID RENDERER =====
+  function renderBoxGrid(s, boxElements, gridId, linesId) {
+    if (!boxElements) return;
+
+    // LOSE reveal: all boxes reset to closed state visually (model data preserved)
+    if (s.roundState === 'LOSE') {
+      for (let i = 0; i < 100; i++) {
+        const el = boxElements[i];
+        if (!el) continue;
+        el.className = 'box failed';
+        const front = el.querySelector('.box-front');
+        const back = el.querySelector('.box-back');
+        el.classList.remove('flipped', 'revealed');
+        if (front) front.textContent = String(i + 1).padStart(2, '0');
+        if (back) back.textContent = '';
+        // Remove found names
+        const oldName = el.querySelector('.found-name');
+        if (oldName) oldName.remove();
+      }
+      // Clear SVG path lines
+      const svgEl = document.getElementById(linesId);
+      if (svgEl) svgEl.innerHTML = '';
+      return;
+    }
+
+    const current = s.prisonerPath.length > 0
+      ? s.prisonerPath[s.prisonerPath.length - 1]
+      : -1;
+    const pathSet = new Set(s.prisonerPath);
+    const pid = s.currentPrisoner;
+    const p = prisoners[pid];
+    const pColor = p ? p.color : null;
+
+    for (let i = 0; i < 100; i++) {
+      const el = boxElements[i];
+      if (!el) continue;
+      el.className = 'box';
+
+      const front = el.querySelector('.box-front');
+      const back = el.querySelector('.box-back');
+
+      if (s.revealed[i]) {
+        el.classList.add('revealed', 'flipped');
+        if (back) back.textContent = s.boxes[i];
+        if (front) front.textContent = '';
+      } else {
+        el.classList.remove('flipped', 'revealed');
+        if (front) front.textContent = String(i + 1).padStart(2, '0');
+        if (back) back.textContent = '';
+      }
+
+      const stepIdx = s.prisonerPath.indexOf(i);
+      if (stepIdx !== -1 && i !== current) {
+        el.classList.add('visited');
+        if (pColor) {
+          el.style.borderColor = pColor;
+          el.style.background = pColor + '33';
+          el.style.color = pColor;
+        }
+        if (front && s.revealed[i]) front.textContent = '';
+      } else if (stepIdx === -1 && !s.revealed[i]) {
+        el.style.borderColor = '';
+        el.style.background = '';
+        el.style.color = '';
+      }
+
+      if (i === current && s.roundState === 'RUNNING') {
+        el.classList.add('current');
+        if (pColor) {
+          el.style.setProperty('--prisoner-glow', pColor);
+          el.style.setProperty('--prisoner-glow-dim', pColor + '44');
+          el.style.borderColor = pColor;
+          el.style.background = pColor + '22';
+          el.style.color = pColor;
+        }
+        const prisonerVal = s.boxes[current];
+        if (prisonerVal === s.currentPrisoner) {
+          el.classList.add('flash-green');
+          el.style.borderColor = '';
+          el.style.background = '';
+          el.style.color = '';
+        }
+      }
+
+      if (s.roundState === 'LOSE' && pathSet.has(i) && i === current) {
+        el.classList.add('failed');
+        el.style.borderColor = '';
+        el.style.background = '';
+        el.style.color = '';
+      }
+
+      // Found name: when box contains the prisoner's own number, show their name
+      const ownerId = s.boxes[i];
+      const isOwnBox = s.revealed[i] && ownerId === i && prisoners[ownerId];
+      const oldName = el.querySelector('.found-name');
+      if (isOwnBox) {
+        if (!oldName) {
+          const nameEl = document.createElement('div');
+          nameEl.className = 'found-name';
+          el.appendChild(nameEl);
+        }
+        el.querySelector('.found-name').textContent = prisoners[ownerId].firstName + ' ' + prisoners[ownerId].lastName;
+      } else if (oldName) {
+        oldName.remove();
+      }
+    }
+  }
+
+  // ===== GENERIC PATH STRIPE =====
+  function renderPathStripe(s, stripeId) {
+    const el = document.getElementById(stripeId);
+    if (!el) return;
+    if (s.roundState === 'IDLE' && s.prisonerPath.length === 0) {
+      el.innerHTML = "Awaiting the warden's decree";
+      el.classList.add('idle-ticker');
+      return;
+    }
+    el.classList.remove('idle-ticker');
+    if (s.prisonerPath.length === 0) {
+      const p = prisoners[s.currentPrisoner];
+      const name = p ? p.lastName + ', ' + p.firstName : 'Prisoner #' + s.currentPrisoner;
+      el.innerHTML = '<span style="color:' + (p ? p.color : '#888') + ';">' + name + '</span>' + ' — preparing...';
+      return;
+    }
+
+    const path = s.prisonerPath;
+    const prisonerId = s.currentPrisoner;
+    const p = prisoners[prisonerId];
+    const pColor = p ? p.color : '#888';
+
+    const showFrom = Math.max(0, path.length - 8);
+    let html = '';
+
+    const name = p ? p.lastName + ', ' + p.firstName : '#' + prisonerId;
+    const pulseClass = s.roundState === 'RUNNING' ? ' class="pulse-name"' : '';
+    html += '<span style="color:' + pColor + ';"' + pulseClass + '>' + name + '</span> ';
+
+    for (let i = showFrom; i < path.length; i++) {
+      const boxIdx = path[i];
+      const foundVal = s.boxes[boxIdx];
+      const isFound = foundVal === prisonerId;
+      const isLast = i === path.length - 1;
+
+      html += '<span class="arrow">→</span> ';
+
+      if (isFound && isLast) {
+        html += '<span class="step-marker">box#' + String(boxIdx).padStart(2, '0') + ' [' + foundVal + ']</span>';
+        html += ' <span class="rune-marker">◈</span><span class="found-text">FOUND</span>';
+      } else if (isLast && s.roundState === 'LOSE') {
+        html += '<span class="step-marker">box#' + String(boxIdx).padStart(2, '0') + ' [' + foundVal + ']</span>';
+        html += ' <span class="fail-text">✗ FAIL</span>';
+      } else if (isLast) {
+        html += '<span class="step-marker">box#' + String(boxIdx).padStart(2, '0') + ' [' + foundVal + ']</span>';
+      } else {
+        html += '<span class="step-marker">box#' + String(boxIdx).padStart(2, '0') + '</span>';
+      }
+    }
+
+    if (s.roundState === 'WIN') {
+      html += ' — <span class="found-text">◈ ALL 100 SURVIVED ◈</span>';
+    } else if (s.roundState === 'LOSE') {
+      html += ' — <span class="fail-text">✖ YOU DIED</span>';
+    }
+
+    el.innerHTML = html;
+  }
+
+  // ===== GENERIC PATH LINES (SVG) =====
+  function renderPathLines(s, linesId, gridId) {
+    const svg = document.getElementById(linesId);
+    if (!svg) return;
+    if (s.prisonerPath.length < 2 || s.roundState === 'IDLE') {
+      svg.innerHTML = '';
+      return;
+    }
+
+    const grid = document.getElementById(gridId);
+    if (!grid) return;
+    const gridRect = grid.getBoundingClientRect();
+    const svgRect = svg.getBoundingClientRect();
+    const cellW = gridRect.width / 10;
+    const cellH = gridRect.height / 10;
+
+    const pid = s.currentPrisoner;
+    const p = prisoners[pid];
+    const pColor = p ? p.color : '#666';
+    const isRunning = s.roundState === 'RUNNING';
+
+    const showFrom = Math.max(0, s.prisonerPath.length - 9);
+    const recentPath = s.prisonerPath.slice(showFrom);
+
+    const relX = gridRect.left - svgRect.left;
+    const relY = gridRect.top - svgRect.top;
+
+    let lines = '';
+    for (let i = 1; i < recentPath.length; i++) {
+      const fromIdx = recentPath[i - 1];
+      const toIdx = recentPath[i];
+      const fromCol = fromIdx % 10;
+      const fromRow = Math.floor(fromIdx / 10);
+      const toCol = toIdx % 10;
+      const toRow = Math.floor(toIdx / 10);
+
+      const x1 = relX + fromCol * cellW + cellW / 2;
+      const y1 = relY + fromRow * cellH + cellH / 2;
+      const x2 = relX + toCol * cellW + cellW / 2;
+      const y2 = relY + toRow * cellH + cellH / 2;
+
+      const age = recentPath.length - 1 - i;
+      const opacity = Math.max(0.2, 1 - age * 0.15);
+      lines += '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="' + pColor + '" stroke-width="2" stroke-opacity="' + (opacity * (isRunning ? 1 : 0.4)) + '" stroke-linecap="round" />';
+    }
+
+    svg.innerHTML = lines;
+  }
+
+  // ===== GENERIC STATS =====
+  function renderStats(s, prefix) {
+    const winsEl = document.getElementById('stat-wins-' + prefix);
+    const lossesEl = document.getElementById('stat-losses-' + prefix);
+    const rateEl = document.getElementById('stat-rate-' + prefix);
+    const streakEl = document.getElementById('stat-streak-' + prefix);
+    const stateEl = document.getElementById('stat-state-' + prefix);
+    const roundEl = document.getElementById('round-' + prefix);
+
+    if (winsEl) winsEl.textContent = s.totalWins;
+    if (lossesEl) lossesEl.textContent = s.totalLosses;
+
+    const total = s.totalWins + s.totalLosses;
+    const rate = total === 0 ? 0 : (s.totalWins / total) * 100;
+    if (rateEl) rateEl.textContent = rate.toFixed(1) + '%';
+    if (streakEl) streakEl.textContent = s.maxStreak;
+    if (roundEl) roundEl.textContent = 'R:' + s.round;
+
+    if (stateEl) {
+      stateEl.textContent = s.roundState;
+      stateEl.className = 'stat-value';
+      stateEl.classList.add('state-' + s.roundState.toLowerCase());
+    }
+  }
+
+  // ===== GENERIC OVERLAY =====
+  function renderOverlay(s, overlayId, textId) {
+    const overlay = document.getElementById(overlayId);
+    const text = document.getElementById(textId);
+    if (!overlay || !text) return;
+
+    if (s.roundState === 'WIN') {
+      overlay.classList.add('active');
+      text.textContent = 'ALL SURVIVED';
+      text.className = 'overlay-text win';
+    } else if (s.roundState === 'LOSE') {
+      overlay.classList.add('active');
+      text.textContent = 'YOU DIED';
+      text.className = 'overlay-text lose';
+    } else {
+      overlay.classList.remove('active');
+    }
+  }
+
+  // ===== PRISONER WALKER — animated marker on grid =====
+  function updateWalkerPosition(s, walkerId, gridWrapperId, boxElements) {
+    const walker = document.getElementById(walkerId);
+    const wrapper = document.getElementById(gridWrapperId);
+    if (!walker || !wrapper) return;
+
+    const pid = s.currentPrisoner;
+    const p = prisoners[pid];
+
+    if (s.roundState === 'IDLE' || s.prisonerPath.length === 0) {
+      walker.classList.remove('active', 'win', 'fail');
+      return;
+    }
+
+    // Color + initials
+    const color = p ? p.color : '#888';
+    walker.style.color = color;
+    walker.style.background = color;
+    const initialsEl = walker.querySelector('.walker-initials');
+    if (initialsEl && p) {
+      initialsEl.textContent = p.firstName.charAt(0) + p.lastName.charAt(0);
+    }
+
+    // Position at the last visited box (the one the prisoner is currently at)
+    const lastBoxIdx = s.prisonerPath[s.prisonerPath.length - 1];
+    const boxEl = boxElements[lastBoxIdx];
+    if (!boxEl) return;
+
+    const wrapperRect = wrapper.getBoundingClientRect();
+    const boxRect = boxEl.getBoundingClientRect();
+
+    walker.style.left = (boxRect.left - wrapperRect.left + boxRect.width / 2 - 10) + 'px';
+    walker.style.top = (boxRect.top - wrapperRect.top + boxRect.height / 2 - 10) + 'px';
+
+    // Show/hide based on round state
+    if (s.roundState === 'WIN') {
+      walker.classList.remove('active');
+      walker.classList.add('win');
+    } else if (s.roundState === 'LOSE') {
+      walker.classList.remove('active');
+      walker.classList.add('fail');
+    } else {
+      walker.classList.add('active');
+      walker.classList.remove('win', 'fail');
+    }
+  }
+
+  // ===== COMPARISON BAR =====
+  function renderComparisonBar() {
+    const totalA = stateA.totalWins + stateA.totalLosses;
+    const totalB = stateB.totalWins + stateB.totalLosses;
+    const rateA = totalA === 0 ? 0 : (stateA.totalWins / totalA) * 100;
+    const rateB = totalB === 0 ? 0 : (stateB.totalWins / totalB) * 100;
+
+    document.getElementById('cmp-rate-a').textContent = rateA.toFixed(1) + '%';
+    document.getElementById('cmp-rate-b').textContent = rateB.toFixed(1) + '%';
+
+    const diff = rateA - rateB;
+    const diffEl = document.getElementById('cmp-rate-diff');
+    if (totalA > 0 || totalB > 0) {
+      diffEl.textContent = (diff > 0 ? '+' : '') + diff.toFixed(1) + '%';
+      diffEl.className = 'cmp-diff ' + (diff >= 0 ? 'diff-pos' : 'diff-neg');
+    } else {
+      diffEl.textContent = '';
+    }
+
+    const stepsA = stateA.totalSteps || 0;
+    const stepsB = stateB.totalSteps || 0;
+    const winsA = stateA.totalWins || 0;
+    const winsB = stateB.totalWins || 0;
+    const avgStepsA = winsA > 0 ? (stepsA / winsA).toFixed(1) : '—';
+    const avgStepsB = winsB > 0 ? (stepsB / winsB).toFixed(1) : '—';
+    document.getElementById('cmp-steps-a').textContent = avgStepsA;
+    document.getElementById('cmp-steps-b').textContent = avgStepsB;
+
+    document.getElementById('cmp-streak-a').textContent = stateA.maxStreak;
+    document.getElementById('cmp-streak-b').textContent = stateB.maxStreak;
+  }
+
+  // ===== MUGSHOT RENDER (per column) =====
+  function renderMugshot(s, canvasId, badgeId) {
+    const canvas = document.getElementById(canvasId);
+    const badge = document.getElementById(badgeId);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    if (s.roundState === 'IDLE' && s.prisonerPath.length === 0) {
+      ctx.fillStyle = '#1a1a1a';
+      ctx.fillRect(0, 0, 32, 32);
+      ctx.fillStyle = '#555';
+      ctx.font = '16px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('?', 16, 22);
+      if (badge) badge.style.borderColor = 'var(--stone-light)';
+      return;
+    }
+
+    const pid = s.currentPrisoner;
+    const p = prisoners[pid];
+    if (!p) return;
+
+    const img = new Image();
+    img.onload = function() {
+      ctx.drawImage(img, 0, 0, 32, 32);
+    };
+    img.src = p.avatar;
+    if (badge) badge.style.borderColor = p.color;
+  }
+
+  // ===== COLUMN-A RENDERERS =====
+  function renderBoxGridA() {
+    boxElementsA = ensureBoxElements('box-grid-a', boxElementsA);
+    renderBoxGrid(stateA, boxElementsA, 'box-grid-a', 'path-lines-a');
+  }
+
+  function renderPathLinesA() {
+    renderPathLines(stateA, 'path-lines-a', 'box-grid-a');
+  }
+
+  function renderPathStripeA() {
+    renderPathStripe(stateA, 'path-stripe-a');
+  }
+
+  function renderStatsA() {
+    renderStats(stateA, 'a');
+  }
+
+  function renderOverlayA() {
+    renderOverlay(stateA, 'overlay-a', 'overlay-text-a');
+  }
+
+  // ===== COLUMN-B RENDERERS =====
+  function renderBoxGridB() {
+    boxElementsB = ensureBoxElements('box-grid-b', boxElementsB);
+    renderBoxGrid(stateB, boxElementsB, 'box-grid-b', 'path-lines-b');
+  }
+
+  function renderPathLinesB() {
+    renderPathLines(stateB, 'path-lines-b', 'box-grid-b');
+  }
+
+  function renderPathStripeB() {
+    renderPathStripe(stateB, 'path-stripe-b');
+  }
+
+  function renderStatsB() {
+    renderStats(stateB, 'b');
+  }
+
+  function renderOverlayB() {
+    renderOverlay(stateB, 'overlay-b', 'overlay-text-b');
+  }
+
+  function renderMugshotA() {
+    renderMugshot(stateA, 'mugshot-a', 'mugshot-badge-a');
+  }
+
+  function renderMugshotB() {
+    renderMugshot(stateB, 'mugshot-b', 'mugshot-badge-b');
+  }
+
+  function renderWalkerA() {
+    updateWalkerPosition(stateA, 'walker-a', 'grid-wrapper-a', boxElementsA);
+  }
+
+  function renderWalkerB() {
+    updateWalkerPosition(stateB, 'walker-b', 'grid-wrapper-b', boxElementsB);
+  }
+
+  // ===== MIXER PANEL (per column) =====
+  function renderMixerPanel(s, containerId) {
+    const container = document.getElementById(containerId);
+    const strategy = Strategies[s.strategy];
+    if (!container) return;
+    container.innerHTML = '';
+
+    for (const [key, mixer] of Object.entries(strategy.mixers)) {
+      const group = document.createElement('div');
+      group.className = 'mixer-group';
+      group.style.display = 'flex';
+      group.style.alignItems = 'center';
+      group.style.gap = '3px';
+
+      const label = document.createElement('span');
+      label.className = 'mixer-label';
+      const labelText = key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1');
+      label.textContent = labelText;
+      label.style.fontSize = '0.55em';
+
+      const val = document.createElement('span');
+      val.className = 'mixer-value';
+      val.id = 'mixer-val-' + s.label + '-' + key;
+      const currentVal = s.config[key] !== undefined ? s.config[key] : mixer.default;
+      val.textContent = mixer.step >= 1 ? currentVal : currentVal.toFixed(2);
+
+      const input = document.createElement('input');
+      input.type = 'range';
+      input.min = mixer.min;
+      input.max = mixer.max;
+      input.step = mixer.step;
+      input.value = currentVal;
+      input.dataset.stateLabel = s.label;
+      input.dataset.mixerKey = key;
+      input.style.width = '40px';
+      input.style.height = '4px';
+
+      input.addEventListener('input', (function(s, key, mixer) {
+        return function(e) {
+          const v = parseFloat(e.target.value);
+          s.config[key] = v;
+          const valEl = document.getElementById('mixer-val-' + s.label + '-' + key);
+          if (valEl) valEl.textContent = mixer.step >= 1 ? v : v.toFixed(2);
+        };
+      })(s, key, mixer));
+
+      group.appendChild(label);
+      group.appendChild(input);
+      group.appendChild(val);
+      container.appendChild(group);
+    }
+  }
+
+  // ===== STRATEGY SELECTOR (per column) =====
+  function renderStrategySelector(s, selectId) {
+    const select = document.getElementById(selectId);
+    if (!select) return;
+    select.innerHTML = '';
+    for (const [key, strat] of Object.entries(Strategies)) {
+      const opt = document.createElement('option');
+      opt.value = key;
+      opt.textContent = strat.name;
+      if (key === s.strategy) opt.selected = true;
+      select.appendChild(opt);
+    }
+  }
+
+  // ===== MASTER RENDER =====
+  function renderAll() {
+    renderBoxGridA();
+    renderBoxGridB();
+    renderPathStripeA();
+    renderPathStripeB();
+    renderPathLinesA();
+    renderPathLinesB();
+    renderWalkerA();
+    renderWalkerB();
+    renderStatsA();
+    renderStatsB();
+    renderOverlayA();
+    renderOverlayB();
+    renderMugshotA();
+    renderMugshotB();
+    renderComparisonBar();
+  }
+  </script>
+
+  <!-- CONTROLLER — dual-strategy lifecycle, events, init -->
+  <script>
+  /* ============================================================
+     CONTROLLER — Event handlers, dual-strategy lifecycle, init
+     ============================================================ */
+
+  // ===== GLOBAL CONTROL =====
+  async function onRunAll() {
+    if (stateA.running || stateB.running) return;
+
+    // Reset both
+    resetState(stateA);
+    resetState(stateB);
+
+    // Shared permutation
+    sharedPerm = generatePermutation();
+    stateA.boxes = sharedPerm;
+    stateB.boxes = [...sharedPerm];
+    stateA.revealed = new Array(100).fill(false);
+    stateB.revealed = new Array(100).fill(false);
+
+    simulationAborted = false;
+    renderAll();
+
+    // Run both loops in parallel (await both to complete)
+    await Promise.all([runLoop(stateA), runLoop(stateB)]);
+    updateButtonStates();
+  }
+
+  function onPauseAll() {
+    stateA.running = false;
+    stateB.running = false;
+    simulationAborted = true;
+    updateButtonStates();
+  }
+
+  function onResetAll() {
+    stateA.running = false;
+    stateB.running = false;
+    simulationAborted = true;
+    resetState(stateA);
+    resetState(stateB);
+    sharedPerm = generatePermutation();
+    stateA.boxes = sharedPerm;
+    stateB.boxes = [...sharedPerm];
+    stateA.revealed = new Array(100).fill(false);
+    stateB.revealed = new Array(100).fill(false);
+    renderAll();
+    updateButtonStates();
+  }
+
+  function resetState(s) {
+    s.round = 0;
+    s.currentPrisoner = 0;
+    s.prisonerStep = 0;
+    s.roundState = 'IDLE';
+    s.prisonerPath = [];
+    s.totalWins = 0;
+    s.totalLosses = 0;
+    s.maxStreak = 0;
+    s.currentStreak = 0;
+    s.history = [];
+    s.totalSteps = 0;
+    s._sacrificeMode = {};
+    for (let i = 0; i < 100; i++) {
+      s.revealed[i] = false;
+    }
+  }
+
+  // ===== PER-COLUMN CONTROLS =====
+  function onRunColumn(s) {
+    if (s.running) return;
+    resetState(s);
+    if (!sharedPerm) {
+      sharedPerm = generatePermutation();
+    }
+    s.boxes = [...sharedPerm];
+    s.revealed = new Array(100).fill(false);
+    simulationAborted = false;
+    runLoop(s);
+    updateButtonStates();
+  }
+
+  function onPauseColumn(s) {
+    s.running = false;
+    simulationAborted = true;
+    updateButtonStates();
+  }
+
+  function onResetColumn(s) {
+    s.running = false;
+    simulationAborted = true;
+    resetState(s);
+    if (sharedPerm) {
+      s.boxes = [...sharedPerm];
+      s.revealed = new Array(100).fill(false);
+    }
+    renderAll();
+    updateButtonStates();
+  }
+
+  // ===== STRATEGY CHANGE =====
+  function onStrategyChange(s, selectId, containerId) {
+    s.strategy = document.getElementById(selectId).value;
+    applyStrategyDefaults(s);
+    renderMixerPanel(s, containerId);
+    renderAll();
+  }
+
+  function onSpeedChange(value) {
+    const v = parseInt(value, 10);
+    stateA.speed = v;
+    stateB.speed = v;
+    document.getElementById('speed-value').textContent = value;
+  }
+
+  function updateButtonStates() {
+    const anyRunning = stateA.running || stateB.running;
+    document.getElementById('btn-run-all').disabled = anyRunning;
+    document.getElementById('btn-pause-all').disabled = !anyRunning;
+    document.getElementById('btn-run-a').disabled = stateA.running;
+    document.getElementById('btn-pause-a').disabled = !stateA.running;
+    document.getElementById('btn-run-b').disabled = stateB.running;
+    document.getElementById('btn-pause-b').disabled = !stateB.running;
+  }
+
+  function attachEventListeners() {
+    // Global
+    document.getElementById('btn-run-all').addEventListener('click', function() { onRunAll(); });
+    document.getElementById('btn-pause-all').addEventListener('click', function() { onPauseAll(); });
+    document.getElementById('btn-reset-all').addEventListener('click', function() { onResetAll(); });
+
+    // Column A
+    document.getElementById('strategy-a').addEventListener('change', function(e) {
+      onStrategyChange(stateA, 'strategy-a', 'mixers-a');
+    });
+    document.getElementById('btn-run-a').addEventListener('click', function() { onRunColumn(stateA); });
+    document.getElementById('btn-pause-a').addEventListener('click', function() { onPauseColumn(stateA); });
+    document.getElementById('btn-reset-a').addEventListener('click', function() { onResetColumn(stateA); });
+
+    // Column B
+    document.getElementById('strategy-b').addEventListener('change', function(e) {
+      onStrategyChange(stateB, 'strategy-b', 'mixers-b');
+    });
+    document.getElementById('btn-run-b').addEventListener('click', function() { onRunColumn(stateB); });
+    document.getElementById('btn-pause-b').addEventListener('click', function() { onPauseColumn(stateB); });
+    document.getElementById('btn-reset-b').addEventListener('click', function() { onResetColumn(stateB); });
+
+    // Speed
+    document.getElementById('speed-slider').addEventListener('input', function(e) {
+      onSpeedChange(e.target.value);
+    });
+  }
+
+  function init() {
+    initPrisoners();
+    sharedPerm = generatePermutation();
+    stateA.boxes = sharedPerm;
+    stateB.boxes = [...sharedPerm];
+    stateA.revealed = new Array(100).fill(false);
+    stateB.revealed = new Array(100).fill(false);
+
+    applyStrategyDefaults(stateA);
+    applyStrategyDefaults(stateB);
+
+    renderStrategySelector(stateA, 'strategy-a');
+    renderStrategySelector(stateB, 'strategy-b');
+    renderMixerPanel(stateA, 'mixers-a');
+    renderMixerPanel(stateB, 'mixers-b');
+    renderAll();
+    updateButtonStates();
+    attachEventListeners();
+
+    // Re-render path lines on resize
+    window.addEventListener('resize', function() {
+      if (stateA.prisonerPath.length > 0) renderPathLinesA();
+      if (stateB.prisonerPath.length > 0) renderPathLinesB();
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
