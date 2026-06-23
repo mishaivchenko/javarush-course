@@ -14,3 +14,15 @@ Thumbs.db
 
 # Claude memory / plugins (workspace-specific, not repo files)
 .claude/
+
+# Node
+node_modules/
+package-lock.json
+package.json
+
+# Playwright
+.playwright-mcp/
+
+# Screenshots
+final_win_state.png
+screen*
