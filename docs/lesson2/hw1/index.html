@@ -1229,7 +1229,7 @@
       prisonerStep: 0,
       roundState: 'IDLE',
       prisonerPath: [],
-      strategy: 'loop',
+      strategy: label === 'B' ? 'sacrifice' : 'loop',
       config: { discipline: 1.0 },
       totalWins: 0,
       totalLosses: 0,
@@ -1245,6 +1245,10 @@
 
   const stateA = createState('A');
   const stateB = createState('B');
+
+  // Apply strategy defaults for non-default strategies
+  applyStrategyDefaults(stateA);
+  applyStrategyDefaults(stateB);
 
   // Shared permutation state
   let sharedPerm = null;
