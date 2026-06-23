@@ -1,7 +1,14 @@
-# The Tomb of 100 Dead Men — Prisoner Simulation
+# Projects
 
-## Project
-`lesson2_1/index.html` — single-file browser simulation of the "100 prisoners and 100 boxes" problem. Lovecraftian horror theme (Bloodborne-inspired). Google Fonts: UnifrakturCook (display) + VT323 (body).
+## Project A: The Tomb of 100 Dead Men (100 Prisoners)
+`lesson2/prisoners-100/index.html` — single-file browser simulation of the "100 prisoners and 100 boxes" problem. Lovecraftian horror theme (Bloodborne-inspired). Google Fonts: UnifrakturCook (display) + VT323 (body).
+
+Pages: `docs/lesson2/prisoners-100/index.html` → https://mishaivchenko.github.io/javarush-course/lesson2/prisoners-100/
+
+## Project B: Prisoner's Dilemma — GULAG
+`lesson2/prisoners-dilemma/index.html` — single-file browser simulation of the Iterated Prisoner's Dilemma. Gulag concrete theme. Google Fonts: UnifrakturCook (display) + VT323 (body). Players choose Cooperate/Defect each round; supports 8 strategies, Match/Tournament/Noisy/Evolution/Islands modes.
+
+Pages: `docs/lesson2/prisoners-dilemma/index.html` → https://mishaivchenko.github.io/javarush-course/lesson2/prisoners-dilemma/
 
 ## Spec → Tasks Rule
 Кожна велика зміна (feature) проходить через цей процес:
@@ -16,7 +23,8 @@
 - Якщо spec описує велику зміну (наприклад UI redesign), його таски можуть мати крізну нумерацію: від 016 до 020.
 
 ## Key Files
-- `lesson2_1/index.html` — main application (strategy engine, renderer, controller, all in one file)
+- `lesson2/prisoners-100/index.html` — 100 Prisoners (strategy engine, renderer, controller, all in one file)
+- `lesson2/prisoners-dilemma/index.html` — Prisoner's Dilemma (all in one file)
 - `docs/superpowers/specs/2026-06-22-100-dead-men-design.md` — original project design spec
 - `docs/superpowers/specs/2026-06-22-100-dead-men-prisoner-ui-design.md` — prisoner UI redesign spec (mugshots, layout, path viz)
 - `docs/superpowers/specs/2026-06-22-grid-vfx-design.md` — grid & visual effects spec (tasks 021-025)
@@ -57,11 +65,19 @@
 | 029 | Proportion Fix (cancelled — superseded by 030) | `tasks/029-proportion-fix.md` |
 | 030 | Dual Strategy Comparison | `tasks/030-dual-strategy-comparison.md` |
 
-## Architecture (single HTML file, 4 JS sections)
+## Architecture — 100 Prisoners (`prisoners-100`)
+Single HTML file, 4 JS sections:
 1. **PRISONER DB** — name pool, pixel avatar generation (`generatePixelAvatar`), sprite generation
 2. **MODEL** — state, permutations, 5 strategies (loop, panic, hybrid, sacrifice, mercy), simulation loop
 3. **RENDERER** — box grid, mugshot card, path stripe, SVG path lines, stats bar, overlay
 4. **CONTROLLER** — event listeners, lifecycle (init, run, pause, reset)
+
+## Architecture — Prisoner's Dilemma (`prisoners-dilemma`)
+Single HTML file, sections:
+1. **CORE** — Move, PayoffMatrix, ScoreCalculator, GameEngine (async playMatch with configurable rounds, continuation probability, noise models)
+2. **STRATEGIES** — 8 strategies: AllC, AllD, TFT, Joss, Friedman, Graaskamp, Tester, Random
+3. **TOURNAMENT / EVOLUTION** — round-robin tournament runner, evolution engine (mutation, selection pressure, population dynamics)
+4. **UI** — mode tabs (Match/Tournament/Noisy/Evolution/Islands), strategy selectors, config panels, visualization (history cells, cumulative chart, radar chart, cooperation bars, stats bar)
 
 ## CSS Theme (Lovecraftian Horror)
 - **Palette:** void `#0d0907`, panel `#17120e`, bone `#c4b8a8`, dried blood `#6b1414`, rusted gold `#8b7340`, vein `#2d1b1b`
