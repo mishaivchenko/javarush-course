@@ -1509,8 +1509,8 @@
       s.round++;
       await runRound(s);
       if (!s.running || simulationAborted) break;
-      // Wait before next round (no extra renderAll — already done in runRound)
-      await sleep(2000);
+      // Wait before next round — scale with speed (max speed ≈ no wait)
+      await sleep(Math.min(s.speed * 2, 2000));
       if (!s.running || simulationAborted) break;
     }
 
