@@ -26,3 +26,5 @@ package.json
 # Screenshots
 final_win_state.png
 screen*
+
+*.png
