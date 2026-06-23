@@ -2357,9 +2357,10 @@
     cellB.textContent = moveB;
     rowBEl.appendChild(cellB);
 
-    // Keep only last 100 cells
-    while (rowAEl.children.length > 100) rowAEl.removeChild(rowAEl.firstChild);
-    while (rowBEl.children.length > 100) rowBEl.removeChild(rowBEl.firstChild);
+    // Keep last N cells — match config rounds (or 200 default, max 500)
+    const maxCells = Math.min(parseInt(document.getElementById('configRounds')?.value) || 200, 500);
+    while (rowAEl.children.length > maxCells) rowAEl.removeChild(rowAEl.firstChild);
+    while (rowBEl.children.length > maxCells) rowBEl.removeChild(rowBEl.firstChild);
 
     // Status
     document.getElementById('statusText').textContent = `Round ${round}/${data.totalRounds} — A: ${totalA}, B: ${totalB}`;
