@@ -336,7 +336,7 @@
     .box {
       aspect-ratio: 1;
       background: var(--stone);
-      background-image: url('https://images.unsplash.com/photo-1781736712900-84d3e5823eea?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5ODAyNDJ8MHwxfHNlYXJjaHwxfHx3b29kJTIwdGV4dHVyZSUyMGRhcmt8ZW58MHwyfDJ8fDE3ODIxOTk2MDd8MA&ixlib=rb-4.1.0&q=80&w=400');
+      background-image: url('https://images.unsplash.com/photo-1698746396053-ce2807d855e3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400');
       background-size: cover;
       background-blend-mode: overlay;
       border: 1px solid var(--stone-light);
@@ -387,7 +387,7 @@
       font-family: 'VT323', monospace;
       font-size: 0.85em;
       color: var(--text);
-      background-image: url('https://images.unsplash.com/photo-1737033764140-fcd66828325e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5ODAyNDJ8MHwxfHNlYXJjaHwxfHxzdG9uZSUyMHRleHR1cmV8ZW58MHwyfHx8MTc4MjE5ODI2MHww&ixlib=rb-4.1.0&q=80&w=400');
+      background-image: url('https://images.unsplash.com/photo-1639907087057-971905eeda58?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400');
       background-size: cover;
       background-blend-mode: overlay;
       transform: rotateY(180deg);
@@ -451,6 +451,23 @@
       box-shadow: inset 0 0 8px rgba(106, 26, 26, 0.3);
     }
 
+    /* ===== FOUND NAME — prisoner name under flipped box ===== */
+    .box .found-name {
+      position: absolute;
+      bottom: 1px;
+      left: 0;
+      right: 0;
+      font-size: 0.45em;
+      font-family: 'VT323', monospace;
+      color: var(--found-text);
+      text-align: center;
+      line-height: 1;
+      pointer-events: none;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
     /* ===== PRISONER WALKER — animated marker ===== */
     .prisoner-walker {
       position: absolute;
@@ -496,17 +513,6 @@
       pointer-events: none;
       z-index: 3;
       overflow: visible;
-    }
-
-    .box .step-label {
-      position: absolute;
-      top: -1px;
-      right: -1px;
-      font-size: 0.45em;
-      color: var(--gold);
-      background: rgba(0,0,0,0.75);
-      padding: 0 2px;
-      line-height: 1;
     }
 
     /* ===== PATH STRIPE — telegram from the underworld ===== */
@@ -859,6 +865,24 @@
       text-shadow: 0 0 20px rgba(201, 42, 42, 0.7), 0 0 40px rgba(201, 42, 42, 0.35);
       animation: overlay-fade 0.6s ease-out, lose-pulse 1.2s ease-in-out 0.6s infinite;
     }
+    .overlay-text.lose::after {
+      content: '';
+      display: block;
+      width: 60%;
+      height: 1px;
+      margin: 8px auto 0;
+      background: linear-gradient(90deg, transparent, var(--accent-bright), transparent);
+      box-shadow: 0 0 6px rgba(201, 42, 42, 0.5);
+    }
+    .overlay-text.lose::before {
+      content: '';
+      display: block;
+      width: 60%;
+      height: 1px;
+      margin: 0 auto 8px;
+      background: linear-gradient(90deg, transparent, var(--accent-bright), transparent);
+      box-shadow: 0 0 6px rgba(201, 42, 42, 0.5);
+    }
 
     @keyframes overlay-fade {
       0% { opacity: 0; transform: scale(0.85); }
@@ -1003,7 +1027,7 @@
       <div class="cmp-item"><span class="cmp-key">Win Rate</span><span class="cmp-val-a" id="cmp-rate-a">0%</span><span class="cmp-delim">|</span><span class="cmp-val-b" id="cmp-rate-b">0%</span><span class="cmp-diff" id="cmp-rate-diff"></span></div>
       <div class="cmp-item"><span class="cmp-key">Avg Steps</span><span class="cmp-val-a" id="cmp-steps-a">—</span><span class="cmp-delim">|</span><span class="cmp-val-b" id="cmp-steps-b">—</span></div>
       <div class="cmp-item"><span class="cmp-key">Best Streak</span><span class="cmp-val-a" id="cmp-streak-a">0</span><span class="cmp-delim">|</span><span class="cmp-val-b" id="cmp-streak-b">0</span></div>
-      <span style="margin-left:auto;font-size:0.45em;color:var(--text-dim);opacity:0.4;white-space:nowrap;">Bg: Alan Pope. Wood: D.Lemesheva. Stone: Freddie. /Unsplash</span>
+      <span style="margin-left:auto;font-size:0.45em;color:var(--text-dim);opacity:0.4;white-space:nowrap;">Bg: Alan Pope. Metal: O.Kilpi. Stone: W.Gunkel. /Unsplash</span>
     </div>
   </div>
 
@@ -1190,6 +1214,8 @@
       label: label,
       boxes: new Array(100).fill(null),
       revealed: new Array(100).fill(false),
+      visuallyClosed: new Array(100).fill(false), // visual-only: boxes that look closed but are still in play
+      boxOwner: new Array(100).fill(null),
       round: 0,
       currentPrisoner: 0,
       prisonerStep: 0,
@@ -1364,12 +1390,29 @@
       renderAll();
 
       // Allow walker CSS transition to play
-      await sleep(Math.min(s.speed * 0.2, 30));
+      await sleep(Math.max(Math.min(s.speed * 0.3, 30), 8));
 
-      if (foundPrisoner === prisonerId) return true;
+      if (foundPrisoner === prisonerId) {
+        // Mark the winning box with its owner
+        s.boxOwner[currentBox] = prisonerId;
+        // Visually close all boxes in this path except the winning one
+        // (revealed stays true so strategies know they've been seen)
+        for (let j = 0; j < s.prisonerPath.length - 1; j++) {
+          s.visuallyClosed[s.prisonerPath[j]] = true;
+        }
+        return true;
+      }
 
       await sleep(s.speed);
-      currentBox = strategy.decide(prisonerId, s.boxes[currentBox], s.config, s.prisonerStep, s);
+      // Если наступили на чужую выигрышную коробку (s.boxes[currentBox] === currentBox) — не идти в тупик
+      if (s.boxes[currentBox] === currentBox && currentBox !== prisonerId) {
+        const unexplored = getUnexplored(s);
+        currentBox = unexplored.length > 0
+          ? unexplored[Math.floor(Math.random() * unexplored.length)]
+          : null;
+      } else {
+        currentBox = strategy.decide(prisonerId, s.boxes[currentBox], s.config, s.prisonerStep, s);
+      }
     }
 
     return false;
@@ -1377,6 +1420,12 @@
 
   async function runRound(s) {
     if (simulationAborted) return;
+
+    // Reset revealed for new round (keep boxOwner — names persist across rounds)
+    for (let i = 0; i < 100; i++) {
+      s.revealed[i] = false;
+      s.visuallyClosed[i] = false;
+    }
 
     s.roundState = 'RUNNING';
     s.currentPrisoner = 0;
@@ -1386,7 +1435,7 @@
     s._sacrificeMode = {};
 
     renderAll();
-    await sleep(s.speed * 2);
+    await sleep(Math.max(s.speed * 2, 200));
 
     let allFound = true;
     for (let p = 0; p < 100; p++) {
@@ -1425,11 +1474,9 @@
 
     while (s.running && !simulationAborted) {
       s.round++;
-      s.roundState = 'RUNNING';
-      renderAll();
       await runRound(s);
       if (!s.running || simulationAborted) break;
-      renderAll();
+      // Wait before next round (no extra renderAll — already done in runRound)
       await sleep(2000);
       if (!s.running || simulationAborted) break;
     }
@@ -1482,6 +1529,28 @@
   // ===== GENERIC BOX GRID RENDERER =====
   function renderBoxGrid(s, boxElements, gridId, linesId) {
     if (!boxElements) return;
+
+    // LOSE reveal: all boxes reset to closed state visually (model data preserved)
+    if (s.roundState === 'LOSE') {
+      for (let i = 0; i < 100; i++) {
+        const el = boxElements[i];
+        if (!el) continue;
+        el.className = 'box failed';
+        const front = el.querySelector('.box-front');
+        const back = el.querySelector('.box-back');
+        el.classList.remove('flipped', 'revealed');
+        if (front) front.textContent = String(i + 1).padStart(2, '0');
+        if (back) back.textContent = '';
+        // Remove found names
+        const oldName = el.querySelector('.found-name');
+        if (oldName) oldName.remove();
+      }
+      // Clear SVG path lines
+      const svgEl = document.getElementById(linesId);
+      if (svgEl) svgEl.innerHTML = '';
+      return;
+    }
+
     const current = s.prisonerPath.length > 0
       ? s.prisonerPath[s.prisonerPath.length - 1]
       : -1;
@@ -1498,7 +1567,11 @@
       const front = el.querySelector('.box-front');
       const back = el.querySelector('.box-back');
 
-      if (s.revealed[i]) {
+      if (s.visuallyClosed[i]) {
+        el.classList.remove('flipped', 'revealed');
+        if (front) front.textContent = String(i + 1).padStart(2, '0');
+        if (back) back.textContent = '';
+      } else if (s.revealed[i]) {
         el.classList.add('revealed', 'flipped');
         if (back) back.textContent = s.boxes[i];
         if (front) front.textContent = '';
@@ -1517,12 +1590,6 @@
           el.style.color = pColor;
         }
         if (front && s.revealed[i]) front.textContent = '';
-        const oldLabel = el.querySelector('.step-label');
-        if (oldLabel) oldLabel.remove();
-        const label = document.createElement('span');
-        label.className = 'step-label';
-        label.textContent = stepIdx + 1;
-        el.appendChild(label);
       } else if (stepIdx === -1 && !s.revealed[i]) {
         el.style.borderColor = '';
         el.style.background = '';
@@ -1552,6 +1619,21 @@
         el.style.borderColor = '';
         el.style.background = '';
         el.style.color = '';
+      }
+
+      // Found name: when a prisoner found their number in this box, show their name
+      const ownerId = s.boxOwner[i];
+      const isOwnBox = s.revealed[i] && ownerId !== null && ownerId !== undefined && prisoners[ownerId];
+      const oldName = el.querySelector('.found-name');
+      if (isOwnBox) {
+        if (!oldName) {
+          const nameEl = document.createElement('div');
+          nameEl.className = 'found-name';
+          el.appendChild(nameEl);
+        }
+        el.querySelector('.found-name').textContent = prisoners[ownerId].firstName + ' ' + prisoners[ownerId].lastName;
+      } else if (oldName) {
+        oldName.remove();
       }
     }
   }
@@ -2030,6 +2112,8 @@
     s._sacrificeMode = {};
     for (let i = 0; i < 100; i++) {
       s.revealed[i] = false;
+      s.visuallyClosed[i] = false;
+      s.boxOwner[i] = null;
     }
   }
 
