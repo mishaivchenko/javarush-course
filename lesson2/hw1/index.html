@@ -1407,8 +1407,8 @@
       renderPathLines(s, linesIdForState(s), gridIdForState(s));
       renderPathStripe(s, stripeIdForState(s));
 
-      // Allow walker CSS transition to play
-      await sleep(Math.max(Math.min(s.speed * 0.3, 30), 8));
+      // Allow walker CSS transition to play (skip when at max speed)
+      if (s.speed > 5) await sleep(Math.min(s.speed * 0.3, 30));
 
       if (foundPrisoner === prisonerId) {
         // Mark the winning box with its owner
@@ -1430,7 +1430,7 @@
         return true;
       }
 
-      await sleep(s.speed);
+      if (s.speed > 5) await sleep(s.speed);
       // Если наступили на чужую выигрышную коробку (s.boxes[currentBox] === currentBox) — не идти в тупик
       if (s.boxes[currentBox] === currentBox && currentBox !== prisonerId) {
         const unexplored = getUnexplored(s);
@@ -1500,9 +1500,9 @@
     renderAll();
 
     while (s.running && !simulationAborted) {
-      // New random permutation each round (shared between both columns)
-      sharedPerm = generatePermutation();
-      s.boxes = sharedPerm;
+      // New random permutation each round (independent per column)
+      const perm = generatePermutation();
+      s.boxes = perm;
       s.revealed = new Array(100).fill(false);
       s.visuallyClosed = new Array(100).fill(false);
 
