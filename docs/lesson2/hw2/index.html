@@ -1,0 +1,2941 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PRISONER'S DILEMMA — GULAG</title>
+
+  <!-- Google Fonts: Impact-like + VT323 (typewriter) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&family=VT323&display=swap" rel="stylesheet">
+
+  <style>
+    /* ===== RESET & GLOBAL ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      /* Gulag palette */
+      --concrete: #3a3a3a;
+      --rust: #8b3a2a;
+      --dirt: #4a3a2a;
+      --steel: #6a7a8a;
+      --blood: #7a1a1a;
+      --smoke: #1a1a1a;
+      --lantern: #d4a050;
+      --coop-green: #5a8a4a;
+      --defect-red: #8a3a3a;
+      --panel-bg: #2a2a2a;
+      --text-primary: #c4b8a8;
+      --text-dim: #7a7a6a;
+      --border-rust: #6a2a1a;
+      --star-red: #cc2222;
+    }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      background: var(--smoke);
+      color: var(--text-primary);
+      font-family: 'VT323', monospace;
+      font-size: 16px;
+      line-height: 1.4;
+    }
+
+    h1, h2, h3 {
+      font-family: 'UnifrakturCook', serif;
+      font-weight: 700;
+      letter-spacing: 2px;
+    }
+
+    /* ===== Gulag Concrete Texture (CSS noise) ===== */
+    @keyframes lanternFlicker {
+      0%, 100% { opacity: 0.6; }
+      25% { opacity: 0.8; }
+      50% { opacity: 0.5; }
+      75% { opacity: 0.7; }
+    }
+
+    @keyframes handcuffClick {
+      0%, 100% { transform: translateX(0); }
+      15% { transform: translateX(-1px); }
+      30% { transform: translateX(1px); }
+      45% { transform: translateX(-1px); }
+    }
+
+    @keyframes dustDrift {
+      0% { background-position: 0 0; }
+      100% { background-position: 100px 80px; }
+    }
+
+    /* ===== #APP LAYOUT ===== */
+    #app {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Concrete wall background */
+    #app::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background:
+        /* Concrete texture via layered gradients */
+        repeating-linear-gradient(90deg,
+          transparent 0px, rgba(60,60,60,0.15) 1px, transparent 2px,
+          transparent 8px, rgba(50,50,50,0.1) 9px, transparent 10px),
+        repeating-linear-gradient(0deg,
+          transparent 0px, rgba(55,55,55,0.12) 1px, transparent 2px,
+          transparent 12px, rgba(45,45,45,0.08) 13px, transparent 14px),
+        repeating-linear-gradient(45deg,
+          rgba(80,70,60,0.03) 0px, transparent 4px),
+        radial-gradient(ellipse at 50% 0%, rgba(60,40,20,0.4) 0%, transparent 60%),
+        linear-gradient(180deg, #1a1a1a 0%, #2a2a2a 40%, #222 60%, #1a1a1a 100%);
+      animation: dustDrift 20s linear infinite;
+      pointer-events: none;
+    }
+
+    /* Barbed wire top border */
+    .header::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background:
+        repeating-linear-gradient(90deg,
+          transparent 0px, transparent 18px,
+          var(--steel) 18px, var(--steel) 20px,
+          transparent 20px, transparent 22px,
+          var(--rust) 22px, var(--rust) 24px,
+          transparent 24px, transparent 40px);
+      opacity: 0.6;
+    }
+
+    /* Lantern glow overlay */
+    #app::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background: radial-gradient(ellipse at 70% 30%, rgba(212,160,80,0.06) 0%, transparent 50%);
+      animation: lanternFlicker 3s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    /* Ensure content is above backgrounds */
+    .header, .main-area, .stats-bar {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ===== HEADER ===== */
+    .header {
+      display: flex;
+      align-items: center;
+      height: 52px;
+      min-height: 52px;
+      padding: 0 16px;
+      background: linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 100%);
+      border-bottom: 2px solid var(--rust);
+      gap: 12px;
+      position: relative;
+      z-index: 10;
+    }
+
+    /* Red star in header */
+    .header::before {
+      content: '★';
+      color: #cc2222;
+      font-size: 18px;
+      text-shadow: 0 0 8px rgba(204,34,34,0.5);
+      margin-right: -4px;
+    }
+
+    .header h1 {
+      font-size: 22px;
+      color: var(--lantern);
+      text-shadow: 0 0 10px rgba(212,160,80,0.3);
+      white-space: nowrap;
+      margin-right: 16px;
+      letter-spacing: 4px;
+    }
+
+    /* Mode tabs */
+    .mode-tabs {
+      display: flex;
+      gap: 2px;
+    }
+
+    .mode-tab {
+      font-family: 'VT323', monospace;
+      font-size: 13px;
+      padding: 4px 12px;
+      background: var(--panel-bg);
+      color: var(--text-dim);
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .mode-tab:hover {
+      color: var(--text-primary);
+      border-color: var(--steel);
+    }
+
+    .mode-tab.active {
+      color: var(--lantern);
+      border-color: var(--rust);
+      background: #3a2a1a;
+    }
+
+    .header-spacer {
+      flex: 1;
+    }
+
+    .global-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .gulag-btn {
+      font-family: 'VT323', monospace;
+      font-size: 14px;
+      padding: 4px 14px;
+      background: var(--panel-bg);
+      color: var(--text-primary);
+      border: 1px solid var(--steel);
+      cursor: pointer;
+      transition: all 0.15s;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .gulag-btn:hover {
+      background: var(--dirt);
+      border-color: var(--lantern);
+      color: var(--lantern);
+    }
+
+    .gulag-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .gulag-btn.primary {
+      background: var(--rust);
+      border-color: var(--rust);
+      color: var(--text-primary);
+    }
+
+    .gulag-btn.primary:hover {
+      background: #9a4a3a;
+    }
+
+    .speed-control {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    .speed-control input[type="range"] {
+      width: 80px;
+      height: 4px;
+      appearance: none;
+      background: var(--steel);
+      border-radius: 2px;
+      outline: none;
+    }
+
+    .speed-control input[type="range"]::-webkit-slider-thumb {
+      appearance: none;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--lantern);
+      cursor: pointer;
+    }
+
+    /* ===== MAIN AREA ===== */
+    .main-area {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* ===== LEFT PANELS ===== */
+    .panels {
+      width: 240px;
+      min-width: 240px;
+      background: var(--panel-bg);
+      border-right: 2px solid var(--rust);
+      padding: 12px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      position: relative;
+    }
+
+    /* Prisoner number stamp */
+    .panels::after {
+      content: 'PRISONER No. 24601';
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      font-size: 9px;
+      color: rgba(100,100,100,0.3);
+      transform: rotate(-5deg);
+      letter-spacing: 2px;
+      pointer-events: none;
+      text-transform: uppercase;
+      font-family: 'VT323', monospace;
+    }
+
+    .panel-section {
+      background: rgba(0,0,0,0.3);
+      border: 1px solid var(--dirt);
+      padding: 10px;
+      position: relative;
+    }
+
+    /* Barbed wire accent above each section */
+    .panel-section::before {
+      content: '';
+      position: absolute;
+      top: -3px;
+      left: 4px;
+      right: 4px;
+      height: 2px;
+      background: repeating-linear-gradient(90deg,
+        transparent 0px, transparent 6px,
+        var(--steel) 6px, var(--steel) 7px,
+        transparent 7px, transparent 12px,
+        var(--rust) 12px, var(--rust) 13px,
+        transparent 13px, transparent 18px);
+      opacity: 0.3;
+    }
+
+    .panel-section h3 {
+      font-size: 13px;
+      color: var(--lantern);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      border-bottom: 1px solid var(--dirt);
+      padding-bottom: 4px;
+    }
+
+    .panel-section h3::before {
+      content: '★ ';
+      color: var(--star-red);
+      font-size: 11px;
+    }
+
+    .panel-section label {
+      display: block;
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-bottom: 2px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .panel-section select,
+    .panel-section input[type="number"] {
+      width: 100%;
+      padding: 4px 8px;
+      background: var(--smoke);
+      border: 1px solid var(--dirt);
+      color: var(--text-primary);
+      font-family: 'VT323', monospace;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .panel-section select:focus,
+    .panel-section input:focus {
+      outline: none;
+      border-color: var(--lantern);
+    }
+
+    .panel-section .stat-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 2px 0;
+      font-size: 13px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .panel-section .stat-row .label {
+      color: var(--text-dim);
+    }
+
+    .panel-section .stat-row .value {
+      color: var(--text-primary);
+      font-weight: bold;
+    }
+
+    /* ===== SIMULATION AREA ===== */
+    .simulation-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 12px;
+      overflow: hidden;
+      gap: 8px;
+    }
+
+    /* Match visualization */
+    .match-visualization {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      gap: 8px;
+      overflow: hidden;
+    }
+
+    .player-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(0,0,0,0.2);
+      border: 1px solid var(--dirt);
+      padding: 8px 12px;
+      min-height: 48px;
+    }
+
+    .player-row.leading {
+      border-color: var(--lantern);
+      background: rgba(212,160,80,0.05);
+    }
+
+    .player-name {
+      font-family: 'UnifrakturCook', serif;
+      font-size: 16px;
+      min-width: 90px;
+      color: var(--text-primary);
+    }
+
+    .player-strategy {
+      font-size: 12px;
+      color: var(--text-dim);
+      min-width: 70px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .player-score {
+      font-size: 28px;
+      font-weight: bold;
+      min-width: 60px;
+      text-align: center;
+      color: var(--lantern);
+      font-family: 'VT323', monospace;
+    }
+
+    .player-score.leader {
+      color: var(--coop-green);
+      text-shadow: 0 0 8px rgba(90,138,74,0.5);
+    }
+
+    .player-score.trailing {
+      color: var(--defect-red);
+    }
+
+    .player-coop {
+      font-size: 12px;
+      color: var(--text-dim);
+      min-width: 50px;
+      text-align: right;
+    }
+
+    .coop-bar {
+      flex: 1;
+      height: 8px;
+      background: var(--smoke);
+      border: 1px solid var(--dirt);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .coop-bar-fill {
+      height: 100%;
+      background: var(--coop-green);
+      transition: width 0.3s;
+    }
+
+    /* Round history grid */
+    .round-history {
+      flex: 1;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      background: rgba(0,0,0,0.2);
+      border: 1px solid var(--dirt);
+      padding: 6px;
+      min-height: 0;
+      position: relative;
+    }
+
+    .round-history .history-label {
+      font-size: 11px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+
+    .history-row {
+      display: flex;
+      gap: 2px;
+      flex-wrap: wrap;
+      align-content: flex-start;
+    }
+
+    .history-cell {
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: bold;
+      border: 1px solid rgba(255,255,255,0.1);
+      flex-shrink: 0;
+    }
+
+    .history-cell.coop {
+      background: var(--coop-green);
+      color: #fff;
+      border-color: #6a9a5a;
+    }
+
+    .history-cell.defect {
+      background: var(--defect-red);
+      color: #fff;
+      border-color: #9a4a4a;
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .history-cell.defect-new {
+        animation: handcuffClick 0.3s ease;
+      }
+    }
+
+    /* Cumulative chart */
+    .cumulative-chart {
+      height: 120px;
+      min-height: 120px;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid var(--dirt);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cumulative-chart canvas {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Comparison charts area */
+    .comparison-charts {
+      display: flex;
+      gap: 8px;
+      min-height: 0;
+      flex: 0 0 auto;
+    }
+
+    .comparison-charts > * {
+      flex: 1;
+    }
+
+    /* What-if panel */
+    .what-if-panel {
+      background: rgba(0,0,0,0.2);
+      border: 1px solid var(--dirt);
+      padding: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .what-if-panel label {
+      font-size: 11px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .what-if-panel select {
+      padding: 2px 6px;
+      background: var(--smoke);
+      border: 1px solid var(--dirt);
+      color: var(--text-primary);
+      font-family: 'VT323', monospace;
+      font-size: 13px;
+    }
+
+    .what-if-panel .what-if-result {
+      font-size: 16px;
+      color: var(--lantern);
+      font-weight: bold;
+    }
+
+    /* ===== STATUS LINE ===== */
+    .status-line {
+      height: 28px;
+      min-height: 28px;
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid var(--dirt);
+      font-size: 13px;
+      color: var(--text-dim);
+    }
+
+    .status-line .highlight {
+      color: var(--lantern);
+    }
+
+    /* ===== STATS BAR ===== */
+    .stats-bar {
+      height: 40px;
+      min-height: 40px;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      background: linear-gradient(0deg, #1a1a1a 0%, #2a2a2a 100%);
+      border-top: 2px solid var(--rust);
+      gap: 24px;
+      font-size: 13px;
+      color: var(--text-dim);
+      position: relative;
+      z-index: 10;
+    }
+
+    /* Rivets on stats bar */
+    .stats-bar::before,
+    .stats-bar::after {
+      content: '⦿';
+      position: absolute;
+      top: 2px;
+      font-size: 6px;
+      color: var(--steel);
+      opacity: 0.5;
+    }
+    .stats-bar::before { left: 8px; }
+    .stats-bar::after { right: 8px; }
+
+    .stats-bar .stat-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .stats-bar .stat-item .stat-value {
+      color: var(--text-primary);
+      font-weight: bold;
+    }
+
+    .stats-bar .stat-item .stat-value.good {
+      color: var(--coop-green);
+    }
+
+    .stats-bar .stat-item .stat-value.bad {
+      color: var(--defect-red);
+    }
+
+    .status-ticker {
+      flex: 1;
+      text-align: right;
+      font-size: 12px;
+      color: var(--text-dim);
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    /* ===== Scrollbar ===== */
+    .panels::-webkit-scrollbar {
+      width: 4px;
+    }
+    .panels::-webkit-scrollbar-track {
+      background: var(--smoke);
+    }
+    .panels::-webkit-scrollbar-thumb {
+      background: var(--dirt);
+    }
+
+    /* ===== Reduced motion ===== */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0s !important;
+        transition-duration: 0s !important;
+      }
+    }
+
+    /* ===== Responsive ===== */
+    @media (max-width: 1024px) {
+      .panels { width: 200px; min-width: 200px; }
+    }
+
+    /* ===== Tournament view ===== */
+    .tournament-view {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .ranking-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      overflow-y: auto;
+      flex: 0 0 auto;
+      max-height: 200px;
+    }
+
+    .ranking-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 8px;
+      background: rgba(0,0,0,0.2);
+      border: 1px solid var(--dirt);
+      font-size: 13px;
+    }
+
+    .ranking-item .rank {
+      min-width: 24px;
+      color: var(--lantern);
+      font-weight: bold;
+    }
+
+    .ranking-item .name {
+      min-width: 100px;
+    }
+
+    .ranking-item .score {
+      min-width: 60px;
+      text-align: right;
+      color: var(--text-primary);
+    }
+
+    .ranking-item .score-bar {
+      flex: 1;
+      height: 8px;
+      background: var(--smoke);
+      border: 1px solid var(--dirt);
+      overflow: hidden;
+    }
+
+    .ranking-item .score-bar-fill {
+      height: 100%;
+      background: var(--steel);
+      transition: width 0.3s;
+    }
+
+    .pairwise-matrix {
+      flex: 1;
+      overflow: auto;
+      border: 1px solid var(--dirt);
+      background: rgba(0,0,0,0.2);
+    }
+
+    .pairwise-matrix table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 12px;
+    }
+
+    .pairwise-matrix th,
+    .pairwise-matrix td {
+      padding: 4px 6px;
+      border: 1px solid var(--dirt);
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .pairwise-matrix th {
+      background: var(--panel-bg);
+      color: var(--lantern);
+      font-family: 'UnifrakturCook', serif;
+      font-size: 12px;
+      font-weight: 700;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    .pairwise-matrix td {
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .pairwise-matrix td:hover {
+      filter: brightness(1.3);
+    }
+
+    .pairwise-matrix td.a-wins {
+      background: rgba(90,138,74,0.3);
+      color: var(--coop-green);
+    }
+
+    .pairwise-matrix td.b-wins {
+      background: rgba(138,58,58,0.3);
+      color: var(--defect-red);
+    }
+
+    .pairwise-matrix td.tie {
+      background: rgba(100,100,100,0.2);
+      color: var(--text-dim);
+    }
+
+    /* ===== Evolution view ===== */
+    .evolution-view {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .population-chart {
+      flex: 1;
+      min-height: 0;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid var(--dirt);
+      position: relative;
+    }
+
+    .population-chart canvas {
+      width: 100%;
+      height: 100%;
+    }
+
+    .extinction-timeline {
+      height: 60px;
+      min-height: 60px;
+      background: rgba(0,0,0,0.2);
+      border: 1px solid var(--dirt);
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      gap: 8px;
+      font-size: 12px;
+      overflow-x: auto;
+    }
+
+    .extinction-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      background: var(--panel-bg);
+      border: 1px solid var(--dirt);
+      white-space: nowrap;
+    }
+
+    .extinction-item .gen-label {
+      color: var(--text-dim);
+    }
+
+    /* ===== Radar chart ===== */
+    .radar-chart-container {
+      width: 100%;
+      height: 200px;
+      background: rgba(0,0,0,0.2);
+      border: 1px solid var(--dirt);
+      position: relative;
+    }
+
+    .radar-chart-container canvas {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* ===== Edge analysis ===== */
+    .edge-analysis {
+      overflow: auto;
+      max-height: 200px;
+      border: 1px solid var(--dirt);
+      background: rgba(0,0,0,0.2);
+    }
+
+    .edge-analysis table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 11px;
+    }
+
+    .edge-analysis th,
+    .edge-analysis td {
+      padding: 3px 6px;
+      border: 1px solid var(--dirt);
+      text-align: center;
+    }
+
+    .edge-analysis th {
+      background: var(--panel-bg);
+      color: var(--lantern);
+      position: sticky;
+      top: 0;
+    }
+
+    /* ===== Hidden ===== */
+    .hidden { display: none !important; }
+
+    /* ===== Gulag decorative elements ===== */
+    .star {
+      display: inline-block;
+      color: var(--star-red);
+      font-size: 14px;
+      margin: 0 4px;
+    }
+
+    /* Tally marks for C/D count */
+    .tally {
+      display: inline-block;
+      font-size: 11px;
+      color: var(--text-dim);
+      font-family: 'VT323', monospace;
+      letter-spacing: 1px;
+    }
+
+    /* Prisoner ID badge on player rows */
+    .prisoner-badge {
+      display: inline-block;
+      background: var(--smoke);
+      border: 1px solid var(--dirt);
+      padding: 0 6px;
+      font-size: 10px;
+      color: var(--lantern);
+      font-family: 'VT323', monospace;
+      letter-spacing: 1px;
+      margin-left: 4px;
+    }
+
+    /* ===== Matching config panel ===== */
+    .match-config-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .config-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .config-row label {
+      min-width: 80px;
+      font-size: 12px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+    }
+
+    .config-row input[type="number"] {
+      width: 70px;
+      padding: 2px 6px;
+      background: var(--smoke);
+      border: 1px solid var(--dirt);
+      color: var(--text-primary);
+      font-family: 'VT323', monospace;
+      font-size: 13px;
+    }
+
+    .config-row input[type="checkbox"] {
+      accent-color: var(--rust);
+    }
+
+    /* ===== Evolution sliders ===== */
+    .evo-slider-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+    }
+
+    .evo-slider-row label {
+      min-width: 100px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+    }
+
+    .evo-slider-row input[type="range"] {
+      flex: 1;
+      height: 4px;
+      appearance: none;
+      background: var(--steel);
+      border-radius: 2px;
+      outline: none;
+    }
+
+    .evo-slider-row input[type="range"]::-webkit-slider-thumb {
+      appearance: none;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--lantern);
+      cursor: pointer;
+    }
+
+    .evo-slider-row .slider-value {
+      min-width: 30px;
+      text-align: right;
+      color: var(--text-primary);
+    }
+
+    /* ===== Strategy select in tournament ===== */
+    .strategy-checks {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 8px;
+    }
+
+    .strategy-checks label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      text-transform: none;
+      cursor: pointer;
+    }
+
+    .strategy-checks input[type="checkbox"] {
+      accent-color: var(--rust);
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- HEADER -->
+    <header class="header">
+      <h1>★ PRISONER'S DILEMMA</h1>
+      <nav class="mode-tabs">
+        <button class="mode-tab active" data-mode="match">Match</button>
+        <button class="mode-tab" data-mode="tournament">Tournament</button>
+        <button class="mode-tab" data-mode="noisy">Noisy</button>
+        <button class="mode-tab" data-mode="evolution">Evolution</button>
+        <button class="mode-tab" data-mode="islands">Islands</button>
+      </nav>
+      <div class="header-spacer"></div>
+      <div class="global-controls">
+        <button class="gulag-btn primary" id="btnRun">▶ Run</button>
+        <button class="gulag-btn" id="btnPause" disabled>⏸ Pause</button>
+        <button class="gulag-btn" id="btnReset">↺ Reset</button>
+        <div class="speed-control">
+          <span>Speed</span>
+          <input type="range" id="speedSlider" min="0" max="5" value="3" step="1">
+          <span id="speedLabel">3</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN -->
+    <div class="main-area">
+      <!-- LEFT PANELS -->
+      <aside class="panels" id="panels">
+        <!-- Strategy Select (Match mode) -->
+        <div class="panel-section" id="matchStrategySection">
+          <h3>★ Players</h3>
+          <label>Player A</label>
+          <select id="strategyA"></select>
+          <label>Player B</label>
+          <select id="strategyB"></select>
+        </div>
+
+        <!-- Strategy Checkboxes (Tournament/Noisy mode) -->
+        <div class="panel-section hidden" id="tournamentStrategySection">
+          <h3>★ Strategies</h3>
+          <div class="strategy-checks" id="strategyChecks"></div>
+          <button class="gulag-btn" id="btnSelectAll">Select All</button>
+          <button class="gulag-btn" id="btnDeselectAll">Deselect All</button>
+        </div>
+
+        <!-- Evolution population sliders -->
+        <div class="panel-section hidden" id="evolutionStrategySection">
+          <h3>★ Population</h3>
+          <div id="populationSliders"></div>
+        </div>
+
+        <!-- Config -->
+        <div class="panel-section">
+          <h3>★ Config</h3>
+          <div class="match-config-panel" id="configPanel">
+            <div class="config-row">
+              <label>Rounds</label>
+              <input type="number" id="configRounds" value="200" min="1" max="10000">
+            </div>
+            <div class="config-row">
+              <label>Prob. cont.</label>
+              <input type="checkbox" id="configProbCont">
+            </div>
+            <div class="config-row hidden noise-config">
+              <label>Action noise</label>
+              <input type="number" id="configActionNoise" value="0.01" min="0" max="1" step="0.01">
+            </div>
+            <div class="config-row hidden noise-config">
+              <label>Percept noise</label>
+              <input type="number" id="configPerceptNoise" value="0.01" min="0" max="1" step="0.01">
+            </div>
+            <div class="config-row hidden evo-config">
+              <label>Generations</label>
+              <input type="number" id="configGenerations" value="50" min="1" max="500">
+            </div>
+            <div class="config-row hidden evo-config">
+              <label>Mutation</label>
+              <input type="number" id="configMutation" value="0.0" min="0" max="1" step="0.01">
+            </div>
+            <div class="config-row hidden evo-config">
+              <label>Pressure</label>
+              <input type="number" id="configPressure" value="1.0" min="0.1" max="10" step="0.1">
+            </div>
+          </div>
+        </div>
+
+        <!-- Info panel -->
+        <div class="panel-section">
+          <h3>★ Status</h3>
+          <div class="stat-row"><span class="label">Round</span><span class="value" id="infoRound">—</span></div>
+          <div class="stat-row"><span class="label">State</span><span class="value" id="infoState">idle</span></div>
+          <div class="stat-row"><span class="label">Seed</span><span class="value" id="infoSeed">—</span></div>
+        </div>
+      </aside>
+
+      <!-- SIMULATION AREA -->
+      <div class="simulation-area" id="simulationArea">
+        <!-- Match View (default) -->
+        <div class="match-visualization" id="matchView">
+          <!-- Player A -->
+          <div class="player-row" id="playerARow">
+            <span class="player-name" id="playerAName">PLAYER A</span>
+            <span class="player-strategy" id="playerAStrategy">TFT</span>
+            <span class="player-score" id="playerAScore">0</span>
+            <div class="coop-bar"><div class="coop-bar-fill" id="playerACoop" style="width:0%"></div></div>
+            <span class="player-coop" id="playerACoopLabel">0%</span>
+          </div>
+
+          <!-- Round history -->
+          <div class="round-history">
+            <div class="history-label">Player A (top) vs Player B (bottom)</div>
+            <div class="history-row" id="historyRowA"></div>
+            <div class="history-row" id="historyRowB"></div>
+          </div>
+
+          <!-- Player B -->
+          <div class="player-row" id="playerBRow">
+            <span class="player-name" id="playerBName">PLAYER B</span>
+            <span class="player-strategy" id="playerBStrategy">AllD</span>
+            <span class="player-score" id="playerBScore">0</span>
+            <div class="coop-bar"><div class="coop-bar-fill" id="playerBCoop" style="width:0%"></div></div>
+            <span class="player-coop" id="playerBCoopLabel">0%</span>
+          </div>
+
+          <!-- Cumulative chart -->
+          <div class="cumulative-chart">
+            <canvas id="cumulativeChart"></canvas>
+          </div>
+
+          <!-- Comparison charts row -->
+          <div class="comparison-charts" id="comparisonCharts">
+            <!-- Radar chart -->
+            <div class="radar-chart-container" id="radarContainer">
+              <canvas id="radarChart"></canvas>
+            </div>
+            <!-- What-if panel -->
+            <div class="what-if-panel">
+              <label>Replace A with</label>
+              <select id="whatIfSelect"></select>
+              <span class="what-if-result" id="whatIfResult">—</span>
+            </div>
+          </div>
+
+          <!-- Status line -->
+          <div class="status-line" id="statusLine">
+            <span class="highlight">▼</span> <span id="statusText">Ready. Select strategies and press Run.</span>
+          </div>
+        </div>
+
+        <!-- Tournament View -->
+        <div class="tournament-view hidden" id="tournamentView">
+          <div class="ranking-list" id="rankingList"></div>
+          <div class="pairwise-matrix" id="pairwiseMatrix"></div>
+          <div class="comparison-charts">
+            <div class="radar-chart-container">
+              <canvas id="tournamentRadarChart"></canvas>
+            </div>
+            <div class="edge-analysis" id="edgeAnalysis"></div>
+          </div>
+          <div class="status-line">
+            <span class="highlight">▼</span> <span id="tournamentStatusText">Run a tournament to see results.</span>
+          </div>
+        </div>
+
+        <!-- Evolution View -->
+        <div class="evolution-view hidden" id="evolutionView">
+          <div class="population-chart">
+            <canvas id="populationChart"></canvas>
+          </div>
+          <div class="extinction-timeline" id="extinctionTimeline"></div>
+          <div class="status-line">
+            <span class="highlight">▼</span> <span id="evolutionStatusText">Configure and run evolution.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATS BAR -->
+    <footer class="stats-bar">
+      <div class="stat-item">Matches: <span class="stat-value" id="statMatches">0</span></div>
+      <div class="stat-item">A wins: <span class="stat-value good" id="statAWins">0</span></div>
+      <div class="stat-item">B wins: <span class="stat-value bad" id="statBWins">0</span></div>
+      <div class="stat-item">Coop rate: <span class="stat-value" id="statCoopRate">0%</span></div>
+      <div class="status-ticker" id="statusTicker">★ GULAG PRISONER'S DILEMMA — EVERY BETRAYAL IS A STEP CLOSER TO FREEDOM</div>
+    </footer>
+  </div>
+
+  <script>
+  /*
+   * ================================================================
+   *  SECTION 1: CORE — Move, PayoffMatrix, ScoreCalculator, GameEngine
+   * ================================================================
+   */
+
+  const Move = Object.freeze({ C: 'C', D: 'D' });
+
+  function opposite(move) {
+    return move === Move.C ? Move.D : Move.C;
+  }
+
+  class PayoffMatrix {
+    /**
+     * @param {number} T — Temptation (defect vs cooperate)
+     * @param {number} R — Reward (both cooperate)
+     * @param {number} P — Punishment (both defect)
+     * @param {number} S — Sucker (cooperate vs defect)
+     */
+    constructor(T = 5, R = 3, P = 1, S = 0) {
+      if (!(T > R && R > P && P > S)) {
+        throw new Error(`PayoffMatrix: must satisfy T > R > P > S (got T=${T}, R=${R}, P=${P}, S=${S})`);
+      }
+      if (!(2 * R > T + S)) {
+        throw new Error(`PayoffMatrix: must satisfy 2R > T+S (got 2R=${2*R}, T+S=${T+S})`);
+      }
+      this.T = T;
+      this.R = R;
+      this.P = P;
+      this.S = S;
+      // Precompute lookup: key = myMove + oppMove
+      this._matrix = {
+        'CC': R,
+        'CD': S,
+        'DC': T,
+        'DD': P,
+      };
+    }
+
+    lookup(myMove, oppMove) {
+      return this._matrix[myMove + oppMove];
+    }
+  }
+
+  class ScoreCalculator {
+    constructor(matrix) {
+      this.matrix = matrix;
+    }
+
+    scoreRound(moveA, moveB) {
+      return {
+        a: this.matrix.lookup(moveA, moveB),
+        b: this.matrix.lookup(moveB, moveA),
+      };
+    }
+  }
+
+  class GameEngine {
+    constructor(matrix) {
+      this.matrix = matrix || new PayoffMatrix();
+      this.scoreCalc = new ScoreCalculator(this.matrix);
+    }
+
+    /**
+     * Play a match between two strategies.
+     * @param {Object} strategyA
+     * @param {Object} strategyB
+     * @param {Object} config — { rounds, continuationProbability, noiseModel, onRound, onMatchComplete }
+     * @returns {Promise<Object>} MatchResult
+     */
+    async playMatch(strategyA, strategyB, config) {
+      const rounds = config.rounds || 200;
+      const contProb = config.continuationProbability || 0;
+      const noise = config.noiseModel || null;
+      const onRound = config.onRound || (() => {});
+      const delay = config.delay || 0;
+
+      strategyA.reset();
+      strategyB.reset();
+
+      // Real history (truth)
+      const realHistoryA = [];
+      const realHistoryB = [];
+
+      // Perceived history (what each strategy sees — may differ due to noise)
+      const perceivedA = []; // what A sees of B's moves
+      const perceivedB = []; // what B sees of A's moves
+
+      let totalA = 0;
+      let totalB = 0;
+      const roundData = [];
+
+      // First moves
+      let moveA = strategyA.firstMove();
+      let moveB = strategyB.firstMove();
+
+      for (let r = 1; r <= rounds; r++) {
+        // Check probabilistic continuation
+        if (contProb > 0 && r > 1) {
+          if (Math.random() > contProb) break;
+        }
+
+        // Apply action noise
+        const executedA = noise ? noise.applyActionNoise(moveA) : moveA;
+        const executedB = noise ? noise.applyActionNoise(moveB) : moveB;
+
+        // Score
+        const roundScore = this.scoreCalc.scoreRound(executedA, executedB);
+        totalA += roundScore.a;
+        totalB += roundScore.b;
+
+        // Perception noise
+        const perceivedByA = noise ? noise.applyPerceptionNoise(executedB, 'A') : executedB;
+        const perceivedByB = noise ? noise.applyPerceptionNoise(executedA, 'B') : executedA;
+
+        // Record real history
+        realHistoryA.push(executedA);
+        realHistoryB.push(executedB);
+        perceivedA.push(perceivedByA);
+        perceivedB.push(perceivedByB);
+
+        roundData.push({
+          round: r,
+          moveA, moveB,
+          executedA, executedB,
+          perceivedByA, perceivedByB,
+          scoreA: roundScore.a,
+          scoreB: roundScore.b,
+          totalA, totalB,
+        });
+
+        // Notify UI
+        if (delay > 0) {
+          await onRound({
+            round: r,
+            totalRounds: rounds,
+            moveA, moveB,
+            executedA, executedB,
+            scoreA: roundScore.a,
+            scoreB: roundScore.b,
+            totalA, totalB,
+            historyA: realHistoryA,
+            historyB: realHistoryB,
+          });
+          await sleep(delay);
+        }
+
+        if (r >= rounds) break;
+
+        // Get next moves (strategies see perceived history)
+        moveA = strategyA.nextMove({
+          myMoves: realHistoryA,
+          oppMoves: perceivedA,
+        });
+        moveB = strategyB.nextMove({
+          myMoves: realHistoryB,
+          oppMoves: perceivedB,
+        });
+      }
+
+      const winner = totalA > totalB ? 'A' : totalB > totalA ? 'B' : 'tie';
+
+      const result = {
+        rounds: roundData,
+        totalA,
+        totalB,
+        winner,
+        strategyA: strategyA.name(),
+        strategyB: strategyB.name(),
+      };
+
+      if (config.onMatchComplete) {
+        config.onMatchComplete(result);
+      }
+
+      return result;
+    }
+  }
+
+  function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  /*
+   * ================================================================
+   *  SECTION 2: STRATEGIES — All 8 strategies
+   * ================================================================
+   */
+
+  class BaseStrategy {
+    name() { return this.constructor.name; }
+    firstMove() { return Move.C; }
+    nextMove(history) { return Move.C; }
+    reset() {}
+  }
+
+  class AllC extends BaseStrategy {
+    name() { return 'AllC'; }
+    firstMove() { return Move.C; }
+    nextMove(history) { return Move.C; }
+  }
+
+  class AllD extends BaseStrategy {
+    name() { return 'AllD'; }
+    firstMove() { return Move.D; }
+    nextMove(history) { return Move.D; }
+  }
+
+  class TFT extends BaseStrategy {
+    name() { return 'TFT'; }
+    firstMove() { return Move.C; }
+    nextMove(history) {
+      const { oppMoves } = history;
+      if (oppMoves.length === 0) return Move.C;
+      return oppMoves[oppMoves.length - 1];
+    }
+  }
+
+  class Joss extends BaseStrategy {
+    constructor(prob = 0.1, rng = Math.random) {
+      super();
+      this.prob = prob;
+      this._rng = rng;
+    }
+    name() { return 'Joss'; }
+    firstMove() { return Move.C; }
+    nextMove(history) {
+      const { oppMoves } = history;
+      if (oppMoves.length === 0) return Move.C;
+      const lastOpp = oppMoves[oppMoves.length - 1];
+      if (lastOpp === Move.D) return Move.D;
+      // Opponent cooperated — sometimes defect anyway
+      return this._rng() < this.prob ? Move.D : Move.C;
+    }
+  }
+
+  class Friedman extends BaseStrategy {
+    name() { return 'Friedman'; }
+    constructor() {
+      super();
+      this.everDefected = false;
+    }
+    firstMove() { return Move.C; }
+    nextMove(history) {
+      const { oppMoves } = history;
+      if (this.everDefected) return Move.D;
+      // Check if opponent ever defected
+      for (const m of oppMoves) {
+        if (m === Move.D) {
+          this.everDefected = true;
+          return Move.D;
+        }
+      }
+      return Move.C;
+    }
+    reset() { this.everDefected = false; }
+  }
+
+  class Graaskamp extends BaseStrategy {
+    constructor(windowSize = 10, threshold = 0.5) {
+      super();
+      this.windowSize = windowSize;
+      this.threshold = threshold;
+      this._buffer = [];
+    }
+    name() { return 'Graaskamp'; }
+    firstMove() { return Move.C; }
+    nextMove(history) {
+      const { oppMoves } = history;
+      // Maintain buffer
+      if (oppMoves.length > 0) {
+        this._buffer.push(oppMoves[oppMoves.length - 1]);
+        if (this._buffer.length > this.windowSize) {
+          this._buffer.shift();
+        }
+      }
+      if (this._buffer.length === 0) return Move.C;
+      const defectionCount = this._buffer.filter(m => m === Move.D).length;
+      const rate = defectionCount / this._buffer.length;
+      return rate > this.threshold ? Move.D : Move.C;
+    }
+    reset() { this._buffer = []; }
+  }
+
+  class Tester extends BaseStrategy {
+    constructor() {
+      super();
+      this.mode = 'testing';
+      this._exploitState = 0; // 0 = D, 1 = C (alternating)
+      this._oppRetaliated = false;
+    }
+    name() { return 'Tester'; }
+    firstMove() { return Move.D; }
+    nextMove(history) {
+      const { oppMoves, myMoves } = history;
+      if (oppMoves.length === 0) return Move.D;
+
+      if (this.mode === 'testing') {
+        // First move was D — check opponent's response
+        const oppFirst = oppMoves[0];
+        if (oppFirst === Move.D) {
+          // Opponent retaliated — become contrite
+          this.mode = 'contrite';
+          this._oppRetaliated = true;
+          return Move.C; // apology
+        } else {
+          // Opponent didn't retaliate — exploit!
+          this.mode = 'exploiting';
+          this._exploitState = 0; // start with D
+          return Move.D;
+        }
+      }
+
+      if (this.mode === 'contrite') {
+        // Play TFT
+        if (oppMoves.length === 0) return Move.C;
+        return oppMoves[oppMoves.length - 1];
+      }
+
+      if (this.mode === 'exploiting') {
+        // Alternate D, C
+        this._exploitState = 1 - this._exploitState;
+        return this._exploitState === 0 ? Move.D : Move.C;
+      }
+
+      return Move.C;
+    }
+    reset() {
+      this.mode = 'testing';
+      this._exploitState = 0;
+      this._oppRetaliated = false;
+    }
+  }
+
+  class RandomStrategy extends BaseStrategy {
+    constructor(rng = Math.random) {
+      super();
+      this._rng = rng;
+    }
+    name() { return 'Random'; }
+    firstMove() { return this._rng() < 0.5 ? Move.C : Move.D; }
+    nextMove(history) {
+      return this._rng() < 0.5 ? Move.C : Move.D;
+    }
+  }
+
+  // Registry of all strategies
+  const STRATEGIES = {
+    AllC: () => new AllC(),
+    AllD: () => new AllD(),
+    TFT: () => new TFT(),
+    Joss: () => new Joss(),
+    Friedman: () => new Friedman(),
+    Graaskamp: () => new Graaskamp(),
+    Tester: () => new Tester(),
+    Random: () => new RandomStrategy(),
+  };
+
+  const STRATEGY_NAMES = Object.keys(STRATEGIES);
+
+  /*
+   * ================================================================
+   *  SECTION 3: ENGINE — Tournament, NoiseModel, Population, Evolution
+   * ================================================================
+   */
+
+  class NoiseModel {
+    constructor(config = {}) {
+      this.actionErrorRate = config.actionErrorRate || 0;
+      this.perceptionErrorRate = config.perceptionErrorRate || 0;
+      this._rng = config.rng || Math.random;
+      // Separate seeds for reproducibility (optional)
+      this._actionRng = config.actionRng || this._rng;
+      this._perceptRng = config.perceptRng || this._rng;
+    }
+
+    applyActionNoise(intendedMove) {
+      if (this.actionErrorRate <= 0) return intendedMove;
+      if (this._actionRng() < this.actionErrorRate) {
+        return opposite(intendedMove);
+      }
+      return intendedMove;
+    }
+
+    applyPerceptionNoise(actualMove, observerId) {
+      if (this.perceptionErrorRate <= 0) return actualMove;
+      if (this._perceptRng() < this.perceptionErrorRate) {
+        return opposite(actualMove);
+      }
+      return actualMove;
+    }
+
+    reset() {
+      // Reset RNG if seeded
+    }
+  }
+
+  class Tournament {
+    constructor(config = {}) {
+      this.roundsPerMatch = config.roundsPerMatch || 200;
+      this.noiseModel = config.noiseModel || null;
+      this.matrix = config.matrix || new PayoffMatrix();
+      this.engine = new GameEngine(this.matrix);
+    }
+
+    /**
+     * Run a round-robin tournament.
+     * @param {Object[]} strategies — array of strategy instances
+     * @param {Object} [callbacks] — { onMatchStart, onMatchComplete, onRound }
+     * @returns {Object} TournamentResult
+     */
+    async run(strategies, callbacks = {}) {
+      const n = strategies.length;
+      // pairwiseScores[i][j] = score of strategies[i] vs strategies[j]
+      const pairwiseScores = Array.from({ length: n }, () => Array(n).fill(0));
+      const totalScores = Array(n).fill(0);
+      const matchResults = [];
+      const cooperationCounts = Array(n).fill(0);
+      const totalRoundsCount = Array(n).fill(0);
+
+      for (let i = 0; i < n; i++) {
+        for (let j = 0; j < n; j++) {
+          if (callbacks.onMatchStart) callbacks.onMatchStart(i, j);
+
+          const result = await this.engine.playMatch(strategies[i], strategies[j], {
+            rounds: this.roundsPerMatch,
+            noiseModel: this.noiseModel,
+            onRound: callbacks.onRound || (() => {}),
+          });
+
+          pairwiseScores[i][j] = result.totalA;
+          totalScores[i] += result.totalA;
+
+          // Count cooperation
+          for (const r of result.rounds) {
+            if (r.executedA === Move.C) cooperationCounts[i]++;
+            totalRoundsCount[i]++;
+          }
+
+          matchResults.push({
+            aIdx: i,
+            bIdx: j,
+            aName: strategies[i].name(),
+            bName: strategies[j].name(),
+            result,
+          });
+
+          if (callbacks.onMatchComplete) callbacks.onMatchComplete({ i, j, result });
+        }
+      }
+
+      // Build ranking
+      const ranking = strategies.map((s, i) => ({
+        name: s.name(),
+        index: i,
+        totalScore: totalScores[i],
+        meanScore: totalScores[i] / n,
+        coopRate: totalRoundsCount[i] > 0 ? cooperationCounts[i] / totalRoundsCount[i] : 0,
+      }));
+      ranking.sort((a, b) => b.totalScore - a.totalScore);
+
+      // Win rates
+      const winCounts = Array(n).fill(0);
+      for (let i = 0; i < n; i++) {
+        for (let j = 0; j < n; j++) {
+          if (i === j) continue;
+          if (pairwiseScores[i][j] > pairwiseScores[j][i]) winCounts[i]++;
+        }
+      }
+
+      ranking.forEach((r, idx) => {
+        r.winRate = winCounts[r.index] / (n - 1);
+      });
+
+      return {
+        pairwiseScores,
+        totalScores,
+        ranking,
+        matchResults,
+        strategies: strategies.map(s => s.name()),
+      };
+    }
+
+    /**
+     * Synchronous tournament (no animation, fast).
+     */
+    runSync(strategies) {
+      const n = strategies.length;
+      const pairwiseScores = Array.from({ length: n }, () => Array(n).fill(0));
+      const totalScores = Array(n).fill(0);
+      const cooperationCounts = Array(n).fill(0);
+      const totalRoundsCount = Array(n).fill(0);
+
+      for (let i = 0; i < n; i++) {
+        for (let j = 0; j < n; j++) {
+          strategies[i].reset();
+          strategies[j].reset();
+          const result = this.engine.playMatch(strategies[i], strategies[j], {
+            rounds: this.roundsPerMatch,
+            noiseModel: this.noiseModel,
+          });
+          // Convert async to sync — we'll use sync variant below
+        }
+      }
+      // Fallback: use syncMatch
+      return this._runSyncInternal(strategies);
+    }
+
+    _runSyncInternal(strategies) {
+      const n = strategies.length;
+      const pairwiseScores = Array.from({ length: n }, () => Array(n).fill(0));
+      const totalScores = Array(n).fill(0);
+      const cooperationCounts = Array(n).fill(0);
+      const totalRoundsCount = Array(n).fill(0);
+
+      // Synchronous match function
+      const syncMatch = (sa, sb) => {
+        sa.reset();
+        sb.reset();
+        const historyA = [], historyB = [];
+        const perceivedA = [], perceivedB = [];
+        let totalA = 0, totalB = 0;
+
+        let moveA = sa.firstMove();
+        let moveB = sb.firstMove();
+
+        for (let r = 0; r < this.roundsPerMatch; r++) {
+          const executedA = this.noiseModel ? this.noiseModel.applyActionNoise(moveA) : moveA;
+          const executedB = this.noiseModel ? this.noiseModel.applyActionNoise(moveB) : moveB;
+
+          const score = { a: this.engine.scoreCalc.matrix.lookup(executedA, executedB),
+                          b: this.engine.scoreCalc.matrix.lookup(executedB, executedA) };
+          totalA += score.a;
+          totalB += score.b;
+
+          const pA = this.noiseModel ? this.noiseModel.applyPerceptionNoise(executedB) : executedB;
+          const pB = this.noiseModel ? this.noiseModel.applyPerceptionNoise(executedA) : executedA;
+
+          historyA.push(executedA);
+          historyB.push(executedB);
+          perceivedA.push(pA);
+          perceivedB.push(pB);
+
+          if (r < this.roundsPerMatch - 1) {
+            moveA = sa.nextMove({ myMoves: historyA, oppMoves: perceivedA });
+            moveB = sb.nextMove({ myMoves: historyB, oppMoves: perceivedB });
+          }
+        }
+        return { totalA, totalB, historyA };
+      };
+
+      for (let i = 0; i < n; i++) {
+        for (let j = 0; j < n; j++) {
+          const result = syncMatch(strategies[i], strategies[j]);
+          pairwiseScores[i][j] = result.totalA;
+          totalScores[i] += result.totalA;
+          for (const m of result.historyA) {
+            if (m === Move.C) cooperationCounts[i]++;
+            totalRoundsCount[i]++;
+          }
+        }
+      }
+
+      const ranking = strategies.map((s, i) => ({
+        name: s.name(),
+        index: i,
+        totalScore: totalScores[i],
+        meanScore: totalScores[i] / n,
+        coopRate: totalRoundsCount[i] > 0 ? cooperationCounts[i] / totalRoundsCount[i] : 0,
+      }));
+      ranking.sort((a, b) => b.totalScore - a.totalScore);
+
+      const winCounts = Array(n).fill(0);
+      for (let i = 0; i < n; i++) {
+        for (let j = 0; j < n; j++) {
+          if (i !== j && pairwiseScores[i][j] > pairwiseScores[j][i]) winCounts[i]++;
+        }
+      }
+      ranking.forEach(r => { r.winRate = winCounts[r.index] / (n - 1); });
+
+      return {
+        pairwiseScores,
+        totalScores,
+        ranking,
+        strategies: strategies.map(s => s.name()),
+      };
+    }
+  }
+
+  class Population {
+    constructor(config = {}) {
+      // { strategyName: count }
+      this.distribution = config.distribution || {};
+      this.populationSize = config.populationSize || 100;
+    }
+
+    total() {
+      return Object.values(this.distribution).reduce((a, b) => a + b, 0);
+    }
+
+    shares() {
+      const t = this.total();
+      if (t === 0) return {};
+      const result = {};
+      for (const [name, count] of Object.entries(this.distribution)) {
+        result[name] = count / t;
+      }
+      return result;
+    }
+
+    /**
+     * Create a new population from scores.
+     * @param {Object} scores — { strategyName: totalScore }
+     * @param {number} selectionPressure
+     * @param {number} mutationRate
+     * @param {string[]} mutationPool
+     * @returns {Population}
+     */
+    reproduce(scores, selectionPressure = 1.0, mutationRate = 0, mutationPool = []) {
+      const totalScore = Object.values(scores).reduce((a, b) => a + b, 0);
+      if (totalScore === 0) return new Population({ distribution: {}, populationSize: this.populationSize });
+
+      const newDist = {};
+      const names = Object.keys(this.distribution);
+
+      for (const name of names) {
+        const score = scores[name] || 0;
+        // Proportional share based on score^selectionPressure
+        const share = Math.pow(score / totalScore, selectionPressure);
+        const count = Math.round(share * this.populationSize);
+        if (count > 0) {
+          newDist[name] = (newDist[name] || 0) + count;
+        }
+      }
+
+      // Normalize to populationSize
+      const currentTotal = Object.values(newDist).reduce((a, b) => a + b, 0);
+      if (currentTotal > 0) {
+        const scale = this.populationSize / currentTotal;
+        for (const name of Object.keys(newDist)) {
+          newDist[name] = Math.max(1, Math.round(newDist[name] * scale));
+        }
+      }
+
+      // Fill remaining slots
+      let fill = this.populationSize - Object.values(newDist).reduce((a, b) => a + b, 0);
+      if (fill > 0 && names.length > 0) {
+        newDist[names[0]] = (newDist[names[0]] || 0) + fill;
+      }
+
+      // Mutation
+      if (mutationRate > 0 && mutationPool.length > 0) {
+        for (const name of Object.keys(newDist)) {
+          if (Math.random() < mutationRate) {
+            const mutant = mutationPool[Math.floor(Math.random() * mutationPool.length)];
+            newDist[name]--;
+            if (newDist[name] <= 0) delete newDist[name];
+            newDist[mutant] = (newDist[mutant] || 0) + 1;
+          }
+        }
+      }
+
+      return new Population({ distribution: newDist, populationSize: this.populationSize });
+    }
+  }
+
+  class EvolutionEngine {
+    constructor(config = {}) {
+      this.roundsPerMatch = config.roundsPerMatch || 200;
+      this.mutationRate = config.mutationRate || 0;
+      this.mutationPool = config.mutationPool || [];
+      this.selectionPressure = config.selectionPressure || 1.0;
+      this.matrix = config.matrix || new PayoffMatrix();
+      this.tournament = new Tournament({
+        roundsPerMatch: this.roundsPerMatch,
+        matrix: this.matrix,
+      });
+    }
+
+    /**
+     * Run evolution over generations.
+     * @param {Population} initialPopulation
+     * @param {number} generations
+     * @param {Object} [callbacks]
+     * @returns {Object} EvolutionResult
+     */
+    async run(initialPopulation, generations, callbacks = {}) {
+      const populationHistory = [];
+      let currentPop = initialPopulation;
+
+      for (let gen = 0; gen < generations; gen++) {
+        const dist = currentPop.distribution;
+        const names = Object.keys(dist);
+
+        // Create strategy instances
+        const instances = [];
+        for (const name of names) {
+          for (let i = 0; i < dist[name]; i++) {
+            instances.push(STRATEGIES[name]());
+          }
+        }
+
+        // Run tournament
+        const result = this.tournament._runSyncInternal(instances);
+
+        // Collect scores per strategy name
+        const scores = {};
+        for (const r of result.ranking) {
+          const name = r.name;
+          scores[name] = (scores[name] || 0) + r.totalScore;
+        }
+        // Average
+        for (const name of Object.keys(scores)) {
+          scores[name] = scores[name] / (dist[name] || 1);
+        }
+
+        // Record population snapshot
+        const snapshot = { generation: gen, distribution: { ...dist } };
+        populationHistory.push(snapshot);
+
+        if (callbacks.onGeneration) {
+          callbacks.onGeneration({ generation: gen, distribution: dist, scores, ranking: result.ranking });
+        }
+
+        // Reproduce
+        currentPop = currentPop.reproduce(scores, this.selectionPressure, this.mutationRate, this.mutationPool);
+      }
+
+      // Final snapshot
+      populationHistory.push({
+        generation: generations,
+        distribution: { ...currentPop.distribution },
+      });
+
+      // Compute extinction events
+      const extinctEvents = [];
+      const allNames = new Set();
+      populationHistory.forEach(s => Object.keys(s.distribution).forEach(n => allNames.add(n)));
+
+      for (const name of allNames) {
+        let alive = false;
+        let extinctGen = null;
+        for (const snap of populationHistory) {
+          if (snap.distribution[name] && snap.distribution[name] > 0) {
+            alive = true;
+          } else if (alive && extinctGen === null) {
+            extinctGen = snap.generation;
+          }
+        }
+        if (extinctGen !== null) {
+          extinctEvents.push({ name, generation: extinctGen });
+        }
+      }
+
+      return {
+        populationHistory,
+        finalDistribution: currentPop.distribution,
+        extinctEvents,
+      };
+    }
+
+    /**
+     * Synchronous evolution (fast, no animation).
+     */
+    runSync(initialPopulation, generations) {
+      const populationHistory = [];
+      let currentPop = initialPopulation;
+
+      for (let gen = 0; gen < generations; gen++) {
+        const dist = currentPop.distribution;
+        const names = Object.keys(dist);
+
+        const instances = [];
+        for (const name of names) {
+          for (let i = 0; i < dist[name]; i++) {
+            instances.push(STRATEGIES[name]());
+          }
+        }
+
+        const result = this.tournament._runSyncInternal(instances);
+
+        const scores = {};
+        for (const r of result.ranking) {
+          scores[r.name] = (scores[r.name] || 0) + r.totalScore;
+        }
+        for (const name of Object.keys(scores)) {
+          scores[name] = scores[name] / (dist[name] || 1);
+        }
+
+        populationHistory.push({ generation: gen, distribution: { ...dist } });
+        currentPop = currentPop.reproduce(scores, this.selectionPressure, this.mutationRate, this.mutationPool);
+      }
+
+      populationHistory.push({ generation: generations, distribution: { ...currentPop.distribution } });
+
+      const extinctEvents = [];
+      const allNames = new Set();
+      populationHistory.forEach(s => Object.keys(s.distribution).forEach(n => allNames.add(n)));
+
+      for (const name of allNames) {
+        let alive = false;
+        let extinctGen = null;
+        for (const snap of populationHistory) {
+          if (snap.distribution[name] && snap.distribution[name] > 0) {
+            alive = true;
+          } else if (alive && extinctGen === null) {
+            extinctGen = snap.generation;
+          }
+        }
+        if (extinctGen !== null) {
+          extinctEvents.push({ name, generation: extinctGen });
+        }
+      }
+
+      return {
+        populationHistory,
+        finalDistribution: currentPop.distribution,
+        extinctEvents,
+      };
+    }
+  }
+
+  /*
+   * ================================================================
+   *  SECTION 4: UI — Renderer, Charts, Controllers
+   * ================================================================
+   */
+
+  // ---- Shared State ----
+  const state = {
+    mode: 'match',
+    running: false,
+    paused: false,
+    currentMatch: null,
+    matchRound: 0,
+    matchHistoryA: [],
+    matchHistoryB: [],
+    matchScores: { a: 0, b: 0 },
+    playerAStrategy: 'TFT',
+    playerBStrategy: 'AllD',
+    tournamentResult: null,
+    evolutionResult: null,
+    stats: { matches: 0, aWins: 0, bWins: 0 },
+  };
+
+  // ---- Strategy helpers ----
+  function createStrategy(name) {
+    const factory = STRATEGIES[name];
+    return factory ? factory() : new TFT();
+  }
+
+  // ---- Radar chart drawing ----
+  function drawRadarChart(canvasId, paramsA, paramsB, labelA, labelB) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const rect = canvas.parentElement.getBoundingClientRect();
+    canvas.width = rect.width * window.devicePixelRatio;
+    canvas.height = rect.height * window.devicePixelRatio;
+    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    const w = rect.width;
+    const h = rect.height;
+
+    const labels = ['Niceness', 'Retaliation', 'Forgiveness', 'Predictability', 'Exploitability', 'Noise Tol.', 'Avg Score'];
+    const values = [
+      paramsA.niceness || 0, paramsA.retaliation || 0, paramsA.forgiveness || 0,
+      paramsA.predictability || 0, paramsA.exploitability || 0, paramsA.noiseTolerance || 0,
+      paramsA.avgScore || 0,
+    ];
+    const valuesB = [
+      paramsB.niceness || 0, paramsB.retaliation || 0, paramsB.forgiveness || 0,
+      paramsB.predictability || 0, paramsB.exploitability || 0, paramsB.noiseTolerance || 0,
+      paramsB.avgScore || 0,
+    ];
+
+    const cx = w / 2;
+    const cy = h / 2;
+    const radius = Math.min(cx, cy) - 30;
+    const angles = labels.map((_, i) => (Math.PI * 2 * i) / labels.length - Math.PI / 2);
+
+    ctx.clearRect(0, 0, w, h);
+
+    // Grid
+    for (let ring = 1; ring <= 4; ring++) {
+      const r = (radius * ring) / 4;
+      ctx.beginPath();
+      for (let i = 0; i <= labels.length; i++) {
+        const a = angles[i % labels.length];
+        const x = cx + r * Math.cos(a);
+        const y = cy + r * Math.sin(a);
+        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+      ctx.strokeStyle = 'rgba(106,122,138,0.3)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+
+    // Axes
+    for (let i = 0; i < labels.length; i++) {
+      const a = angles[i];
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx + radius * Math.cos(a), cy + radius * Math.sin(a));
+      ctx.strokeStyle = 'rgba(106,122,138,0.3)';
+      ctx.stroke();
+
+      // Label
+      const lx = cx + (radius + 16) * Math.cos(a);
+      const ly = cy + (radius + 16) * Math.sin(a);
+      ctx.fillStyle = '#7a7a6a';
+      ctx.font = '10px VT323, monospace';
+      ctx.textAlign = a > Math.PI / 2 && a < Math.PI * 1.5 ? 'right' : a < -Math.PI / 2 || a > Math.PI * 1.5 ? 'left' : 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(labels[i], lx, ly);
+    }
+
+    // Data polygon A
+    ctx.beginPath();
+    for (let i = 0; i < labels.length; i++) {
+      const v = Math.max(0, Math.min(1, values[i]));
+      const r = v * radius;
+      const x = cx + r * Math.cos(angles[i]);
+      const y = cy + r * Math.sin(angles[i]);
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(90,138,74,0.2)';
+    ctx.fill();
+    ctx.strokeStyle = '#5a8a4a';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Data polygon B
+    ctx.beginPath();
+    for (let i = 0; i < labels.length; i++) {
+      const v = Math.max(0, Math.min(1, valuesB[i]));
+      const r = v * radius;
+      const x = cx + r * Math.cos(angles[i]);
+      const y = cy + r * Math.sin(angles[i]);
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(138,58,58,0.2)';
+    ctx.fill();
+    ctx.strokeStyle = '#8a3a3a';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Legend
+    ctx.font = '11px VT323, monospace';
+    ctx.fillStyle = '#5a8a4a';
+    ctx.fillText(labelA || 'A', 10, 14);
+    ctx.fillStyle = '#8a3a3a';
+    ctx.fillText(labelB || 'B', 10, 28);
+  }
+
+  // ---- Cumulative chart ----
+  function drawCumulativeChart(canvasId, historyA, historyB, labelA, labelB) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const rect = canvas.parentElement.getBoundingClientRect();
+    canvas.width = rect.width * window.devicePixelRatio;
+    canvas.height = rect.height * window.devicePixelRatio;
+    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    const w = rect.width;
+    const h = rect.height;
+
+    ctx.clearRect(0, 0, w, h);
+
+    if (historyA.length === 0) return;
+
+    const maxScore = Math.max(
+      Math.max(...historyA.map(s => s.totalA), 0),
+      Math.max(...historyB.map(s => s.totalB), 0),
+      10
+    );
+    const n = historyA.length;
+
+    const pad = { top: 8, bottom: 16, left: 8, right: 8 };
+    const cw = w - pad.left - pad.right;
+    const ch = h - pad.top - pad.bottom;
+
+    // Draw grid lines
+    const gridLines = 4;
+    for (let i = 0; i <= gridLines; i++) {
+      const y = pad.top + (ch * (gridLines - i)) / gridLines;
+      ctx.beginPath();
+      ctx.moveTo(pad.left, y);
+      ctx.lineTo(w - pad.right, y);
+      ctx.strokeStyle = 'rgba(106,122,138,0.2)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      ctx.fillStyle = '#7a7a6a';
+      ctx.font = '9px VT323, monospace';
+      ctx.textAlign = 'right';
+      ctx.fillText(Math.round((maxScore * i) / gridLines), pad.left - 2, y + 3);
+    }
+
+    // Line A
+    ctx.beginPath();
+    for (let i = 0; i < n; i++) {
+      const x = pad.left + (i / Math.max(n - 1, 1)) * cw;
+      const y = pad.top + ch - (historyA[i].totalA / maxScore) * ch;
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.strokeStyle = '#5a8a4a';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Line B
+    ctx.beginPath();
+    for (let i = 0; i < n; i++) {
+      const x = pad.left + (i / Math.max(n - 1, 1)) * cw;
+      const y = pad.top + ch - (historyB[i].totalB / maxScore) * ch;
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.strokeStyle = '#8a3a3a';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Legend
+    ctx.font = '10px VT323, monospace';
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#5a8a4a';
+    ctx.fillText(labelA || 'A', 10, 12);
+    ctx.fillStyle = '#8a3a3a';
+    ctx.fillText(labelB || 'B', 50, 12);
+  }
+
+  // ---- Population chart ----
+  function drawPopulationChart(canvasId, populationHistory) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const rect = canvas.parentElement.getBoundingClientRect();
+    canvas.width = rect.width * window.devicePixelRatio;
+    canvas.height = rect.height * window.devicePixelRatio;
+    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    const w = rect.width;
+    const h = rect.height;
+
+    ctx.clearRect(0, 0, w, h);
+    if (!populationHistory || populationHistory.length < 2) return;
+
+    const allNames = new Set();
+    populationHistory.forEach(s => Object.keys(s.distribution).forEach(n => allNames.add(n)));
+    const names = Array.from(allNames);
+    const colors = ['#5a8a4a', '#8a3a3a', '#d4a050', '#6a7a8a', '#8b3a2a', '#4a3a2a', '#7a1a1a', '#3a3a3a'];
+    const genCount = populationHistory.length;
+    const maxPop = Math.max(...populationHistory.map(s => Object.values(s.distribution).reduce((a, b) => a + b, 0)));
+
+    const pad = { top: 8, bottom: 20, left: 8, right: 8 };
+    const cw = w - pad.left - pad.right;
+    const ch = h - pad.top - pad.bottom;
+
+    // Area chart (stacked)
+    for (let i = names.length - 1; i >= 0; i--) {
+      ctx.beginPath();
+      let started = false;
+      for (let g = 0; g < genCount; g++) {
+        const x = pad.left + (g / (genCount - 1)) * cw;
+        // Sum of shares for this strategy and above
+        let y = pad.top + ch;
+        for (let j = names.length - 1; j >= i; j--) {
+          const share = (populationHistory[g].distribution[names[j]] || 0) / maxPop;
+          y = pad.top + ch - share * ch;
+          if (j === i) {
+            const xx = x;
+            if (!started) { ctx.moveTo(xx, y); started = true; }
+            else ctx.lineTo(xx, y);
+          }
+        }
+      }
+      // Close to bottom
+      ctx.lineTo(pad.left + cw, pad.top + ch);
+      ctx.lineTo(pad.left, pad.top + ch);
+      ctx.closePath();
+      ctx.fillStyle = colors[i % colors.length] + '80';
+      ctx.fill();
+    }
+
+    // Legend
+    ctx.font = '10px VT323, monospace';
+    let lx = 10;
+    for (let i = 0; i < names.length && i < 8; i++) {
+      ctx.fillStyle = colors[i % colors.length];
+      ctx.fillRect(lx, 4, 8, 8);
+      ctx.fillStyle = '#c4b8a8';
+      ctx.fillText(names[i], lx + 10, 12);
+      lx += 70;
+    }
+  }
+
+  // ---- Render match view ----
+  function renderMatchRound(data) {
+    const { round, moveA, moveB, totalA, totalB, historyA, historyB } = data;
+
+    state.matchRound = round;
+    state.matchHistoryA = historyA.map(m => ({ totalA: m === Move.C ? 3 : 1 }));
+    state.matchHistoryB = historyB.map(m => ({ totalB: m === Move.C ? 3 : 1 }));
+    state.matchScores.a = totalA;
+    state.matchScores.b = totalB;
+
+    // Scores
+    document.getElementById('playerAScore').textContent = totalA;
+    document.getElementById('playerBScore').textContent = totalB;
+
+    // Leader highlight
+    const rowA = document.getElementById('playerARow');
+    const rowB = document.getElementById('playerBRow');
+    const scoreAEl = document.getElementById('playerAScore');
+    const scoreBEl = document.getElementById('playerBScore');
+    rowA.classList.toggle('leading', totalA >= totalB);
+    rowB.classList.toggle('leading', totalB >= totalA);
+    scoreAEl.className = 'player-score' + (totalA > totalB ? ' leader' : totalA < totalB ? ' trailing' : '');
+    scoreBEl.className = 'player-score' + (totalB > totalA ? ' leader' : totalB < totalA ? ' trailing' : '');
+
+    // Cooperation rate
+    const coopA = historyA.length > 0 ? historyA.filter(m => m === Move.C).length / historyA.length : 0;
+    const coopB = historyB.length > 0 ? historyB.filter(m => m === Move.C).length / historyB.length : 0;
+    document.getElementById('playerACoop').style.width = (coopA * 100) + '%';
+    document.getElementById('playerBCoop').style.width = (coopB * 100) + '%';
+    document.getElementById('playerACoopLabel').textContent = Math.round(coopA * 100) + '%';
+    document.getElementById('playerBCoopLabel').textContent = Math.round(coopB * 100) + '%';
+
+    // History cells
+    const rowAEl = document.getElementById('historyRowA');
+    const rowBEl = document.getElementById('historyRowB');
+    const cell = document.createElement('div');
+    cell.className = 'history-cell ' + (moveA === Move.C ? 'coop' : 'defect');
+    if (moveA === Move.D) cell.classList.add('defect-new');
+    cell.textContent = moveA;
+    rowAEl.appendChild(cell);
+
+    const cellB = document.createElement('div');
+    cellB.className = 'history-cell ' + (moveB === Move.C ? 'coop' : 'defect');
+    if (moveB === Move.D) cellB.classList.add('defect-new');
+    cellB.textContent = moveB;
+    rowBEl.appendChild(cellB);
+
+    // Keep only last 100 cells
+    while (rowAEl.children.length > 100) rowAEl.removeChild(rowAEl.firstChild);
+    while (rowBEl.children.length > 100) rowBEl.removeChild(rowBEl.firstChild);
+
+    // Status
+    document.getElementById('statusText').textContent = `Round ${round}/${data.totalRounds} — A: ${totalA}, B: ${totalB}`;
+    document.getElementById('infoRound').textContent = round;
+
+    // Cumulative chart
+    drawCumulativeChart('cumulativeChart',
+      historyA.map((m, i) => ({ totalA: historyA.slice(0, i + 1).filter(x => x === Move.C).length * 3 + historyA.slice(0, i + 1).filter(x => x === Move.D).length * 1 })),
+      historyB.map((m, i) => ({ totalB: historyB.slice(0, i + 1).filter(x => x === Move.C).length * 3 + historyB.slice(0, i + 1).filter(x => x === Move.D).length * 1 })),
+      state.playerAStrategy, state.playerBStrategy
+    );
+  }
+
+  function renderMatchComplete(result) {
+    document.getElementById('statusText').textContent =
+      `MATCH COMPLETE — ${result.strategyA}: ${result.totalA}, ${result.strategyB}: ${result.totalB}. Winner: ${result.winner === 'tie' ? 'TIE' : 'Player ' + result.winner}`;
+    document.getElementById('infoRound').textContent = result.rounds.length;
+    document.getElementById('infoState').textContent = 'complete';
+
+    // Update stats
+    state.stats.matches++;
+    if (result.winner === 'A') state.stats.aWins++;
+    else if (result.winner === 'B') state.stats.bWins++;
+    updateStatsBar();
+
+    // Update radar
+    updateRadarChart();
+
+    // Update what-if
+    updateWhatIf();
+  }
+
+  function updateRadarChart() {
+    const paramsA = getStrategyParams(state.playerAStrategy);
+    const paramsB = getStrategyParams(state.playerBStrategy);
+
+    // Add average score from current match
+    if (state.matchScores.a > 0 && state.matchRound > 0) {
+      paramsA.avgScore = Math.min(1, (state.matchScores.a / state.matchRound) / 5);
+    }
+    if (state.matchScores.b > 0 && state.matchRound > 0) {
+      paramsB.avgScore = Math.min(1, (state.matchScores.b / state.matchRound) / 5);
+    }
+
+    drawRadarChart('radarChart', paramsA, paramsB, state.playerAStrategy, state.playerBStrategy);
+  }
+
+  function updateWhatIf() {
+    const whatIfName = document.getElementById('whatIfSelect').value;
+    if (!whatIfName || state.matchRound === 0) return;
+
+    // Simulate hypothetical match
+    const stratA = createStrategy(whatIfName);
+    const stratB = createStrategy(state.playerBStrategy);
+
+    const engine = new GameEngine();
+    const result = engine.playMatch(stratA, stratB, { rounds: state.matchRound });
+    // Need sync version
+    const syncResult = syncMatch(stratA, stratB, state.matchRound);
+    document.getElementById('whatIfResult').textContent =
+      `${whatIfName}: ${syncResult.a} | ${state.playerBStrategy}: ${syncResult.b} (diff: ${syncResult.a - syncResult.b > 0 ? '+' : ''}${syncResult.a - syncResult.b})`;
+  }
+
+  function syncMatch(sa, sb, rounds) {
+    sa.reset();
+    sb.reset();
+    const hA = [], hB = [];
+    const pA = [], pB = [];
+    let tA = 0, tB = 0;
+    const matrix = new PayoffMatrix();
+    let mA = sa.firstMove(), mB = sb.firstMove();
+
+    for (let r = 0; r < rounds; r++) {
+      const eA = mA, eB = mB; // no noise
+      const sA = matrix.lookup(eA, eB);
+      const sB = matrix.lookup(eB, eA);
+      tA += sA; tB += sB;
+      hA.push(eA); hB.push(eB);
+      pA.push(eB); pB.push(eA);
+      if (r < rounds - 1) {
+        mA = sa.nextMove({ myMoves: hA, oppMoves: pA });
+        mB = sb.nextMove({ myMoves: hB, oppMoves: pB });
+      }
+    }
+    return { a: tA, b: tB };
+  }
+
+  function getStrategyParams(name) {
+    const defaults = {
+      niceness: 0.5, retaliation: 0.5, forgiveness: 0.5,
+      predictability: 0.5, exploitability: 0.5, noiseTolerance: 0.5,
+      avgScore: 0,
+    };
+    const params = {
+      AllC: { niceness: 1.0, retaliation: 0.0, forgiveness: 1.0, predictability: 1.0, exploitability: 1.0, noiseTolerance: 0.0 },
+      AllD: { niceness: 0.0, retaliation: 1.0, forgiveness: 0.0, predictability: 1.0, exploitability: 0.0, noiseTolerance: 1.0 },
+      TFT: { niceness: 1.0, retaliation: 1.0, forgiveness: 1.0, predictability: 1.0, exploitability: 0.5, noiseTolerance: 0.2 },
+      Joss: { niceness: 0.9, retaliation: 1.0, forgiveness: 0.9, predictability: 0.9, exploitability: 0.4, noiseTolerance: 0.15 },
+      Friedman: { niceness: 1.0, retaliation: 1.0, forgiveness: 0.0, predictability: 1.0, exploitability: 0.0, noiseTolerance: 0.0 },
+      Graaskamp: { niceness: 1.0, retaliation: 0.6, forgiveness: 0.8, predictability: 1.0, exploitability: 0.3, noiseTolerance: 0.8 },
+      Tester: { niceness: 0.0, retaliation: 1.0, forgiveness: 1.0, predictability: 0.7, exploitability: 0.7, noiseTolerance: 0.3 },
+      Random: { niceness: 0.5, retaliation: 0.0, forgiveness: 0.5, predictability: 0.0, exploitability: 0.0, noiseTolerance: 1.0 },
+    };
+    return params[name] || defaults;
+  }
+
+  function updateStatsBar() {
+    document.getElementById('statMatches').textContent = state.stats.matches;
+    document.getElementById('statAWins').textContent = state.stats.aWins;
+    document.getElementById('statBWins').textContent = state.stats.bWins;
+
+    // Coop rate from current match
+    const total = state.matchHistoryA.length + state.matchHistoryB.length;
+    if (total > 0) {
+      const coopA = state.matchHistoryA.filter(m => m === Move.C || m && m.totalA).length;
+      const coopB = state.matchHistoryB.filter(m => m === Move.C || m && m.totalB).length;
+      // Use actual history from state.matchHistoryA/B which stores moves
+      let actualCoopA = 0, actualTotal = 0;
+      const cells = document.querySelectorAll('#historyRowA .history-cell');
+      cells.forEach(c => { if (c.textContent === 'C') actualCoopA++; actualTotal++; });
+      document.getElementById('statCoopRate').textContent = actualTotal > 0 ? Math.round((actualCoopA / actualTotal) * 100) + '%' : '0%';
+    }
+  }
+
+  // ---- Render tournament ----
+  function renderTournament(result) {
+    state.tournamentResult = result;
+
+    // Ranking
+    const list = document.getElementById('rankingList');
+    list.innerHTML = '';
+    const maxScore = result.ranking.length > 0 ? result.ranking[0].totalScore : 1;
+
+    result.ranking.forEach((r, i) => {
+      const el = document.createElement('div');
+      el.className = 'ranking-item';
+      el.innerHTML = `
+        <span class="rank">#${i + 1}</span>
+        <span class="name">${r.name}</span>
+        <span class="score">${r.totalScore}</span>
+        <div class="score-bar"><div class="score-bar-fill" style="width:${(r.totalScore / maxScore) * 100}%"></div></div>
+        <span style="font-size:11px;color:#7a7a6a;min-width:50px;text-align:right">${Math.round(r.coopRate * 100)}% coop</span>
+      `;
+      list.appendChild(el);
+    });
+
+    // Pairwise matrix
+    const matrixDiv = document.getElementById('pairwiseMatrix');
+    matrixDiv.innerHTML = '';
+    const table = document.createElement('table');
+    const names = result.strategies;
+
+    // Header
+    let html = '<tr><th></th>';
+    names.forEach(n => { html += `<th>${n}</th>`; });
+    html += '</tr>';
+
+    names.forEach((name, i) => {
+      html += `<tr><th>${name}</th>`;
+      names.forEach((_, j) => {
+        const score = result.pairwiseScores[i][j];
+        let cls = '';
+        if (i !== j) {
+          const opp = result.pairwiseScores[j][i];
+          cls = score > opp ? 'a-wins' : score < opp ? 'b-wins' : 'tie';
+        }
+        html += `<td class="${cls}" data-i="${i}" data-j="${j}">${score}</td>`;
+      });
+      html += '</tr>';
+    });
+
+    table.innerHTML = html;
+    matrixDiv.appendChild(table);
+
+    // Edge analysis
+    renderEdgeAnalysis(result);
+
+    // Radar for top 2
+    if (result.ranking.length >= 2) {
+      const p1 = getStrategyParams(result.ranking[0].name);
+      const p2 = getStrategyParams(result.ranking[1].name);
+      p1.avgScore = Math.min(1, result.ranking[0].meanScore / 5);
+      p2.avgScore = Math.min(1, result.ranking[1].meanScore / 5);
+      drawRadarChart('tournamentRadarChart', p1, p2, result.ranking[0].name, result.ranking[1].name);
+    }
+
+    document.getElementById('tournamentStatusText').textContent =
+      `Tournament complete — ${result.strategies.length} strategies, ${result.ranking[0].name} wins with ${result.ranking[0].totalScore} points.`;
+    document.getElementById('infoState').textContent = 'complete';
+  }
+
+  function renderEdgeAnalysis(result) {
+    const div = document.getElementById('edgeAnalysis');
+    div.innerHTML = '';
+    const table = document.createElement('table');
+    const names = result.strategies;
+
+    let html = '<tr><th>A</th><th>B</th><th>A score</th><th>B score</th><th>Winner</th><th>Coop A</th><th>Coop B</th></tr>';
+
+    // Use matchResults if available
+    if (result.matchResults) {
+      for (const mr of result.matchResults) {
+        const r = mr.result;
+        const coopA = r.rounds.filter(x => x.executedA === Move.C).length / r.rounds.length;
+        const coopB = r.rounds.filter(x => x.executedB === Move.C).length / r.rounds.length;
+        const winner = r.totalA > r.totalB ? mr.aName : r.totalB > r.totalA ? mr.bName : 'Tie';
+        html += `<tr>
+          <td>${mr.aName}</td><td>${mr.bName}</td>
+          <td>${r.totalA}</td><td>${r.totalB}</td>
+          <td>${winner}</td>
+          <td>${Math.round(coopA * 100)}%</td>
+          <td>${Math.round(coopB * 100)}%</td>
+        </tr>`;
+      }
+    } else {
+      for (let i = 0; i < names.length; i++) {
+        for (let j = 0; j < names.length; j++) {
+          if (i === j) continue;
+          const sA = result.pairwiseScores[i][j];
+          const sB = result.pairwiseScores[j][i];
+          const winner = sA > sB ? names[i] : sB > sA ? names[j] : 'Tie';
+          html += `<tr>
+            <td>${names[i]}</td><td>${names[j]}</td>
+            <td>${sA}</td><td>${sB}</td>
+            <td>${winner}</td>
+            <td>—</td><td>—</td>
+          </tr>`;
+        }
+      }
+    }
+
+    table.innerHTML = html;
+    div.appendChild(table);
+  }
+
+  // ---- Render evolution ----
+  function renderEvolution(result) {
+    state.evolutionResult = result;
+
+    // Population chart
+    drawPopulationChart('populationChart', result.populationHistory);
+
+    // Extinction timeline
+    const timeline = document.getElementById('extinctionTimeline');
+    timeline.innerHTML = '';
+    if (result.extinctEvents.length === 0) {
+      timeline.innerHTML = '<span style="color:#7a7a6a;font-size:12px;">No extinctions occurred.</span>';
+    } else {
+      result.extinctEvents.forEach(e => {
+        const el = document.createElement('div');
+        el.className = 'extinction-item';
+        el.innerHTML = `<span>${e.name}</span><span class="gen-label">gen ${e.generation}</span>`;
+        timeline.appendChild(el);
+      });
+    }
+
+    document.getElementById('evolutionStatusText').textContent =
+      `Evolution complete — ${result.populationHistory.length - 1} generations. Final species: ${Object.entries(result.finalDistribution).map(([k, v]) => `${k}:${v}`).join(', ')}`;
+    document.getElementById('infoState').textContent = 'complete';
+  }
+
+  // ---- Switch views ----
+  function switchView(mode) {
+    document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+    document.querySelector(`.mode-tab[data-mode="${mode}"]`).classList.add('active');
+
+    document.getElementById('matchView').classList.add('hidden');
+    document.getElementById('tournamentView').classList.add('hidden');
+    document.getElementById('evolutionView').classList.add('hidden');
+
+    document.getElementById('matchStrategySection').classList.add('hidden');
+    document.getElementById('tournamentStrategySection').classList.add('hidden');
+    document.getElementById('evolutionStrategySection').classList.add('hidden');
+
+    document.querySelectorAll('.noise-config').forEach(e => e.classList.add('hidden'));
+    document.querySelectorAll('.evo-config').forEach(e => e.classList.add('hidden'));
+
+    if (mode === 'match') {
+      document.getElementById('matchView').classList.remove('hidden');
+      document.getElementById('matchStrategySection').classList.remove('hidden');
+    } else if (mode === 'tournament' || mode === 'noisy') {
+      document.getElementById('tournamentView').classList.remove('hidden');
+      document.getElementById('tournamentStrategySection').classList.remove('hidden');
+      if (mode === 'noisy') {
+        document.querySelectorAll('.noise-config').forEach(e => e.classList.remove('hidden'));
+      }
+    } else if (mode === 'evolution' || mode === 'islands') {
+      document.getElementById('evolutionView').classList.remove('hidden');
+      document.getElementById('evolutionStrategySection').classList.remove('hidden');
+      document.querySelectorAll('.evo-config').forEach(e => e.classList.remove('hidden'));
+    }
+  }
+
+  /*
+   * ================================================================
+   *  SECTION 5: INIT — Bootstrap, event listeners
+   * ================================================================
+   */
+
+  let _initialized = false;
+
+  function init() {
+    if (_initialized) return;
+    _initialized = true;
+    // Populate strategy selects
+    const selA = document.getElementById('strategyA');
+    const selB = document.getElementById('strategyB');
+    const whatIf = document.getElementById('whatIfSelect');
+
+    STRATEGY_NAMES.forEach(name => {
+      selA.appendChild(new Option(name, name));
+      selB.appendChild(new Option(name, name));
+      whatIf.appendChild(new Option(name, name));
+    });
+    selA.value = 'TFT';
+    selB.value = 'AllD';
+    state.playerAStrategy = 'TFT';
+    state.playerBStrategy = 'AllD';
+
+    // Populate strategy checkboxes
+    const checksDiv = document.getElementById('strategyChecks');
+    STRATEGY_NAMES.forEach(name => {
+      const label = document.createElement('label');
+      label.innerHTML = `<input type="checkbox" value="${name}" checked> ${name}`;
+      checksDiv.appendChild(label);
+    });
+
+    // Population sliders
+    const popSliders = document.getElementById('populationSliders');
+    STRATEGY_NAMES.forEach(name => {
+      const row = document.createElement('div');
+      row.className = 'evo-slider-row';
+      row.innerHTML = `
+        <label>${name}</label>
+        <input type="range" min="0" max="100" value="12" class="evo-pop-slider" data-name="${name}">
+        <span class="slider-value" id="popVal-${name}">12</span>
+      `;
+      popSliders.appendChild(row);
+
+      const slider = row.querySelector('input');
+      const valSpan = row.querySelector('.slider-value');
+      slider.addEventListener('input', () => {
+        valSpan.textContent = slider.value;
+      });
+    });
+
+    // Speed slider
+    document.getElementById('speedSlider').addEventListener('input', function() {
+      document.getElementById('speedLabel').textContent = this.value;
+    });
+
+    // Mode tabs
+    document.querySelectorAll('.mode-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        const mode = tab.dataset.mode;
+        state.mode = mode;
+        switchView(mode);
+        resetSimulation();
+      });
+    });
+
+    // Strategy selects
+    selA.addEventListener('change', () => {
+      state.playerAStrategy = selA.value;
+      document.getElementById('playerAStrategy').textContent = selA.value;
+      document.getElementById('playerAName').textContent = 'PLAYER ' + selA.value;
+      resetSimulation();
+    });
+    selB.addEventListener('change', () => {
+      state.playerBStrategy = selB.value;
+      document.getElementById('playerBStrategy').textContent = selB.value;
+      document.getElementById('playerBName').textContent = 'PLAYER ' + selB.value;
+      resetSimulation();
+    });
+
+    // Select All / Deselect All
+    document.getElementById('btnSelectAll').addEventListener('click', () => {
+      document.querySelectorAll('#strategyChecks input[type="checkbox"]').forEach(c => c.checked = true);
+    });
+    document.getElementById('btnDeselectAll').addEventListener('click', () => {
+      document.querySelectorAll('#strategyChecks input[type="checkbox"]').forEach(c => c.checked = false);
+    });
+
+    // What-if change
+    whatIf.addEventListener('change', updateWhatIf);
+
+    // Run button
+    document.getElementById('btnRun').addEventListener('click', runSimulation);
+
+    // Pause button
+    document.getElementById('btnPause').addEventListener('click', () => {
+      state.paused = !state.paused;
+      document.getElementById('btnPause').textContent = state.paused ? '▶ Resume' : '⏸ Pause';
+    });
+
+    // Reset button
+    document.getElementById('btnReset').addEventListener('click', resetSimulation);
+
+    // Set player names
+    document.getElementById('playerAStrategy').textContent = 'TFT';
+    document.getElementById('playerBStrategy').textContent = 'AllD';
+
+    // Set random seed
+    document.getElementById('infoSeed').textContent = Math.floor(Math.random() * 100000);
+
+    // Initial radar
+    updateRadarChart();
+  }
+
+  function resetSimulation() {
+    state.running = false;
+    state.paused = false;
+    state.matchRound = 0;
+    state.matchHistoryA = [];
+    state.matchHistoryB = [];
+    state.matchScores = { a: 0, b: 0 };
+
+    document.getElementById('btnRun').disabled = false;
+    document.getElementById('btnPause').disabled = true;
+    document.getElementById('btnPause').textContent = '⏸ Pause';
+    document.getElementById('playerAScore').textContent = '0';
+    document.getElementById('playerBScore').textContent = '0';
+    document.getElementById('historyRowA').innerHTML = '';
+    document.getElementById('historyRowB').innerHTML = '';
+    document.getElementById('playerACoop').style.width = '0%';
+    document.getElementById('playerBCoop').style.width = '0%';
+    document.getElementById('playerACoopLabel').textContent = '0%';
+    document.getElementById('playerBCoopLabel').textContent = '0%';
+    document.getElementById('infoRound').textContent = '—';
+    document.getElementById('infoState').textContent = 'idle';
+    document.getElementById('whatIfResult').textContent = '—';
+
+    // Clear charts
+    const cumulativeCanvas = document.getElementById('cumulativeChart');
+    if (cumulativeCanvas) {
+      const ctx = cumulativeCanvas.getContext('2d');
+      ctx.clearRect(0, 0, cumulativeCanvas.width, cumulativeCanvas.height);
+    }
+  }
+
+  async function runSimulation() {
+    if (state.running && !state.paused) return;
+    if (state.paused) {
+      state.paused = false;
+      document.getElementById('btnPause').textContent = '⏸ Pause';
+      return;
+    }
+
+    state.running = true;
+    state.paused = false;
+    document.getElementById('btnRun').disabled = true;
+    document.getElementById('btnPause').disabled = false;
+    document.getElementById('infoState').textContent = 'running';
+
+    const mode = state.mode;
+    const speed = parseInt(document.getElementById('speedSlider').value);
+    const delay = speed === 0 ? 0 : Math.max(10, (6 - speed) * 40); // 0 = instant, 5 = slow
+
+    if (mode === 'match') {
+      await runMatch(delay);
+    } else if (mode === 'tournament' || mode === 'noisy') {
+      await runTournament(delay);
+    } else if (mode === 'evolution' || mode === 'islands') {
+      await runEvolution(delay);
+    }
+
+    state.running = false;
+    document.getElementById('btnRun').disabled = false;
+    document.getElementById('btnPause').disabled = true;
+    document.getElementById('btnPause').textContent = '⏸ Pause';
+  }
+
+  async function runMatch(delay) {
+    const rounds = parseInt(document.getElementById('configRounds').value) || 200;
+    const stratA = createStrategy(state.playerAStrategy);
+    const stratB = createStrategy(state.playerBStrategy);
+
+    const engine = new GameEngine();
+
+    // Clear history
+    document.getElementById('historyRowA').innerHTML = '';
+    document.getElementById('historyRowB').innerHTML = '';
+
+    const result = await engine.playMatch(stratA, stratB, {
+      rounds,
+      delay,
+      onRound: (data) => {
+        if (state.paused) {
+          // Wait until unpaused
+          return new Promise(resolve => {
+            const check = setInterval(() => {
+              if (!state.paused) { clearInterval(check); resolve(); }
+            }, 100);
+          });
+        }
+        renderMatchRound(data);
+      },
+    });
+
+    renderMatchComplete(result);
+
+    // Draw final cumulative chart with actual scores
+    if (result.rounds.length > 0) {
+      drawCumulativeChart('cumulativeChart',
+        result.rounds.map(r => ({ totalA: r.totalA })),
+        result.rounds.map(r => ({ totalB: r.totalB })),
+        state.playerAStrategy, state.playerBStrategy
+      );
+    }
+  }
+
+  async function runTournament(delay) {
+    const rounds = parseInt(document.getElementById('configRounds').value) || 200;
+    const checks = document.querySelectorAll('#strategyChecks input[type="checkbox"]:checked');
+    const selected = Array.from(checks).map(c => c.value);
+
+    if (selected.length < 2) {
+      document.getElementById('tournamentStatusText').textContent = 'Select at least 2 strategies.';
+      state.running = false;
+      return;
+    }
+
+    const strategies = selected.map(name => createStrategy(name));
+    const tournament = new Tournament({ roundsPerMatch: rounds });
+
+    // Add noise for noisy mode
+    if (state.mode === 'noisy') {
+      const actionNoise = parseFloat(document.getElementById('configActionNoise').value) || 0;
+      const perceptNoise = parseFloat(document.getElementById('configPerceptNoise').value) || 0;
+      tournament.noiseModel = new NoiseModel({ actionErrorRate: actionNoise, perceptionErrorRate: perceptNoise });
+    }
+
+    const result = tournament._runSyncInternal(strategies);
+    renderTournament(result);
+    document.getElementById('tournamentStatusText').textContent =
+      `Tournament complete — ${result.strategies.length} strategies.`;
+  }
+
+  async function runEvolution(delay) {
+    const generations = parseInt(document.getElementById('configGenerations').value) || 50;
+    const rounds = parseInt(document.getElementById('configRounds').value) || 200;
+    const mutation = parseFloat(document.getElementById('configMutation').value) || 0;
+    const pressure = parseFloat(document.getElementById('configPressure').value) || 1.0;
+
+    // Read population sliders
+    const sliders = document.querySelectorAll('.evo-pop-slider');
+    const distribution = {};
+    sliders.forEach(s => {
+      const val = parseInt(s.value);
+      if (val > 0) distribution[s.dataset.name] = val;
+    });
+
+    if (Object.keys(distribution).length < 2) {
+      document.getElementById('evolutionStatusText').textContent = 'Distribute population among at least 2 strategies.';
+      state.running = false;
+      return;
+    }
+
+    const initialPop = new Population({ distribution, populationSize: Object.values(distribution).reduce((a, b) => a + b, 0) });
+    const engine = new EvolutionEngine({
+      roundsPerMatch: rounds,
+      mutationRate: mutation,
+      selectionPressure: pressure,
+      mutationPool: STRATEGY_NAMES,
+    });
+
+    const result = engine.runSync(initialPop, generations);
+    renderEvolution(result);
+  }
+
+  // Init on DOM ready
+  document.addEventListener('DOMContentLoaded', init);
+  // Also call init in case DOM is already loaded
+  if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    init();
+  }
+  </script>
+</body>
+</html>
