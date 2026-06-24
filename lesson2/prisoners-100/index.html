@@ -2219,27 +2219,21 @@
   }
 
   function runBenchmarkSync() {
-    try {
-    // Pure synchronous benchmark — no async, no await, no rendering
-    function perm() {
-      var a = Array.from({length:100}, function(_,i){return i;});
-      for (var i=99; i>0; i--) { var j = Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; }
-      return a;
-    }
-
-    var N = 10000;
-    var loopWins = 0, sacWins = 0;
+    var loopWins = 0, sacWins = 0, N = 10000;
 
     for (var r = 0; r < N; r++) {
-      var b = perm();
+      // Generate permutation
+      var a = Array.from({length:100}, function(_,i){return i;});
+      for (var i=99; i>0; i--) { var j = Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; }
+
       // Loop Protocol
       var ok = true;
       for (var p = 0; p < 100 && ok; p++) {
         var c = p, found = false;
         for (var s = 0; s < 50; s++) {
           if (c == null) break;
-          if (b[c] === p) { found = true; break; }
-          c = b[c];
+          if (a[c] === p) { found = true; break; }
+          c = a[c];
         }
         if (!found) ok = false;
       }
@@ -2247,45 +2241,45 @@
 
       // Lucky Sacrifice
       ok = true;
-      var sm = {};
       for (var p = 0; p < 100 && ok; p++) {
-        sm[p] = Math.random() < 0.5 ? 'loop' : 'panic';
-        var c = sm[p] === 'loop' ? p : Math.floor(Math.random()*100);
-        var found = false;
-        var revealed = new Array(100).fill(false);
+        var mode = Math.random() < 0.5 ? 'loop' : 'panic';
+        var c2 = mode === 'loop' ? p : Math.floor(Math.random()*100);
+        var found2 = false;
+        var rev = new Array(100).fill(false);
         for (var s = 0; s < 50; s++) {
-          if (c == null) break;
-          revealed[c] = true;
-          if (b[c] === p) { found = true; break; }
-          if (sm[p] === 'loop') { c = b[c]; }
-          else { var u = []; for (var i=0; i<100; i++) if (!revealed[i]) u.push(i); c = u.length>0 ? u[Math.floor(Math.random()*u.length)] : null; }
+          if (c2 == null) break;
+          rev[c2] = true;
+          if (a[c2] === p) { found2 = true; break; }
+          if (mode === 'loop') { c2 = a[c2]; }
+          else { var u = []; for (var k=0; k<100; k++) if (!rev[k]) u.push(k); c2 = u.length>0 ? u[Math.floor(Math.random()*u.length)] : null; }
         }
-        if (!found) ok = false;
+        if (!found2) ok = false;
       }
       if (ok) sacWins++;
     }
 
-    var loopPct = (loopWins/N*100).toFixed(1);
-    var sacPct = (sacWins/N*100).toFixed(1);
+    var lPct = (loopWins/N*100).toFixed(1);
+    var sPct = (sacWins/N*100).toFixed(1);
 
-    document.getElementById('cmp-rate-a').textContent = loopPct + '%';
-    document.getElementById('cmp-rate-b').textContent = sacPct + '%';
-    document.getElementById('cmp-rate-diff').textContent = (loopWins - sacWins > 0 ? '+' : '') + (loopPct - sacPct) + '%';
-    document.getElementById('cmp-rate-diff').className = 'cmp-diff ' + (loopWins >= sacWins ? 'diff-pos' : 'diff-neg');
-
-    document.getElementById('stat-wins-a').textContent = loopWins;
-    document.getElementById('stat-wins-b').textContent = sacWins;
-    document.getElementById('stat-losses-a').textContent = N - loopWins;
-    document.getElementById('stat-losses-b').textContent = N - sacWins;
-    document.getElementById('stat-rate-a').textContent = loopPct + '%';
-    document.getElementById('stat-rate-b').textContent = sacPct + '%';
-
+    try {
+      document.getElementById('cmp-rate-a').textContent = lPct + '%';
+      document.getElementById('cmp-rate-b').textContent = sPct + '%';
+      document.getElementById('cmp-rate-diff').textContent = '+' + (loopWins - sacWins) + ' (' + lPct + '% vs ' + sPct + '%)';
+      document.getElementById('cmp-rate-diff').className = 'cmp-diff diff-pos';
+      document.getElementById('stat-wins-a').textContent = loopWins;
+      document.getElementById('stat-wins-b').textContent = sacWins;
+      document.getElementById('stat-losses-a').textContent = N - loopWins;
+      document.getElementById('stat-losses-b').textContent = N - sacWins;
+      document.getElementById('stat-rate-a').textContent = lPct + '%';
+      document.getElementById('stat-rate-b').textContent = sPct + '%';
+      document.getElementById('stat-state-a').textContent = 'WIN RATE ' + lPct + '%';
+      document.getElementById('stat-state-b').textContent = 'WIN RATE ' + sPct + '%';
+    } catch(e) {
+      document.getElementById('btn-run-all').textContent = '▶ ERR: ' + e.message;
+      return;
+    }
     document.getElementById('btn-run-all').textContent = '▶ Run All';
     document.getElementById('btn-run-all').disabled = false;
-    } catch(e) {
-      document.getElementById('btn-run-all').textContent = '▶ ERROR: ' + e.message;
-      document.getElementById('btn-run-all').disabled = false;
-    }
   }
 
   function onPauseAll() {
