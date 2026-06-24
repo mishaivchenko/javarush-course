@@ -2207,8 +2207,6 @@
   function onRunAll() {
     if (stateA.running || stateB.running) return;
 
-    // Run All: run benchmark synchronously.
-    // Reset stats first
     document.getElementById('stat-wins-a').textContent = '0';
     document.getElementById('stat-losses-a').textContent = '0';
     document.getElementById('stat-wins-b').textContent = '0';
@@ -2216,11 +2214,12 @@
     document.getElementById('btn-run-all').disabled = true;
     document.getElementById('btn-run-all').textContent = '◈ Running...';
 
-    // Defer to let UI update, then run
-    setTimeout(function() { runBenchmarkSync(); }, 50);
+    // Run benchmark immediately (no setTimeout — it was the bug)
+    runBenchmarkSync();
   }
 
   function runBenchmarkSync() {
+    try {
     // Pure synchronous benchmark — no async, no await, no rendering
     function perm() {
       var a = Array.from({length:100}, function(_,i){return i;});
@@ -2283,6 +2282,10 @@
 
     document.getElementById('btn-run-all').textContent = '▶ Run All';
     document.getElementById('btn-run-all').disabled = false;
+    } catch(e) {
+      document.getElementById('btn-run-all').textContent = '▶ ERROR: ' + e.message;
+      document.getElementById('btn-run-all').disabled = false;
+    }
   }
 
   function onPauseAll() {
