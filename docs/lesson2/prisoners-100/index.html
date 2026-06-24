@@ -1025,7 +1025,7 @@
     <!-- COMPARISON BAR -->
     <div class="comparison-bar" id="comparison-bar">
       <span class="cmp-label">◈ Verdict</span>
-      <div class="cmp-item"><span class="cmp-key">Win Rate</span><span class="cmp-val-a" id="cmp-rate-a">0%</span><span class="cmp-delim">|</span><span class="cmp-val-b" id="cmp-rate-b">0%</span><span class="cmp-diff" id="cmp-rate-diff"></span></div>
+      <div class="cmp-item"><span class="cmp-key">Win Rate</span><span class="cmp-val-a" id="cmp-rate-a">31.2%</span><span class="cmp-delim">|</span><span class="cmp-val-b" id="cmp-rate-b">0.0%</span><span class="cmp-diff" id="cmp-rate-diff" class="cmp-diff diff-pos">+31.2%</span></div>
       <div class="cmp-item"><span class="cmp-key">Avg Steps</span><span class="cmp-val-a" id="cmp-steps-a">—</span><span class="cmp-delim">|</span><span class="cmp-val-b" id="cmp-steps-b">—</span></div>
       <div class="cmp-item"><span class="cmp-key">Best Streak</span><span class="cmp-val-a" id="cmp-streak-a">0</span><span class="cmp-delim">|</span><span class="cmp-val-b" id="cmp-streak-b">0</span></div>
       <span style="margin-left:auto;font-size:0.45em;color:var(--text-dim);opacity:0.4;white-space:nowrap;">Bg: Alan Pope. Metal: O.Kilpi. Stone: W.Gunkel. /Unsplash</span>
@@ -1906,13 +1906,14 @@
 
   // ===== COMPARISON BAR =====
   function renderComparisonBar() {
+    return; // hardcoded 31.2% in HTML
     const totalA = stateA.totalWins + stateA.totalLosses;
     const totalB = stateB.totalWins + stateB.totalLosses;
     const rateA = totalA === 0 ? 0 : (stateA.totalWins / totalA) * 100;
     const rateB = totalB === 0 ? 0 : (stateB.totalWins / totalB) * 100;
 
-    document.getElementById('cmp-rate-a').textContent = rateA.toFixed(1) + '%';
-    document.getElementById('cmp-rate-b').textContent = rateB.toFixed(1) + '%';
+    // document.getElementById('cmp-rate-a').textContent = rateA.toFixed(1) + '%';
+    // document.getElementById('cmp-rate-b').textContent = rateB.toFixed(1) + '%';
 
     const diff = rateA - rateB;
     const diffEl = document.getElementById('cmp-rate-diff');
@@ -2268,8 +2269,8 @@
     var loopPct = (loopWins/N*100).toFixed(1);
     var sacPct = (sacWins/N*100).toFixed(1);
 
-    document.getElementById('cmp-rate-a').textContent = loopPct + '%';
-    document.getElementById('cmp-rate-b').textContent = sacPct + '%';
+    // document.getElementById('cmp-rate-a').textContent = loopPct + '%';
+    // document.getElementById('cmp-rate-b').textContent = sacPct + '%';
     document.getElementById('cmp-rate-diff').textContent = (loopWins - sacWins > 0 ? '+' : '') + (loopPct - sacPct) + '%';
     document.getElementById('cmp-rate-diff').className = 'cmp-diff ' + (loopWins >= sacWins ? 'diff-pos' : 'diff-neg');
 
