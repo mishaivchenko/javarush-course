@@ -2261,6 +2261,11 @@
     var lPct = (loopWins/N*100).toFixed(1);
     var sPct = (sacWins/N*100).toFixed(1);
 
+    // Write to state so renderStats() picks up correct values
+    stateA.totalWins = loopWins;
+    stateA.totalLosses = N - loopWins;
+    stateB.totalWins = sacWins;
+    stateB.totalLosses = N - sacWins;
     try {
       document.getElementById('cmp-rate-a').textContent = lPct + '%';
       document.getElementById('cmp-rate-b').textContent = sPct + '%';
@@ -2464,6 +2469,10 @@
     renderStrategySelector(stateB, 'strategy-b');
     renderMixerPanel(stateA, 'mixers-a');
     renderMixerPanel(stateB, 'mixers-b');
+
+    // Run benchmark BEFORE first render — ensures stats show 31% immediately
+    runBenchmarkSync();
+
     renderAll();
     updateButtonStates();
     attachEventListeners();
@@ -2473,9 +2482,6 @@
       if (stateA.prisonerPath.length > 0) renderPathLinesA();
       if (stateB.prisonerPath.length > 0) renderPathLinesB();
     });
-
-    // Auto-run benchmark on page load (shows win rates immediately)
-    setTimeout(function() { onRunAll(); }, 500);
   }
 
   document.addEventListener('DOMContentLoaded', init);
