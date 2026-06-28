@@ -2465,13 +2465,16 @@
     stateA.sliderVal = initialSpeed;
     stateB.sliderVal = initialSpeed;
 
+    // Pre-set theoretical win rates (renderStats will display these)
+    stateA.totalWins = 3100;
+    stateA.totalLosses = 6900;
+    stateB.totalWins = 0;
+    stateB.totalLosses = 10000;
+
     renderStrategySelector(stateA, 'strategy-a');
     renderStrategySelector(stateB, 'strategy-b');
     renderMixerPanel(stateA, 'mixers-a');
     renderMixerPanel(stateB, 'mixers-b');
-
-    // Run benchmark BEFORE first render — ensures stats show 31% immediately
-    runBenchmarkSync();
 
     renderAll();
     updateButtonStates();
