@@ -1,0 +1,23 @@
+# Render Blueprint — JavaRush Course
+# One-click deploy: https://render.com/deploy?repo=https://github.com/mishaivchenko/javarush-course
+#
+# After connecting the repo in Render dashboard:
+# 1. Go to https://dashboard.render.com/select-repo?repo=mishaivchenko/javarush-course
+# 2. Select "Blueprint" deployment type
+# 3. Render picks up this file automatically
+#
+# For individual Web Service (without Blueprint):
+# New Web Service → connect repo → Root Directory: lesson3/haiku-50
+services:
+  - type: web
+    name: haiku-50
+    env: node
+    region: frankfurt
+    rootDir: lesson3/haiku-50
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_VERSION
+        value: 20.18.0
+      - key: OPENAI_API_KEY
+        sync: false
