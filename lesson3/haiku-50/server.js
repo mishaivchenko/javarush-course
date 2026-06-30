@@ -51,13 +51,12 @@ app.post('/generate-haiku', async (req, res) => {
 
   try {
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: 'gpt-5-nano-2025-08-07',
       messages: [
         { role: 'system', content: 'You are a haiku master. Output exactly 3 lines, no more, no less.' },
         { role: 'user', content: prompt }
       ],
-      max_tokens: 150,
-      temperature: 0.8,
+      max_completion_tokens: 150,
     });
 
     const raw = completion.choices[0]?.message?.content || '';
@@ -66,13 +65,12 @@ app.post('/generate-haiku', async (req, res) => {
     // Retry once if normalization failed
     if (haiku.split('\n').filter(Boolean).length < 3) {
       const retry = await openai.chat.completions.create({
-        model: 'gpt-4o-mini',
+        model: 'gpt-5-nano-2025-08-07',
         messages: [
           { role: 'system', content: 'You are a haiku master. Output exactly 3 lines, no more, no less.' },
           { role: 'user', content: prompt + '\n\nIMPORTANT: Output EXACTLY 3 lines, separated by newlines. Nothing else.' }
         ],
-        max_tokens: 150,
-        temperature: 0.7,
+        max_completion_tokens: 150,
       });
       const retryRaw = retry.choices[0]?.message?.content || '';
       haiku = normalizeHaiku(retryRaw);
@@ -88,6 +86,8 @@ app.post('/generate-haiku', async (req, res) => {
 
   } catch (err) {
     console.error('OpenAI API error:', err.message);
+    console.error('Error status:', err.status);
+    console.error('Full error:', JSON.stringify(err, Object.getOwnPropertyNames(err)));
 
     // Check for content policy violation (profanity)
     if (err.status === 400 && err.message?.includes('content_filter')) {
