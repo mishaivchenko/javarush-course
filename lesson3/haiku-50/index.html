@@ -1115,8 +1115,255 @@
     return div.innerHTML;
   }
 
+  /* ===== History (localStorage) ===== */
+
+  function loadHistory() {
+    try {
+      var raw = localStorage.getItem('haikuHistory');
+      if (!raw) { state.history = []; return; }
+      var parsed = JSON.parse(raw);
+      state.history = Array.isArray(parsed) ? parsed : [];
+    } catch(e) {
+      state.history = [];
+    }
+  }
+
+  function saveHistory() {
+    try {
+      // Keep max 100 items
+      if (state.history.length > 100) {
+        state.history = state.history.slice(-100);
+      }
+      localStorage.setItem('haikuHistory', JSON.stringify(state.history));
+    } catch(e) {
+      // localStorage full or unavailable — silently fail
+    }
+  }
+
+  /* ===== Profanity Modal ===== */
+
+  function showProfanityModal(words) {
+    var html = '';
+    for (var i = 0; i < words.length; i++) {
+      html += '<span class="modal-word">' + escapeHtml(words[i]) + '</span>';
+    }
+    els.modalWords.innerHTML = html;
+    els.profanityModal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function hideProfanityModal() {
+    els.profanityModal.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  /* ===== API Client ===== */
+
+  function generateHaiku(words, language, wasabiLevel) {
+    var controller = new AbortController();
+    var timeout = setTimeout(function() { controller.abort(); }, 30000);
+
+    return fetch('/generate-haiku', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ words: words, language: language, wasabiLevel: wasabiLevel }),
+      signal: controller.signal,
+    }).then(function(response) {
+      clearTimeout(timeout);
+      if (!response.ok) {
+        return response.json().then(function(data) {
+          var err = new Error(data.error || 'Request failed');
+          if (data.profanityWords) { err.profanityWords = data.profanityWords; }
+          throw err;
+        });
+      }
+      return response.json();
+    }).catch(function(err) {
+      clearTimeout(timeout);
+      if (err.name === 'AbortError') {
+        throw new Error('The request took too long. Try again.');
+      }
+      if (err.message === 'Failed to fetch' || err.message === 'NetworkError') {
+        throw new Error('Server is temporarily unavailable. Try later.');
+      }
+      throw err;
+    });
+  }
+
+  /* ===== Main Handler ===== */
+
+  function generate() {
+    // Guard double-submit
+    if (state.resultState === 'loading') return;
+
+    var words = phrases(state.keywords);
+    var wordCount = words.length;
+
+    // Client-side validation
+    if (wordCount < 3 || wordCount > 7) {
+      state.resultState = 'error';
+      state.errorMsg = wordCount < 3
+        ? 'Enter 3 to 7 words or short phrases'
+        : 'Too many — keep it to 7 words or phrases at most';
+      render();
+      return;
+    }
+
+    if (!state.lang) {
+      state.resultState = 'error';
+      state.errorMsg = 'Choose a generation language';
+      render();
+      return;
+    }
+
+    // Set loading state
+    state.resultState = 'loading';
+    state.lines = [];
+    state.errorMsg = '';
+    render();
+
+    generateHaiku(words, state.lang, state.spice).then(function(data) {
+      // Parse success
+      var lines = data.haiku.split('\n').filter(Boolean).slice(0, 3);
+
+      // Use fallback if empty
+      if (lines.length === 0) {
+        lines = ['Silence', 'where words should be', 'a blank page'];
+      }
+
+      state.lines = lines;
+      state.doneLang = labelOf(state.lang);
+      state.doneSpice = SPICE_LABELS[state.spice] || SPICE_LABELS[0];
+      state.resultState = 'done';
+
+      // Save to history
+      var entry = {
+        id: nextId(),
+        haiku: data.haiku,
+        langLabel: state.doneLang,
+        spice: state.doneSpice,
+        timeLabel: timeLabel(),
+      };
+      state.history.push(entry);
+      saveHistory();
+
+      render();
+
+    }).catch(function(err) {
+      // Check for profanity
+      if (err.profanityWords && err.profanityWords.length > 0) {
+        state.resultState = 'empty';
+        render();
+        showProfanityModal(err.profanityWords);
+        return;
+      }
+
+      state.resultState = 'error';
+      state.errorMsg = err.message || 'Something went wrong. Try again.';
+      render();
+    });
+  }
+
+  /* ===== Event Binding ===== */
+
+  function bindEvents() {
+    // Keywords input
+    els.keywords.addEventListener('input', function() {
+      state.keywords = els.keywords.value;
+      renderKeywords();
+      renderGenerateButton();
+    });
+
+    // Keywords clear
+    els.btnClear.addEventListener('click', function() {
+      state.keywords = '';
+      els.keywords.value = '';
+      renderKeywords();
+      renderGenerateButton();
+      els.keywords.focus();
+    });
+
+    // Language toggle
+    els.langSelector.addEventListener('click', function(e) {
+      e.stopPropagation();
+      state.langOpen = !state.langOpen;
+      renderLanguage();
+    });
+
+    // Language menu (event delegation)
+    els.langMenu.addEventListener('click', function(e) {
+      var btn = e.target.closest('.lang-option');
+      if (!btn) return;
+      state.lang = btn.getAttribute('data-code');
+      state.langOpen = false;
+      render();
+    });
+
+    // Outside click to close language menu
+    document.addEventListener('click', function() {
+      if (state.langOpen) {
+        state.langOpen = false;
+        renderLanguage();
+      }
+    });
+
+    // Wasabi dots (event delegation)
+    els.wasabiDots.addEventListener('click', function(e) {
+      var dot = e.target.closest('.dot');
+      if (!dot) return;
+      var level = parseInt(dot.getAttribute('data-level'), 10);
+      // If clicking the same level, reset to 0; otherwise set to that level
+      state.spice = (state.spice === level) ? 0 : level;
+      renderWasabi();
+      renderGenerateButton();
+    });
+
+    // Generate button
+    els.btnGenerate.addEventListener('click', generate);
+
+    // Enter key in textarea
+    els.keywords.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        var words = phrases(state.keywords);
+        var hasMinWords = words.length >= 3 && words.length <= 7;
+        if (hasMinWords && state.lang && state.resultState !== 'loading') {
+          generate();
+        }
+      }
+    });
+
+    // Modal close
+    els.modalClose.addEventListener('click', hideProfanityModal);
+    els.modalBtn.addEventListener('click', hideProfanityModal);
+
+    // Click on backdrop to close modal
+    els.profanityModal.addEventListener('click', function(e) {
+      if (e.target === els.profanityModal) {
+        hideProfanityModal();
+      }
+    });
+
+    // Escape key to close modal
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && els.profanityModal.classList.contains('open')) {
+        hideProfanityModal();
+      }
+    });
+
+    // Clear history
+    els.btnClearHist.addEventListener('click', function() {
+      state.history = [];
+      saveHistory();
+      renderHistory();
+      renderGenerateButton();
+    });
+  }
+
   /* ===== Init ===== */
   bindElements();
+  loadHistory();
+  bindEvents();
   render();
 
 })();
