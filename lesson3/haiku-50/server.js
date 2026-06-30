@@ -12,7 +12,14 @@ app.use(express.json());
 // Serve static files
 app.use(express.static(path.join(__dirname)));
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+function getOpenAI() {
+  if (!process.env.OPENAI_API_KEY) {
+    return null;
+  }
+  return new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+}
+
+let openai = null;
 
 const ALLOWED_LANGUAGES = [
   'uk', 'en', 'de', 'ja', 'fr', 'es', 'it', 'pt', 'pl', 'zh', 'ko', 'ar'
@@ -50,6 +57,13 @@ app.post('/generate-haiku', async (req, res) => {
   const prompt = buildPrompt(words, language, wasabiLevel);
 
   try {
+    if (!openai) {
+      openai = getOpenAI();
+    }
+    if (!openai) {
+      return res.status(500).json({ error: 'API key not configured. Set OPENAI_API_KEY in .env' });
+    }
+
     const completion = await openai.chat.completions.create({
       model: 'gpt-5-nano-2025-08-07',
       messages: [

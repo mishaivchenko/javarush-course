@@ -1092,7 +1092,7 @@
     for (var i = state.history.length - 1; i >= 0; i--) {
       var h = state.history[i];
       html += '<div class="history-item">';
-      html += '<div class="hi-line">' + escapeHtml(h.haiku.replace(/\n/g, '<br>')) + '</div>';
+      html += '<div class="hi-line">' + escapeHtml((h.haiku || '').replace(/\n/g, '<br>')) + '</div>';
       html += '<div class="hi-meta">';
       if (h.langLabel) html += '<span class="hi-tag">' + escapeHtml(h.langLabel) + '</span>';
       if (h.spice) html += '<span class="hi-tag savory">' + escapeHtml(h.spice) + '</span>';
