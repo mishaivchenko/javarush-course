@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Haiku 50 — Japanese minimalistic haiku generator powered by AI">
+  <title>Haiku 50 — 俳句</title>
+
+  <!-- Google Fonts: Noto Sans JP + Noto Serif JP -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500&family=Noto+Serif+JP:wght@500;600&display=swap" rel="stylesheet">
+
+  <style>
+    /* ===== Design Tokens ===== */
+    :root {
+      --bg-cream:   #f1efe8;
+      --card-white: rgba(255, 255, 255, 0.88);
+      --text-dark:  #232220;
+      --text-muted: #a8a496;
+      --text-dim:   #b3afa3;
+      --accent:     #5c8a4a;
+      --accent-bg:  #eef3e9;
+      --border:     rgba(231, 227, 216, 0.78);
+      --error-red:  #c0392b;
+      --wasabi-max: #c98a3a;
+      --shadow:     0 2px 8px rgba(0,0,0,0.04);
+      --radius:     20px;
+      --font-body:  'Noto Sans JP', sans-serif;
+      --font-serif: 'Noto Serif JP', serif;
+    }
+
+    /* ===== Reset ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg-cream);
+      background-image: radial-gradient(ellipse at 20% 50%, rgba(92,138,74,0.04) 0%, transparent 60%),
+                        radial-gradient(ellipse at 80% 20%, rgba(201,138,58,0.03) 0%, transparent 50%);
+      color: var(--text-dark);
+      min-height: 100vh;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button { cursor: pointer; font-family: inherit; font-size: inherit; }
+    textarea { font-family: inherit; }
+
+    /* ===== Splash Screen ===== */
+    #splash {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      background: radial-gradient(ellipse at center, #f5f3ec 0%, #e8e5da 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: h50splash 3s ease forwards;
+      pointer-events: none;
+    }
+
+    #splash svg {
+      width: 320px;
+      height: auto;
+      animation: h50splashLogo 1s ease-out both;
+    }
+
+    @keyframes h50splash {
+      0%, 60% { opacity: 1; }
+      100%    { opacity: 0; }
+    }
+
+    @keyframes h50splashLogo {
+      0%   { opacity: 0; transform: scale(0.85) translateY(10px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    /* ===== Page Shell ===== */
+    #app {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 32px 24px;
+      animation: h50up 0.6s ease 2.8s both;
+    }
+
+    /* ===== Header ===== */
+    header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    header h1 {
+      font-family: var(--font-serif);
+      font-size: 36px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      color: var(--text-dark);
+    }
+
+    header h1 span {
+      font-size: 28px;
+      color: var(--text-muted);
+      margin-left: 8px;
+    }
+
+    header p {
+      color: var(--text-dim);
+      font-size: 15px;
+      margin-top: 4px;
+      font-weight: 400;
+    }
+
+    /* ===== Bento Grid ===== */
+    .bento-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-rows: auto auto auto auto;
+      grid-template-areas:
+        "result  result  input"
+        "result  result  lang"
+        "result  result  wasabi"
+        "history history info";
+      gap: 16px;
+    }
+
+    /* ===== Cards ===== */
+    .card {
+      background: var(--card-white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      padding: 24px;
+    }
+
+    .card-title {
+      font-size: 12px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-dim);
+      margin-bottom: 16px;
+    }
+
+    /* ===== Result Card ===== */
+    #result-card {
+      grid-area: result;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 320px;
+      text-align: center;
+    }
+
+    /* Empty state */
+    .result-empty .result-ring {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      border: 2px dashed var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+      color: var(--text-dim);
+      font-size: 28px;
+    }
+
+    .result-empty .result-label {
+      font-size: 18px;
+      font-weight: 500;
+      color: var(--text-dark);
+    }
+
+    .result-empty .result-hint {
+      font-size: 14px;
+      color: var(--text-dim);
+      margin-top: 8px;
+    }
+
+    /* Loading state */
+    .result-loading .result-spinner {
+      width: 38px;
+      height: 38px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: h50spin 0.8s linear infinite;
+      margin-bottom: 20px;
+    }
+
+    .result-loading .result-label {
+      font-size: 16px;
+      color: var(--text-muted);
+    }
+
+    @keyframes h50spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Error state */
+    .result-error .result-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: #fdecea;
+      color: var(--error-red);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+
+    .result-error .result-label {
+      font-size: 16px;
+      color: var(--error-red);
+      max-width: 320px;
+    }
+
+    /* Done state */
+    .result-done .haiku-lines {
+      font-family: var(--font-serif);
+      font-size: 32px;
+      font-weight: 500;
+      line-height: 1.6;
+      color: var(--text-dark);
+      animation: h50pop 0.4s ease both;
+    }
+
+    .result-done .haiku-meta {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .result-done .haiku-tag {
+      font-size: 12px;
+      padding: 4px 12px;
+      border-radius: 100px;
+      background: var(--accent-bg);
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    .result-done .haiku-tag.savory {
+      background: #f5efe6;
+      color: var(--wasabi-max);
+    }
+
+    @keyframes h50pop {
+      0%   { opacity: 0; transform: scale(0.92); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    /* ===== Keywords Card ===== */
+    #keywords-card {
+      grid-area: input;
+    }
+
+    #keywords-card textarea {
+      width: 100%;
+      min-height: 80px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 14px;
+      font-weight: 400;
+      color: var(--text-dark);
+      background: transparent;
+      resize: none;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    #keywords-card textarea:focus {
+      border-color: var(--accent);
+    }
+
+    #keywords-card textarea::placeholder {
+      color: var(--text-dim);
+    }
+
+    .keywords-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 8px;
+    }
+
+    .word-count {
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    .word-count.warn {
+      color: var(--wasabi-max);
+    }
+
+    .btn-clear {
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      font-size: 13px;
+      padding: 4px 8px;
+      transition: color 0.2s;
+    }
+
+    .btn-clear:hover { color: var(--text-dark); }
+    .btn-clear:disabled { opacity: 0.3; cursor: default; }
+
+    /* ===== Language Card ===== */
+    #language-card {
+      grid-area: lang;
+      position: relative;
+    }
+
+    .lang-selector {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 12px 14px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      font-size: 14px;
+      color: var(--text-dark);
+      transition: border-color 0.2s;
+    }
+
+    .lang-selector:hover,
+    .lang-selector:focus-visible {
+      border-color: var(--accent);
+    }
+
+    .lang-selector .chevron {
+      font-size: 10px;
+      color: var(--text-dim);
+      transition: transform 0.2s;
+    }
+
+    .lang-selector.open .chevron {
+      transform: rotate(180deg);
+    }
+
+    .lang-menu {
+      position: absolute;
+      left: 24px; right: 24px;
+      top: calc(100% - 8px);
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+      max-height: 240px;
+      overflow-y: auto;
+      display: none;
+      z-index: 10;
+    }
+
+    .lang-menu.open {
+      display: block;
+    }
+
+    .lang-option {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      padding: 10px 16px;
+      background: none;
+      border: none;
+      font-size: 14px;
+      color: var(--text-dark);
+      text-align: left;
+    }
+
+    .lang-option:hover {
+      background: var(--accent-bg);
+    }
+
+    .lang-option.selected {
+      background: var(--accent-bg);
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    .lang-option .native-name {
+      color: var(--text-dim);
+      font-size: 12px;
+    }
+
+    /* ===== Wasabi Card ===== */
+    #wasabi-card {
+      grid-area: wasabi;
+    }
+
+    .wasabi-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .wasabi-icon {
+      width: 28px;
+      height: 28px;
+      border: 1.5px dashed var(--border);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      color: var(--text-dim);
+    }
+
+    .wasabi-label {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .wasabi-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .wasabi-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .dot {
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      border: 1.5px solid var(--border);
+      background: transparent;
+      padding: 0;
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .dot.active {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .dot:hover {
+      border-color: var(--accent);
+    }
+
+    .heat-level {
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-left: 4px;
+    }
+
+    .heat-max {
+      font-size: 11px;
+      background: #f5efe6;
+      color: var(--wasabi-max);
+      padding: 2px 8px;
+      border-radius: 100px;
+      font-weight: 500;
+    }
+
+    /* ===== History Card ===== */
+    #history-card {
+      grid-area: history;
+    }
+
+    .history-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .history-header .card-title {
+      margin-bottom: 0;
+    }
+
+    .btn-history-clear {
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      font-size: 12px;
+      padding: 4px 8px;
+      transition: color 0.2s;
+    }
+
+    .btn-history-clear:hover { color: var(--error-red); }
+    .btn-history-clear:disabled { opacity: 0.3; cursor: default; }
+
+    .history-empty {
+      text-align: center;
+      padding: 20px 0;
+      color: var(--text-dim);
+      font-size: 14px;
+    }
+
+    .history-list {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      max-height: 240px;
+      overflow-y: auto;
+    }
+
+    .history-item {
+      padding: 12px;
+      border-radius: 12px;
+      background: rgba(0,0,0,0.02);
+      border: 1px solid rgba(231,227,216,0.5);
+    }
+
+    .history-item .hi-line {
+      font-family: var(--font-serif);
+      font-size: 13px;
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .history-item .hi-meta {
+      display: flex;
+      gap: 6px;
+      margin-top: 6px;
+      font-size: 10px;
+    }
+
+    .history-item .hi-tag {
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: var(--accent-bg);
+      color: var(--accent);
+    }
+
+    .history-item .hi-tag.savory {
+      background: #f5efe6;
+      color: var(--wasabi-max);
+    }
+
+    .history-item .hi-time {
+      color: var(--text-dim);
+      font-size: 10px;
+      margin-left: auto;
+    }
+
+    /* ===== Info Card ===== */
+    #info-card {
+      grid-area: info;
+      background: rgba(35, 34, 32, 0.04);
+    }
+
+    .info-57 {
+      font-family: var(--font-serif);
+      font-size: 32px;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      margin-bottom: 8px;
+    }
+
+    .info-text {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    .btn-generate {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      background: var(--accent);
+      color: white;
+      font-size: 16px;
+      font-weight: 500;
+      transition: background 0.2s, opacity 0.2s;
+    }
+
+    .btn-generate:hover {
+      background: #4d7a3e;
+    }
+
+    .btn-generate:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+
+    .btn-generate:disabled:hover {
+      background: var(--accent);
+    }
+
+    @keyframes h50up {
+      0%   { opacity: 0; transform: translateY(12px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ===== Profanity Modal ===== */
+    #profanity-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 9000;
+      background: rgba(0,0,0,0.3);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      animation: modalFadeIn 0.25s ease;
+    }
+
+    #profanity-modal.open {
+      display: flex;
+    }
+
+    @keyframes modalFadeIn {
+      0%   { opacity: 0; }
+      100% { opacity: 1; }
+    }
+
+    .modal-card {
+      background: white;
+      border-radius: var(--radius);
+      max-width: 420px;
+      width: 90%;
+      padding: 32px;
+      text-align: center;
+      box-shadow: 0 16px 48px rgba(0,0,0,0.12);
+      animation: modalSlideIn 0.3s ease;
+      position: relative;
+    }
+
+    @keyframes modalSlideIn {
+      0%   { opacity: 0; transform: translateY(20px) scale(0.96); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: none;
+      border: none;
+      font-size: 18px;
+      color: var(--text-dim);
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+
+    .modal-close:hover {
+      background: rgba(0,0,0,0.05);
+    }
+
+    .modal-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+
+    .modal-title {
+      font-size: 20px;
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+
+    .modal-desc {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+
+    .modal-words {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      margin-bottom: 24px;
+    }
+
+    .modal-word {
+      padding: 6px 16px;
+      border-radius: 100px;
+      background: #fdecea;
+      color: var(--error-red);
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .modal-btn {
+      padding: 12px 32px;
+      border: none;
+      border-radius: 12px;
+      background: var(--accent);
+      color: white;
+      font-size: 15px;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+
+    .modal-btn:hover {
+      background: #4d7a3e;
+    }
+
+    /* ===== Responsive ===== */
+
+    /* Tablet: ≤979px */
+    @media (max-width: 979px) {
+      .bento-grid {
+        grid-template-columns: 1fr 1fr;
+        grid-template-areas:
+          "result  result"
+          "input   lang"
+          "wasabi  info"
+          "history history";
+      }
+    }
+
+    /* Mobile: ≤639px */
+    @media (max-width: 639px) {
+      #app { padding: 16px; }
+
+      .bento-grid {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+          "result"
+          "input"
+          "lang"
+          "wasabi"
+          "info"
+          "history";
+        gap: 12px;
+      }
+
+      #result-card { min-height: 240px; }
+
+      .result-done .haiku-lines {
+        font-size: 26px;
+      }
+
+      .history-list {
+        grid-template-columns: 1fr;
+      }
+
+      header h1 {
+        font-size: 28px;
+      }
+
+      header h1 span {
+        font-size: 22px;
+      }
+    }
+
+    /* ===== Reduced Motion ===== */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+
+      #app {
+        animation: none !important;
+        opacity: 1 !important;
+      }
+
+      #splash {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Splash Screen -->
+  <div id="splash" aria-hidden="true">
+    <svg viewBox="0 0 1200 800" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="600" cy="350" r="120" stroke="#232220" stroke-width="4" fill="none" opacity="0.15"/>
+      <circle cx="600" cy="350" r="100" stroke="#232220" stroke-width="3" fill="none" opacity="0.10"/>
+      <circle cx="600" cy="350" r="80" stroke="#5c8a4a" stroke-width="3" fill="none" opacity="0.25"/>
+      <!-- Drop -->
+      <path d="M600 280 C600 280 580 320 580 340 C580 355 589 365 600 365 C611 365 620 355 620 340 C620 320 600 280 600 280Z" fill="#5c8a4a" opacity="0.20"/>
+      <text x="600" y="480" text-anchor="middle" font-family="'Noto Serif JP', serif" font-size="52" font-weight="500" fill="#232220">Haiku 50</text>
+      <text x="600" y="530" text-anchor="middle" font-family="'Noto Serif JP', serif" font-size="28" fill="#a8a496">俳句</text>
+    </svg>
+  </div>
+
+  <!-- App Shell -->
+  <div id="app">
+    <!-- Header -->
+    <header>
+      <h1>Haiku 50 <span>俳句</span></h1>
+      <p>Enter words, choose a language, set the heat — let AI compose a three-line haiku</p>
+    </header>
+
+    <!-- Bento Grid -->
+    <div class="bento-grid">
+      <!-- Result Card -->
+      <div id="result-card" class="card result-empty" aria-live="polite" role="status">
+        <div class="result-ring">◌</div>
+        <div class="result-label">No haiku yet</div>
+        <div class="result-hint">Enter 3–7 words and press Generate</div>
+      </div>
+
+      <!-- Keywords Card -->
+      <div id="keywords-card" class="card">
+        <div class="card-title">Keywords</div>
+        <textarea id="keywords-input" placeholder="e.g. sakura, river, hot wind, cricket, autumn" rows="3"></textarea>
+        <div class="keywords-footer">
+          <span class="word-count" id="word-count">0 / 3–7</span>
+          <button class="btn-clear" id="btn-clear" disabled>Clear</button>
+        </div>
+      </div>
+
+      <!-- Language Card -->
+      <div id="language-card" class="card">
+        <div class="card-title">Language</div>
+        <button class="lang-selector" id="lang-selector" aria-haspopup="listbox">
+          <span id="lang-selected">Choose language</span>
+          <span class="chevron">▾</span>
+        </button>
+        <div class="lang-menu" id="lang-menu" role="listbox" aria-label="Select language"></div>
+      </div>
+
+      <!-- Wasabi Card -->
+      <div id="wasabi-card" class="card">
+        <div class="card-title">Wasabi</div>
+        <div class="wasabi-header">
+          <div class="wasabi-icon">≡</div>
+          <span class="wasabi-label">Spiciness level</span>
+        </div>
+        <div class="wasabi-controls">
+          <div class="wasabi-dots" id="wasabi-dots"></div>
+          <span class="heat-level" id="heat-level">Calm</span>
+          <span class="heat-max">MAX&nbsp;6</span>
+        </div>
+      </div>
+
+      <!-- History Card -->
+      <div id="history-card" class="card">
+        <div class="history-header">
+          <div class="card-title">History</div>
+          <button class="btn-history-clear" id="btn-history-clear" disabled>Clear all</button>
+        </div>
+        <div class="history-empty" id="history-empty">No haiku yet</div>
+        <div class="history-list" id="history-list"></div>
+      </div>
+
+      <!-- Info Card -->
+      <div id="info-card" class="card">
+        <div class="info-57">5·7·5</div>
+        <div class="info-text">
+          A traditional Japanese haiku has three phrases of 5, 7, and 5 morae. Our AI follows this spirit in over a dozen languages.
+        </div>
+        <button class="btn-generate" id="btn-generate" disabled>Generate</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Profanity Modal -->
+  <div id="profanity-modal">
+    <div class="modal-card">
+      <button class="modal-close" id="modal-close" aria-label="Close">✕</button>
+      <div class="modal-icon">⚠️</div>
+      <div class="modal-title">Watch your language</div>
+      <div class="modal-desc">Some words you entered may not be appropriate. Please remove them and try again.</div>
+      <div class="modal-words" id="modal-words"></div>
+      <button class="modal-btn" id="modal-btn">Got it</button>
+    </div>
+  </div>
+
+  <!-- Script (deferred to tasks 044–045) -->
+  <script>
+    // JS implementation in tasks 044–045
+  </script>
+</body>
+</html>
