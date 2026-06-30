@@ -56,7 +56,6 @@ app.post('/generate-haiku', async (req, res) => {
         { role: 'system', content: 'You are a haiku master. Output exactly 3 lines, no more, no less.' },
         { role: 'user', content: prompt }
       ],
-      reasoning_effort: 'low',
       max_tokens: 150,
       temperature: 0.8,
     });
@@ -72,7 +71,6 @@ app.post('/generate-haiku', async (req, res) => {
           { role: 'system', content: 'You are a haiku master. Output exactly 3 lines, no more, no less.' },
           { role: 'user', content: prompt + '\n\nIMPORTANT: Output EXACTLY 3 lines, separated by newlines. Nothing else.' }
         ],
-        reasoning_effort: 'low',
         max_tokens: 150,
         temperature: 0.7,
       });
