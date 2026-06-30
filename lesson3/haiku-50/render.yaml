@@ -1,0 +1,16 @@
+# Render Blueprint — Haiku 50
+# Deploy: connect this repo in Render dashboard → "Blueprint" → select render.yaml
+# Or: create a new Web Service and point to lesson3/haiku-50/
+services:
+  - type: web
+    name: haiku-50
+    env: node
+    region: frankfurt
+    rootDir: lesson3/haiku-50
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_VERSION
+        value: 20.18.0
+      - key: OPENAI_API_KEY
+        sync: false
