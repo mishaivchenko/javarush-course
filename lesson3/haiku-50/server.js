@@ -56,7 +56,7 @@ app.post('/generate-haiku', async (req, res) => {
         { role: 'system', content: 'You are a haiku master. Output exactly 3 lines, no more, no less.' },
         { role: 'user', content: prompt }
       ],
-      max_completion_tokens: 300,
+      max_completion_tokens: 3000,
     });
 
     const raw = completion.choices[0]?.message?.content || '';
@@ -70,7 +70,7 @@ app.post('/generate-haiku', async (req, res) => {
           { role: 'system', content: 'You are a haiku master. Output exactly 3 lines, no more, no less.' },
           { role: 'user', content: prompt + '\n\nIMPORTANT: Output EXACTLY 3 lines, separated by newlines. Nothing else.' }
         ],
-        max_completion_tokens: 300,
+        max_completion_tokens: 3000,
       });
       const retryRaw = retry.choices[0]?.message?.content || '';
       haiku = normalizeHaiku(retryRaw);
