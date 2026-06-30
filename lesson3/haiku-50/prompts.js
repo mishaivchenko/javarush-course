@@ -28,8 +28,12 @@ ${spice}
 }
 
 function normalizeHaiku(raw) {
-  // 1. Strip markdown code blocks (``` or """)
-  let cleaned = raw.replace(/```[\s\S]*?```/g, '').replace(/"""[\s\S]*?"""/g, '');
+  // 1. Strip markdown code block delimiters, keep the content inside
+  let cleaned = raw.replace(/```[\s\S]*?```/g, function(m) {
+    return m.replace(/^```[^\n]*\n?/, '').replace(/\n?```$/, '');
+  }).replace(/"""[\s\S]*?"""/g, function(m) {
+    return m.replace(/^"""[^\n]*\n?/, '').replace(/\n?"""$/, '');
+  });
 
   // 2. Remove common introductory text
   cleaned = cleaned.replace(/^(Here is|Here's|I hope you|I've written|Sure|Of course|Certainly)[^]*?\n/i, '');

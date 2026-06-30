@@ -462,6 +462,17 @@
       margin-left: 4px;
     }
 
+    .spice-max {
+      font-size: 11px;
+      color: var(--wasabi-max);
+      margin-left: 8px;
+      font-weight: 500;
+    }
+
+    .spice-max.is-hidden {
+      display: none;
+    }
+
     .heat-max {
       font-size: 11px;
       background: #f5efe6;
@@ -846,6 +857,7 @@
         <div class="wasabi-controls">
           <div class="wasabi-dots" id="wasabi-dots"></div>
           <span class="heat-level" id="heat-level">Calm</span>
+          <div class="spice-max is-hidden" id="spice-max">🌶 As hot as it gets — tap again to cool down</div>
           <span class="heat-max">MAX&nbsp;6</span>
         </div>
       </div>
@@ -899,6 +911,7 @@
     els.langMenu     = document.getElementById('lang-menu');
     els.wasabiDots   = document.getElementById('wasabi-dots');
     els.heatLevel    = document.getElementById('heat-level');
+    els.spiceMax     = document.getElementById('spice-max');
     els.historyEmpty = document.getElementById('history-empty');
     els.historyList  = document.getElementById('history-list');
     els.btnClearHist = document.getElementById('btn-history-clear');
@@ -1060,6 +1073,7 @@
     }
     els.wasabiDots.innerHTML = html;
     els.heatLevel.textContent = SPICE_LABELS[state.spice] || SPICE_LABELS[0];
+    els.spiceMax.className = 'spice-max' + (state.spice === 6 ? '' : ' is-hidden');
   }
 
   function renderHistory() {
@@ -1236,16 +1250,18 @@
       state.doneSpice = SPICE_LABELS[state.spice] || SPICE_LABELS[0];
       state.resultState = 'done';
 
-      // Save to history
-      var entry = {
-        id: nextId(),
-        haiku: data.haiku,
-        langLabel: state.doneLang,
-        spice: state.doneSpice,
-        timeLabel: timeLabel(),
-      };
-      state.history.push(entry);
-      saveHistory();
+      // Save to history (skip fallback haikus)
+      if (!data.fallback) {
+        var entry = {
+          id: nextId(),
+          haiku: data.haiku,
+          langLabel: state.doneLang,
+          spice: state.doneSpice,
+          timeLabel: timeLabel(),
+        };
+        state.history.push(entry);
+        saveHistory();
+      }
 
       render();
 

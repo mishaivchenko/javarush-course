@@ -83,9 +83,10 @@ app.post('/generate-haiku', async (req, res) => {
     // Final fallback if still bad
     if (haiku.split('\n').filter(Boolean).length < 3) {
       haiku = 'Silence\nwhere words should be\na blank page';
+      return res.json({ haiku, fallback: true });
     }
 
-    res.json({ haiku });
+    res.json({ haiku, fallback: false });
 
   } catch (err) {
     console.error('OpenAI API error:', err.message);
