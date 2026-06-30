@@ -51,7 +51,7 @@ app.post('/generate-haiku', async (req, res) => {
 
   try {
     const completion = await openai.chat.completions.create({
-      model: 'gpt-5-nano-2025-08-07',
+      model: 'gpt-4o-mini',
       messages: [
         { role: 'system', content: 'You are a haiku master. Output exactly 3 lines, no more, no less.' },
         { role: 'user', content: prompt }
@@ -67,7 +67,7 @@ app.post('/generate-haiku', async (req, res) => {
     // Retry once if normalization failed
     if (haiku.split('\n').filter(Boolean).length < 3) {
       const retry = await openai.chat.completions.create({
-        model: 'gpt-5-nano-2025-08-07',
+        model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: 'You are a haiku master. Output exactly 3 lines, no more, no less.' },
           { role: 'user', content: prompt + '\n\nIMPORTANT: Output EXACTLY 3 lines, separated by newlines. Nothing else.' }
