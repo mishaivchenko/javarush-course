@@ -1829,7 +1829,7 @@
     const stateEl = document.getElementById('stat-state-' + prefix);
     const roundEl = document.getElementById('round-' + prefix);
 
-    if (winsEl) winsEl.textContent = s.totalWins;
+    // STATIC — never overwritten
     if (lossesEl) lossesEl.textContent = s.totalLosses;
 
     const total = s.totalWins + s.totalLosses;
