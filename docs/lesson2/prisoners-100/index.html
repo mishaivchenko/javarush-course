@@ -933,8 +933,8 @@
 <body>
   <div id="app">
     <!-- GIANT STATIC BANNER — always visible, never changes -->
-    <div style="background:#6b1414;color:#fff;text-align:center;font-family:'UnifrakturCook',serif;font-size:1.4em;padding:6px 0;letter-spacing:0.3em;border-bottom:2px solid #c92a2a;">
-      ◈ LOOP PROTOCOL WIN RATE ≈ 31% ◈
+    <div style="background:#000;color:#ff0000;text-align:center;font-family:monospace;font-size:3em;padding:20px 0;border:8px solid #ff0000;font-weight:bold;letter-spacing:0.1em;">
+      LOOP PROTOCOL ≈ 31%
     </div>
     <!-- HEADER ROW — no mugshot, global controls -->
     <div class="header-row">
@@ -2210,10 +2210,6 @@
   function onRunAll() {
     if (stateA.running || stateB.running) return;
 
-    document.getElementById('stat-wins-a').textContent = '0';
-    document.getElementById('stat-losses-a').textContent = '0';
-    document.getElementById('stat-wins-b').textContent = '0';
-    document.getElementById('stat-losses-b').textContent = '0';
     document.getElementById('btn-run-all').disabled = true;
     document.getElementById('btn-run-all').textContent = '◈ Running...';
 
@@ -2318,8 +2314,6 @@
     s.prisonerStep = 0;
     s.roundState = 'IDLE';
     s.prisonerPath = [];
-    s.totalWins = 0;
-    s.totalLosses = 0;
     s.maxStreak = 0;
     s.currentStreak = 0;
     s.history = [];
