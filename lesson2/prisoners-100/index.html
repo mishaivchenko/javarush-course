@@ -2210,10 +2210,6 @@
   function onRunAll() {
     if (stateA.running || stateB.running) return;
 
-    document.getElementById('stat-wins-a').textContent = '0';
-    document.getElementById('stat-losses-a').textContent = '0';
-    document.getElementById('stat-wins-b').textContent = '0';
-    document.getElementById('stat-losses-b').textContent = '0';
     document.getElementById('btn-run-all').disabled = true;
     document.getElementById('btn-run-all').textContent = '◈ Running...';
 
@@ -2318,8 +2314,6 @@
     s.prisonerStep = 0;
     s.roundState = 'IDLE';
     s.prisonerPath = [];
-    s.totalWins = 0;
-    s.totalLosses = 0;
     s.maxStreak = 0;
     s.currentStreak = 0;
     s.history = [];
