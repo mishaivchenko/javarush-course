@@ -883,9 +883,243 @@
     </div>
   </div>
 
-  <!-- Script (deferred to tasks 044–045) -->
   <script>
-    // JS implementation in tasks 044–045
-  </script>
+(function(){ 'use strict';
+
+  /* ===== DOM Elements ===== */
+  var els = {};
+
+  function bindElements() {
+    els.resultCard   = document.getElementById('result-card');
+    els.keywords     = document.getElementById('keywords-input');
+    els.wordCount    = document.getElementById('word-count');
+    els.btnClear     = document.getElementById('btn-clear');
+    els.langSelector = document.getElementById('lang-selector');
+    els.langSelected = document.getElementById('lang-selected');
+    els.langMenu     = document.getElementById('lang-menu');
+    els.wasabiDots   = document.getElementById('wasabi-dots');
+    els.heatLevel    = document.getElementById('heat-level');
+    els.historyEmpty = document.getElementById('history-empty');
+    els.historyList  = document.getElementById('history-list');
+    els.btnClearHist = document.getElementById('btn-history-clear');
+    els.btnGenerate  = document.getElementById('btn-generate');
+    els.profanityModal = document.getElementById('profanity-modal');
+    els.modalWords   = document.getElementById('modal-words');
+    els.modalClose   = document.getElementById('modal-close');
+    els.modalBtn     = document.getElementById('modal-btn');
+  }
+
+  /* ===== Constants ===== */
+  var LANGS = [
+    { code: 'uk', label: 'Ukrainian',      native: 'Українська' },
+    { code: 'en', label: 'English',         native: 'English' },
+    { code: 'de', label: 'German',          native: 'Deutsch' },
+    { code: 'ja', label: 'Japanese',        native: '日本語' },
+    { code: 'fr', label: 'French',          native: 'Français' },
+    { code: 'es', label: 'Spanish',         native: 'Español' },
+    { code: 'it', label: 'Italian',         native: 'Italiano' },
+    { code: 'pt', label: 'Portuguese',      native: 'Português' },
+    { code: 'pl', label: 'Polish',          native: 'Polski' },
+    { code: 'zh', label: 'Chinese',         native: '中文' },
+    { code: 'ko', label: 'Korean',          native: '한국어' },
+    { code: 'ar', label: 'Arabic',          native: 'العربية' },
+  ];
+
+  var SPICE_LABELS = ['Calm', 'Gentle', 'Subtle', 'Playful', 'Bold', 'Wild', 'Insane'];
+
+  /* ===== State ===== */
+  var state = {
+    keywords: '',
+    lang: '',
+    spice: 0,
+    langOpen: false,
+    resultState: 'empty',    // empty | loading | error | done
+    errorMsg: '',
+    lines: [],
+    doneLang: '',
+    doneSpice: '',
+    history: [],
+  };
+
+  /* ===== Helpers ===== */
+
+  function phrases(str) {
+    return str.split(/[,\n]/).map(function(s){ return s.trim(); }).filter(Boolean);
+  }
+
+  function labelOf(code) {
+    for (var i = 0; i < LANGS.length; i++) {
+      if (LANGS[i].code === code) return LANGS[i].label;
+    }
+    return code;
+  }
+
+  function timeLabel() {
+    var d = new Date();
+    var h = d.getHours().toString().padStart(2, '0');
+    var m = d.getMinutes().toString().padStart(2, '0');
+    return h + ':' + m;
+  }
+
+  function nextId() {
+    return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  }
+
+  /* ===== Render Functions ===== */
+
+  function renderEmpty() {
+    els.resultCard.className = 'card result-empty';
+    els.resultCard.innerHTML =
+      '<div class="result-ring">◌</div>' +
+      '<div class="result-label">No haiku yet</div>' +
+      '<div class="result-hint">Enter 3–7 words and press Generate</div>';
+  }
+
+  function renderLoading() {
+    els.resultCard.className = 'card result-loading';
+    els.resultCard.innerHTML =
+      '<div class="result-spinner"></div>' +
+      '<div class="result-label">Composing the lines…</div>';
+  }
+
+  function renderError() {
+    els.resultCard.className = 'card result-error';
+    els.resultCard.innerHTML =
+      '<div class="result-icon">!</div>' +
+      '<div class="result-label">' + escapeHtml(state.errorMsg) + '</div>';
+  }
+
+  function renderDone() {
+    els.resultCard.className = 'card result-done';
+    var html = '<div class="haiku-lines">';
+    for (var i = 0; i < state.lines.length; i++) {
+      html += escapeHtml(state.lines[i]);
+      if (i < state.lines.length - 1) html += '<br>';
+    }
+    html += '</div><div class="haiku-meta">';
+    if (state.doneLang) {
+      html += '<span class="haiku-tag">' + escapeHtml(state.doneLang) + '</span>';
+    }
+    if (state.doneSpice) {
+      html += '<span class="haiku-tag savory">' + escapeHtml(state.doneSpice) + '</span>';
+    }
+    html += '</div>';
+    els.resultCard.innerHTML = html;
+  }
+
+  function renderResult() {
+    switch (state.resultState) {
+      case 'empty':   renderEmpty();   break;
+      case 'loading': renderLoading(); break;
+      case 'error':   renderError();   break;
+      case 'done':    renderDone();    break;
+    }
+  }
+
+  function renderKeywords() {
+    // Sync state from DOM if user pasted or typed
+    if (els.keywords.value !== state.keywords) {
+      state.keywords = els.keywords.value;
+    }
+    var words = phrases(state.keywords);
+    var count = words.length;
+    var countLabel = (state.keywords ? count : 0) + ' / 3–7';
+    els.wordCount.textContent = countLabel;
+    els.wordCount.className = 'word-count' + (count > 7 ? ' warn' : '');
+    els.btnClear.disabled = !state.keywords;
+  }
+
+  function renderLanguage() {
+    // Build menu items
+    var html = '';
+    for (var i = 0; i < LANGS.length; i++) {
+      var l = LANGS[i];
+      var sel = l.code === state.lang ? ' selected' : '';
+      html += '<button class="lang-option' + sel + '" data-code="' + l.code + '">' +
+        escapeHtml(l.label) + ' <span class="native-name">' + escapeHtml(l.native) + '</span></button>';
+    }
+    els.langMenu.innerHTML = html;
+
+    // Update button text
+    if (state.lang) {
+      els.langSelected.textContent = labelOf(state.lang);
+    } else {
+      els.langSelected.textContent = 'Choose language';
+    }
+
+    // Toggle dropdown
+    els.langMenu.className = 'lang-menu' + (state.langOpen ? ' open' : '');
+    els.langSelector.className = 'lang-selector' + (state.langOpen ? ' open' : '');
+  }
+
+  function renderWasabi() {
+    var html = '';
+    for (var i = 0; i < 6; i++) {
+      var active = i < state.spice ? ' active' : '';
+      html += '<button class="dot' + active + '" data-level="' + (i + 1) + '"></button>';
+    }
+    els.wasabiDots.innerHTML = html;
+    els.heatLevel.textContent = SPICE_LABELS[state.spice] || SPICE_LABELS[0];
+  }
+
+  function renderHistory() {
+    if (state.history.length === 0) {
+      els.historyEmpty.style.display = '';
+      els.historyList.style.display = 'none';
+      els.btnClearHist.disabled = true;
+      return;
+    }
+
+    els.historyEmpty.style.display = 'none';
+    els.historyList.style.display = '';
+    els.btnClearHist.disabled = false;
+
+    var html = '';
+    for (var i = state.history.length - 1; i >= 0; i--) {
+      var h = state.history[i];
+      html += '<div class="history-item">';
+      html += '<div class="hi-line">' + escapeHtml(h.haiku.replace(/\n/g, '<br>')) + '</div>';
+      html += '<div class="hi-meta">';
+      if (h.langLabel) html += '<span class="hi-tag">' + escapeHtml(h.langLabel) + '</span>';
+      if (h.spice) html += '<span class="hi-tag savory">' + escapeHtml(h.spice) + '</span>';
+      if (h.timeLabel) html += '<span class="hi-time">' + escapeHtml(h.timeLabel) + '</span>';
+      html += '</div></div>';
+    }
+    els.historyList.innerHTML = html;
+  }
+
+  function renderGenerateButton() {
+    var words = phrases(state.keywords);
+    var hasMinWords = words.length >= 3 && words.length <= 7;
+    var hasLang = !!state.lang;
+    var canGenerate = hasMinWords && hasLang && state.resultState !== 'loading';
+
+    els.btnGenerate.disabled = !canGenerate;
+    els.btnGenerate.textContent = state.resultState === 'loading' ? 'Generating…' : 'Generate';
+  }
+
+  function render() {
+    renderResult();
+    renderKeywords();
+    renderLanguage();
+    renderWasabi();
+    renderHistory();
+    renderGenerateButton();
+  }
+
+  /* ===== Utility ===== */
+
+  function escapeHtml(str) {
+    var div = document.createElement('div');
+    div.appendChild(document.createTextNode(str));
+    return div.innerHTML;
+  }
+
+  /* ===== Init ===== */
+  bindElements();
+  render();
+
+})();
+</script>
 </body>
 </html>
