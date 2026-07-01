@@ -3,6 +3,7 @@ import SafariServices
 
 struct ContentView: View {
     @AppStorage("extensionEnabled") private var extensionEnabled = false
+    @State private var safariExtensionEnabled = false
     @State private var showSafariPrefs = false
     @State private var showResetConfirmation = false
 
@@ -27,12 +28,32 @@ struct ContentView: View {
 
             Divider()
 
-            // Status section
-            HStack {
-                Image(systemName: extensionEnabled ? "checkmark.circle.fill" : "xmark.circle.fill")
-                    .foregroundColor(extensionEnabled ? .green : .red)
-                Text(extensionEnabled ? "Extension Active" : "Extension Inactive")
-                    .font(.headline)
+            // Status section with interactive toggle
+            Toggle(isOn: $extensionEnabled) {
+                HStack {
+                    Image(systemName: "shield.lefthalf.filled")
+                        .foregroundColor(extensionEnabled ? .green : .secondary)
+                    Text("Extension Active")
+                        .font(.headline)
+                }
+            }
+            .toggleStyle(.switch)
+            .padding(.horizontal, 4)
+
+            if safariExtensionEnabled {
+                if extensionEnabled {
+                    Text("Don't Touch is blocking NSFW content on all websites.")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                } else {
+                    Text("Toggle the switch above to activate content blocking.")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+            } else {
+                Text("Enable the extension in Safari Settings first (use the button below).")
+                    .font(.caption)
+                    .foregroundColor(.orange)
             }
 
             // Instructions
@@ -93,7 +114,7 @@ struct ContentView: View {
             withIdentifier: "com.yourname.donttouch.extension"
         ) { state, error in
             DispatchQueue.main.async {
-                extensionEnabled = state?.isEnabled ?? false
+                safariExtensionEnabled = state?.isEnabled ?? false
             }
         }
     }

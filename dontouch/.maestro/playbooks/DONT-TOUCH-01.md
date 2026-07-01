@@ -47,7 +47,7 @@ This phase sets up the Xcode project, creates the Safari extension skeleton, and
   3. `validate(context:validationHandler:)` returns `(true, nil)` — extension activates on all pages.
   4. Message flow verified: `content.js` → `browser.runtime.sendMessage({type:"pageLoaded",url})` → `background.js` → `safari.self.tab.dispatchMessage("pageLoaded",...)` → `SafariWebExtensionHandler.messageReceived(withName:"pageLoaded",...)` → responds `{status:"ready"}` → `content.js` sets `isReady=true`.
 
-- [ ] Add extension activation logic in the main app (`DontTouchApp.swift`):
+- [x] Add extension activation logic in the main app (`DontTouchApp.swift`):
   1. In the main app target's `ContentView.swift` or `DontTouchApp.swift`, add code that calls `SFSafariApplication.showPreferencesForExtension(withIdentifier: "com.yourname.DontTouchBlocker")` to open Safari preferences to the extension tab.
   2. Show a simple SwiftUI view with:
      - App icon/name "Don't Touch" at top
