@@ -1,6 +1,13 @@
 import SafariServices
 import OSLog
 
+/// Error thrown when an analysis task exceeds its time budget.
+/// Caught in message handlers to return a graceful timeout response
+/// instead of leaving the content script waiting indefinitely.
+enum AnalysisTimeoutError: Error {
+    case timedOut(duration: TimeInterval)
+}
+
 /// Native handler for the Safari Web Extension.
 /// Conforms to SFSafariExtensionHandling to bridge between the
 /// W3C content script and native detection code.
@@ -20,6 +27,11 @@ class SafariWebExtensionHandler: NSObject, SFSafariExtensionHandling {
     private let logger = Logger(subsystem: "com.yourname.donttouch.extension", category: "handler")
     private let engine = AnalysisEngine.shared
 
+    /// Default timeout for any Vision-based analysis operation (seconds).
+    /// If detection takes longer than this, the handler responds with
+    /// `timeout: true` so content scripts can retry or skip gracefully.
+    private static let analysisTimeout: TimeInterval = 10.0
+
     /// Shared URLSession for fetching image data from page URLs.
     /// Timeouts are tight to avoid holding up the scan.
     private lazy var session: URLSession = {
@@ -29,6 +41,37 @@ class SafariWebExtensionHandler: NSObject, SFSafariExtensionHandling {
         config.waitsForConnectivity = false
         return URLSession(configuration: config)
     }()
+
+    // MARK: - Timeout Helper
+
+    /// Run an async operation with a time limit.
+    ///
+    /// If `operation` does not complete within `seconds`, the task group
+    /// is cancelled and `AnalysisTimeoutError.timedOut` is thrown.
+    /// This allows callers to catch the error and respond with a
+    /// graceful degredation payload instead of hanging indefinitely.
+    ///
+    /// - Parameters:
+    ///   - seconds: Maximum wall-clock time for the operation.
+    ///   - operation: The async closure to execute.
+    /// - Returns: The value produced by `operation`.
+    /// - Throws: `AnalysisTimeoutError.timedOut` if the duration is exceeded,
+    ///           or whatever error `operation` throws.
+    private func withTimeout<T>(_ seconds: TimeInterval, operation: @escaping () async throws -> T) async throws -> T {
+        try await withThrowingTaskGroup(of: T.self) { group in
+            group.addTask {
+                return try await operation()
+            }
+            group.addTask {
+                let ns = UInt64(seconds * 1_000_000_000)
+                try await Task.sleep(nanoseconds: ns)
+                throw AnalysisTimeoutError.timedOut(duration: seconds)
+            }
+            let result = try await group.next()!
+            group.cancelAll()
+            return result
+        }
+    }
 
     // MARK: - SFSafariExtensionHandling
 
@@ -199,7 +242,15 @@ class SafariWebExtensionHandler: NSObject, SFSafariExtensionHandling {
 
             guard !data.isEmpty else { return nil }
 
-            let confidence = await engine.analyzeImage(url: url.absoluteString, data: data)
+            let confidence: Double
+            do {
+                confidence = try await withTimeout(Self.analysisTimeout) {
+                    await self.engine.analyzeImage(url: url.absoluteString, data: data)
+                }
+            } catch AnalysisTimeoutError.timedOut(let duration) {
+                self.logger.warning("Image analysis timed out after \(duration)s: \(url.absoluteString, privacy: .public)")
+                return nil
+            }
 
             if engine.shouldBlock(confidence: confidence) {
                 return [
@@ -233,29 +284,52 @@ class SafariWebExtensionHandler: NSObject, SFSafariExtensionHandling {
     /// ```
     private func handleAnalyzeVideoFrame(userInfo: [String: Any]?, page: SFSafariPage) {
         guard let userInfo = userInfo,
-              let base64 = userInfo["data"] as? String,
-              let selector = userInfo["selector"] as? String,
+              let base64 = userInfo["data"] as? String, !base64.isEmpty,
+              let selector = userInfo["selector"] as? String, !selector.isEmpty,
               let videoId = userInfo["videoId"] as? Int else {
-            logger.debug("analyzeVideoFrame: invalid payload")
+            logger.debug("analyzeVideoFrame: invalid or missing payload keys")
             return
         }
 
         logger.debug("Analyzing video frame (id:\(videoId)) for: \(selector, privacy: .public)")
 
         Task {
-            let confidence = await engine.analyzeVideoFrame(base64: base64)
-            let isFlagged = engine.shouldBlock(confidence: confidence)
+            do {
+                let confidence = try await withTimeout(Self.analysisTimeout) {
+                    await self.engine.analyzeVideoFrame(base64: base64)
+                }
+                let isFlagged = engine.shouldBlock(confidence: confidence)
 
-            self.respond(to: page, result: [
-                "type": "donttouch-response",
-                "action": "frameResult",
-                "videoId": videoId,
-                "isFlagged": isFlagged,
-                "selector": selector
-            ])
+                self.respond(to: page, result: [
+                    "type": "donttouch-response",
+                    "action": "frameResult",
+                    "videoId": videoId,
+                    "isFlagged": isFlagged,
+                    "selector": selector
+                ])
 
-            if isFlagged {
-                self.logger.debug("Video frame flagged (id:\(videoId))")
+                if isFlagged {
+                    self.logger.debug("Video frame flagged (id:\(videoId))")
+                }
+            } catch AnalysisTimeoutError.timedOut(let duration) {
+                self.logger.warning("Video frame analysis timed out after \(duration)s (id:\(videoId))")
+                self.respond(to: page, result: [
+                    "type": "donttouch-response",
+                    "action": "frameResult",
+                    "videoId": videoId,
+                    "isFlagged": false,
+                    "timeout": true,
+                    "selector": selector
+                ])
+            } catch {
+                self.logger.warning("Video frame analysis failed: \(error.localizedDescription, privacy: .public)")
+                self.respond(to: page, result: [
+                    "type": "donttouch-response",
+                    "action": "frameResult",
+                    "videoId": videoId,
+                    "isFlagged": false,
+                    "selector": selector
+                ])
             }
         }
     }
@@ -273,9 +347,9 @@ class SafariWebExtensionHandler: NSObject, SFSafariExtensionHandling {
     /// ```
     private func handleAnalyzeText(userInfo: [String: Any]?, page: SFSafariPage) {
         guard let userInfo = userInfo,
-              let text = userInfo["text"] as? String,
+              let text = userInfo["text"] as? String, !text.isEmpty,
               let textId = userInfo["textId"] as? Int else {
-            logger.debug("analyzeText: invalid payload")
+            logger.debug("analyzeText: invalid or missing payload keys")
             return
         }
 
@@ -303,8 +377,8 @@ class SafariWebExtensionHandler: NSObject, SFSafariExtensionHandling {
     /// ```
     private func handleSaveSettings(userInfo: [String: Any]?, page: SFSafariPage) {
         guard let userInfo = userInfo,
-              let settings = userInfo["settings"] as? [String: Any] else {
-            logger.debug("saveSettings: invalid payload")
+              let settings = userInfo["settings"] as? [String: Any], !settings.isEmpty else {
+            logger.debug("saveSettings: invalid or missing payload")
             return
         }
 
@@ -401,6 +475,17 @@ class SafariWebExtensionHandler: NSObject, SFSafariExtensionHandling {
     /// Responds with `blocked`, `confidence`, and `url` for content.js's
     /// legacy response handler (`data-dt-url` attribute matching).
     private func handleImageCheck(imageData: String, url: String, page: SFSafariPage) {
+        guard !url.isEmpty, !imageData.isEmpty else {
+            logger.debug("handleImageCheck: empty url or imageData")
+            respond(to: page, result: [
+                "type": "donttouch-response",
+                "blocked": false,
+                "confidence": 0.0,
+                "url": url
+            ])
+            return
+        }
+
         logger.debug("Image check requested for: \(url, privacy: .public)")
 
         guard let data = Data(base64Encoded: imageData) else {
@@ -414,15 +499,35 @@ class SafariWebExtensionHandler: NSObject, SFSafariExtensionHandling {
         }
 
         Task {
-            let confidence = await engine.analyzeImage(url: url, data: data)
-            let blocked = engine.shouldBlock(confidence: confidence)
+            do {
+                let confidence = try await withTimeout(Self.analysisTimeout) {
+                    await self.engine.analyzeImage(url: url, data: data)
+                }
+                let blocked = engine.shouldBlock(confidence: confidence)
 
-            self.respond(to: page, result: [
-                "type": "donttouch-response",
-                "blocked": blocked,
-                "confidence": confidence,
-                "url": url
-            ])
+                self.respond(to: page, result: [
+                    "type": "donttouch-response",
+                    "blocked": blocked,
+                    "confidence": confidence,
+                    "url": url
+                ])
+            } catch AnalysisTimeoutError.timedOut(let duration) {
+                self.logger.warning("Image check timed out after \(duration)s: \(url, privacy: .public)")
+                self.respond(to: page, result: [
+                    "type": "donttouch-response",
+                    "blocked": false,
+                    "timeout": true,
+                    "url": url
+                ])
+            } catch {
+                self.logger.warning("Image check analysis failed: \(error.localizedDescription, privacy: .public)")
+                self.respond(to: page, result: [
+                    "type": "donttouch-response",
+                    "blocked": false,
+                    "confidence": 0.0,
+                    "url": url
+                ])
+            }
         }
     }
 

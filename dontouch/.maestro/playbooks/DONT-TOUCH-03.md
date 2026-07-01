@@ -78,7 +78,7 @@ Add real video frame analysis, live sensitivity slider, cross-platform App Group
   - `content.js`:
     - Skip `data:` and `blob:` URIs in legacy `checkImage` path
 
-- [ ] Add 10-second analysis timeout in `SafariWebExtensionHandler.swift`:
+- [x] Add 10-second analysis timeout in `SafariWebExtensionHandler.swift`:
   - Wrap each `Task` in a timeout: if Vision analysis takes > 10s, respond with `{blocked: false, timeout: true}`
   - Guard against nil/empty/missing keys in `userInfo` for all message handlers
   - Log warning on timeout
