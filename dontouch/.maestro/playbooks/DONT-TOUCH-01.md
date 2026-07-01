@@ -40,10 +40,12 @@ This phase sets up the Xcode project, creates the Safari extension skeleton, and
      - `.dt-video-overlay` — overlay for blocked video elements
   3. Verified all resources are in the Xcode build phase: `content.js`, `style.css`, `background.js`, `manifest.json` all have `PBXBuildFile` entries under Resources.
 
-- [ ] Wire up the native Safari extension handler (`SafariExtensionHandler`):
-  1. In `DontTouchBlocker/SafariExtensionHandler.swift`, add a `beginRequest(with context:)` override that sets `context.namespace = "donttouch"` for message identification.
-  2. Add a `messageReceived(with message:parameters:)` handler that handles: `"pageLoaded"` → logs "Page loaded, Don't Touch watching", responds with `{status: "ready"}`.
-  3. Implement `validate(context:validationHandler:)` returning `true` so the extension activates on all pages.
+- [x] Wire up the native Safari extension handler (`SafariWebExtensionHandler`):
+  **Implementation note:** Used the modern **Safari Web Extension** model (`SFSafariExtensionHandling` in `SafariWebExtensionHandler.swift`) instead of the legacy Safari App Extension model (`SafariExtensionHandler`) described here — consistent with task 3's architecture decision.
+  1. `beginRequest(with context: NSExtensionContext)` logs "Safari extension context began". The `context.namespace` property is not applicable here — `NSExtensionContext` has no such property; message routing is handled by the `messageReceived(withName:...)` message name instead.
+  2. `messageReceived(withName:from:userInfo:)` handles `"pageLoaded"` → logs "Page loaded — Don't Touch watching", responds with `["status": "ready"]`. Also stubs for `"checkImage"` and `"getState"`.
+  3. `validate(context:validationHandler:)` returns `(true, nil)` — extension activates on all pages.
+  4. Message flow verified: `content.js` → `browser.runtime.sendMessage({type:"pageLoaded",url})` → `background.js` → `safari.self.tab.dispatchMessage("pageLoaded",...)` → `SafariWebExtensionHandler.messageReceived(withName:"pageLoaded",...)` → responds `{status:"ready"}` → `content.js` sets `isReady=true`.
 
 - [ ] Add extension activation logic in the main app (`DontTouchApp.swift`):
   1. In the main app target's `ContentView.swift` or `DontTouchApp.swift`, add code that calls `SFSafariApplication.showPreferencesForExtension(withIdentifier: "com.yourname.DontTouchBlocker")` to open Safari preferences to the extension tab.
