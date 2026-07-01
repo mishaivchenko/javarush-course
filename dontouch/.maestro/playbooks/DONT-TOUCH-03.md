@@ -83,13 +83,13 @@ Add real video frame analysis, live sensitivity slider, cross-platform App Group
   - Guard against nil/empty/missing keys in `userInfo` for all message handlers
   - Log warning on timeout
 
-- [ ] Add iOS platform to Safari Extension target in `Project.yml`:
+- [x] Add iOS platform to Safari Extension target in `Project.yml`:
   - `DontTouch/Project.yml`: add `platforms: [macOS, iOS]` to `DontTouch Extension` target
   - Create `DontTouch/DontTouch/iOS/` stub directory with placeholder `SceneDelegate.swift`
   - Verify entitlements are compatible with iOS (App Groups same identifier)
   - Run `xcodegen generate` and attempt iOS build
 
-- [ ] Build, fix, and verify full project:
+- [x] Build, fix, and verify full project:
   - Run `cd DontTouch && xcodebuild -project DontTouch.xcodeproj -scheme DontTouch -destination "platform=macOS" build 2>&1`
   - Fix any compilation errors:
     - `CVPixelBuffer` / `CGImageSource` import issues (CoreVideo, CoreGraphics, ImageIO)

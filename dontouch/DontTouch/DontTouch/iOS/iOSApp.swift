@@ -1,8 +1,8 @@
 import SwiftUI
 
-#if os(macOS)
+#if os(iOS)
 @main
-struct DontTouchApp: App {
+struct DontTouchApp_iOS: App {
     @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
 
     var body: some Scene {
@@ -17,7 +17,6 @@ struct DontTouchApp: App {
                 }
             }
         }
-        .windowResizability(.contentSize)
     }
 }
 #endif

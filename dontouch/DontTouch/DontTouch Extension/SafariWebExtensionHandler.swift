@@ -8,7 +8,11 @@ enum AnalysisTimeoutError: Error {
     case timedOut(duration: TimeInterval)
 }
 
-/// Native handler for the Safari Web Extension.
+// MARK: - macOS Full Implementation
+
+#if os(macOS)
+
+/// Native handler for the Safari Web Extension (macOS).
 /// Conforms to SFSafariExtensionHandling to bridge between the
 /// W3C content script and native detection code.
 ///
@@ -543,3 +547,20 @@ class SafariWebExtensionHandler: NSObject, SFSafariExtensionHandling {
         page.dispatchMessageToScript(withName: "donttouch-response", userInfo: result)
     }
 }
+
+#elseif os(iOS)
+
+/// Minimal Safari Web Extension handler for iOS.
+/// On iOS, the SFSafariExtensionHandling protocol is not available,
+/// so this provides a basic NSExtensionRequestHandling conformance
+/// to allow the extension to load. Full native messaging between
+/// content scripts and the native handler is macOS-only.
+class SafariWebExtensionHandler: NSObject, NSExtensionRequestHandling {
+    private let logger = Logger(subsystem: "com.yourname.donttouch.extension", category: "handler")
+
+    func beginRequest(with context: NSExtensionContext) {
+        logger.debug("Safari extension context began (iOS)")
+    }
+}
+
+#endif

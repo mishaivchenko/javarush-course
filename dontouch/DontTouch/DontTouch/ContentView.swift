@@ -1,5 +1,7 @@
 import SwiftUI
+#if os(macOS)
 import SafariServices
+#endif
 
 struct ContentView: View {
     @AppStorage("extensionEnabled") private var extensionEnabled = false
@@ -67,7 +69,11 @@ struct ContentView: View {
                 InstructionRow(number: 4, text: "Visit any page to test — look for the 🚫 DT badge")
             }
             .padding()
+            #if os(macOS)
             .background(Color(.controlBackgroundColor))
+            #else
+            .background(Color(.systemGray6))
+            #endif
             .cornerRadius(10)
 
             // Buttons
@@ -87,8 +93,10 @@ struct ContentView: View {
             .foregroundColor(.secondary)
         }
         .padding(24)
+        #if os(macOS)
         .frame(width: 400)
         .fixedSize()
+        #endif
         .alert("Reset Onboarding", isPresented: $showResetConfirmation) {
             Button("Cancel", role: .cancel) {}
             Button("Reset", role: .destructive) {
@@ -104,12 +112,15 @@ struct ContentView: View {
     }
 
     private func openSafariPreferences() {
+        #if os(macOS)
         SFSafariApplication.showPreferencesForExtension(
             withIdentifier: "com.yourname.donttouch.extension"
         )
+        #endif
     }
 
     private func checkExtensionStatus() {
+        #if os(macOS)
         SFSafariExtensionManager.getStateOfSafariExtension(
             withIdentifier: "com.yourname.donttouch.extension"
         ) { state, error in
@@ -117,6 +128,7 @@ struct ContentView: View {
                 safariExtensionEnabled = state?.isEnabled ?? false
             }
         }
+        #endif
     }
 }
 
@@ -179,7 +191,9 @@ struct OnboardingView: View {
 
             Spacer()
         }
+        #if os(macOS)
         .frame(width: 420, height: 520)
         .fixedSize()
+        #endif
     }
 }

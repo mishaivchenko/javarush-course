@@ -14,6 +14,8 @@ targets:
     sources:
       - path: DontTouch
         type: group
+        excludes:
+          - "iOS"
       - path: DontTouch Detection
         type: group
         createIntermediateGroups: true
@@ -32,11 +34,42 @@ targets:
         NSHighResolutionCapable: true
         NSPhotoLibraryUsageDescription: Don't Touch needs camera access to analyze images on-device
     dependencies:
-      - target: DontTouch Extension
+      - target: DontTouch_Extension_Mac
         embed: true
         codeSign: true
 
-  DontTouch Extension:
+  DontTouch_iOS:
+    type: application
+    platform: iOS
+    sources:
+      - path: DontTouch
+        type: group
+        includes:
+          - "*.swift"
+      - path: DontTouch/iOS
+        type: group
+      - path: DontTouch Detection
+        type: group
+        createIntermediateGroups: true
+        excludes:
+          - "Info.plist"
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.yourname.donttouch
+      INFOPLIST_FILE: DontTouch/iOS/Info.plist
+      CODE_SIGN_ENTITLEMENTS: DontTouch/DontTouch.entitlements
+      MARKETING_VERSION: "1.0"
+      CURRENT_PROJECT_VERSION: "1"
+    info:
+      path: DontTouch/iOS/Info.plist
+      properties:
+        LSRequiresIPhoneOS: true
+        NSPhotoLibraryUsageDescription: Don't Touch needs camera access to analyze images on-device
+    dependencies:
+      - target: DontTouch_Extension_iOS
+        embed: true
+        codeSign: true
+
+  DontTouch_Extension_Mac:
     type: app-extension
     platform: macOS
     sources:
@@ -66,3 +99,39 @@ targets:
         SFSafariExtensionBundleIdentifier: $(PRODUCT_BUNDLE_IDENTIFIER)
         NSPhotoLibraryUsageDescription: Don't Touch needs camera access to analyze images on-device
         LSMinimumSystemVersion: "14.0"
+
+  DontTouch_Extension_iOS:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: DontTouch Extension
+        type: group
+        excludes:
+          - "Info.plist"
+          - "iOS-Info.plist"
+      - path: DontTouch Detection
+        type: group
+        createIntermediateGroups: true
+        excludes:
+          - "Info.plist"
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.yourname.donttouch.extension
+      INFOPLIST_FILE: DontTouch Extension/iOS-Info.plist
+      CODE_SIGN_ENTITLEMENTS: DontTouch Extension/DontTouch_Extension.entitlements
+      MARKETING_VERSION: "1.0"
+      CURRENT_PROJECT_VERSION: "1"
+      ENABLE_MODULE_VERIFIER: NO
+    dependencies:
+      - framework: SafariServices.framework
+    info:
+      path: DontTouch Extension/iOS-Info.plist
+      properties:
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.Safari-web-extension
+          NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).SafariWebExtensionHandler
+          SFSafariContentScript: true
+          NSExtensionAttributes:
+            SFSafariWebsiteAccess:
+              Level: All
+        SFSafariExtensionBundleIdentifier: $(PRODUCT_BUNDLE_IDENTIFIER)
+        NSPhotoLibraryUsageDescription: Don't Touch needs camera access to analyze images on-device
