@@ -1,3 +1,4 @@
+import CoreImage
 import Foundation
 import Vision
 
@@ -38,6 +39,6 @@ class NSFWClassifier {
 
         // Map classification label to confidence
         // Phase 2: map model output labels (e.g., "NSFW", "SFW") to confidence
-        return topResult.confidence
+        return Double(topResult.confidence)
     }
 }
