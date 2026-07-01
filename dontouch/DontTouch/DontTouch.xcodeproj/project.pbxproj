@@ -1,0 +1,641 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0218D0673E529BA10D5B62EA /* background.js in Resources */ = {isa = PBXBuildFile; fileRef = 6C6016C59ECDB0CEC5B30D40 /* background.js */; };
+		07C3395577EC058989B62E29 /* DontTouchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67235A8FF54A90FAEFC97A53 /* DontTouchApp.swift */; };
+		22E94DF0202096DAF70D60F3 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 793D5F80A0105BFC16E2765A /* AppSettings.swift */; };
+		3B6D865A1ABB220094FA06B1 /* popup.html in Resources */ = {isa = PBXBuildFile; fileRef = B1FB9F31D42090C2B56CA815 /* popup.html */; };
+		3FD221C36204DE07E25B42F1 /* NSFWClassifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DB602FE7E5A5CDB105C89C0 /* NSFWClassifier.swift */; };
+		3FF2525BF70299DC64318A8D /* icon-16.png in Resources */ = {isa = PBXBuildFile; fileRef = C74466CAE7C3FB1D146DFF8F /* icon-16.png */; };
+		40AC8021AD6678C614545A44 /* icon-48.png in Resources */ = {isa = PBXBuildFile; fileRef = A049C50CC9AE8FB99DCAE2B4 /* icon-48.png */; };
+		49ED27BB50B5C4C3BAC41599 /* CoreMLAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69AEA365CCCF1BFFF9771808 /* CoreMLAdapter.swift */; };
+		59FC0661FD992EF2592A5482 /* DontTouch Detection.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 48891C0EC653E9259AB076DB /* DontTouch Detection.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		5C17D8BA8B6F2CC17B7961B2 /* icon-32.png in Resources */ = {isa = PBXBuildFile; fileRef = DE640456F71891836703AF43 /* icon-32.png */; };
+		6288DA5D0096C8532D16BED0 /* AnalysisOrchestrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1B79EC71D52726D04DA9F5E /* AnalysisOrchestrator.swift */; };
+		66BC2FBDFB739AE4C5AFE503 /* popup.js in Resources */ = {isa = PBXBuildFile; fileRef = F0D55EEAC484F2DACAA03463 /* popup.js */; };
+		737AF962EF6ACD79D0AC9F9B /* ContentAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CBDD3A620FA609EC26FD061 /* ContentAnalyzer.swift */; };
+		7FB18CDC838E02544622B18C /* DontTouch Extension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = C605778DC9268CD801E065CA /* DontTouch Extension.appex */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		8084F9D28666E18ED84AF818 /* SafariWebExtensionHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C8ED5533FBB9E70134CC3B2 /* SafariWebExtensionHandler.swift */; };
+		824344D9B8E1AEAED11114C8 /* VideoFrameExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 876B743ECDC6C0B81DE1F904 /* VideoFrameExtractor.swift */; };
+		866581323A361D94214265D3 /* icon-128.png in Resources */ = {isa = PBXBuildFile; fileRef = CCA08F92AF171987E3C3F961 /* icon-128.png */; };
+		9EDAA9AA01C827638F8F4995 /* popup.css in Resources */ = {isa = PBXBuildFile; fileRef = 7FA45B4BC9F7B0FCCDC1DA9C /* popup.css */; };
+		A4C70904378D0677B4EB05BD /* icon-512.png in Resources */ = {isa = PBXBuildFile; fileRef = 07F09EEE7526222980C75A1C /* icon-512.png */; };
+		A4C8B6B484FD9C67C89D9884 /* style.css in Resources */ = {isa = PBXBuildFile; fileRef = 98D6E948CF8B4F029064EF13 /* style.css */; };
+		AF856E513CB3615636FFDF9A /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BC4E2A1018927CB8AD0EA83 /* ContentView.swift */; };
+		CEE89E49482B9AE1EB6DD710 /* DontTouch Detection.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 48891C0EC653E9259AB076DB /* DontTouch Detection.framework */; };
+		D49BD4AFA3106EC47BEFCC44 /* manifest.json in Resources */ = {isa = PBXBuildFile; fileRef = 516BBF6A4573FAFFC363E7CE /* manifest.json */; };
+		EFA6F39EB3DF52A6BCB5DA0E /* content.js in Resources */ = {isa = PBXBuildFile; fileRef = 6CA4CD2F2465933C90B658DA /* content.js */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		7FEEE9A5EF2DE5E981CEFB6E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 01424B7A9EFF600D855B78BD /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 56F85DDC2BC0B9F9A41952C6;
+			remoteInfo = "DontTouch Detection";
+		};
+		84C2EA3AA4E2B879F1EC5DB2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 01424B7A9EFF600D855B78BD /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 7A7E774A6C24A6BB15E3E807;
+			remoteInfo = "DontTouch Extension";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		20DC87D1B027304A1CA2E464 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				7FB18CDC838E02544622B18C /* DontTouch Extension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		39CD1C262DBBB9DDBF07A170 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				59FC0661FD992EF2592A5482 /* DontTouch Detection.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		07F09EEE7526222980C75A1C /* icon-512.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon-512.png"; sourceTree = "<group>"; };
+		376349FB297563250736BAE6 /* DontTouch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DontTouch.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		48891C0EC653E9259AB076DB /* DontTouch Detection.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = "DontTouch Detection.framework"; sourceTree = BUILT_PRODUCTS_DIR; };
+		4CBDD3A620FA609EC26FD061 /* ContentAnalyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentAnalyzer.swift; sourceTree = "<group>"; };
+		516BBF6A4573FAFFC363E7CE /* manifest.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = manifest.json; sourceTree = "<group>"; };
+		5D38310A965637EF2DE03801 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		67235A8FF54A90FAEFC97A53 /* DontTouchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DontTouchApp.swift; sourceTree = "<group>"; };
+		69AEA365CCCF1BFFF9771808 /* CoreMLAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreMLAdapter.swift; sourceTree = "<group>"; };
+		6C6016C59ECDB0CEC5B30D40 /* background.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = background.js; sourceTree = "<group>"; };
+		6CA4CD2F2465933C90B658DA /* content.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = content.js; sourceTree = "<group>"; };
+		793D5F80A0105BFC16E2765A /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
+		7BC4E2A1018927CB8AD0EA83 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		7C8ED5533FBB9E70134CC3B2 /* SafariWebExtensionHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafariWebExtensionHandler.swift; sourceTree = "<group>"; };
+		7FA45B4BC9F7B0FCCDC1DA9C /* popup.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = popup.css; sourceTree = "<group>"; };
+		860EE7934E990916E4C4E4E4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		876B743ECDC6C0B81DE1F904 /* VideoFrameExtractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoFrameExtractor.swift; sourceTree = "<group>"; };
+		8DB602FE7E5A5CDB105C89C0 /* NSFWClassifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSFWClassifier.swift; sourceTree = "<group>"; };
+		98D6E948CF8B4F029064EF13 /* style.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = style.css; sourceTree = "<group>"; };
+		A049C50CC9AE8FB99DCAE2B4 /* icon-48.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon-48.png"; sourceTree = "<group>"; };
+		B1FB9F31D42090C2B56CA815 /* popup.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = popup.html; sourceTree = "<group>"; };
+		C605778DC9268CD801E065CA /* DontTouch Extension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "DontTouch Extension.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
+		C74466CAE7C3FB1D146DFF8F /* icon-16.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon-16.png"; sourceTree = "<group>"; };
+		CCA08F92AF171987E3C3F961 /* icon-128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon-128.png"; sourceTree = "<group>"; };
+		DE640456F71891836703AF43 /* icon-32.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon-32.png"; sourceTree = "<group>"; };
+		E1B79EC71D52726D04DA9F5E /* AnalysisOrchestrator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalysisOrchestrator.swift; sourceTree = "<group>"; };
+		F0D55EEAC484F2DACAA03463 /* popup.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = popup.js; sourceTree = "<group>"; };
+		F93304E74A27F45083BDD5D6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		C757AE23B7BE532466D3C332 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CEE89E49482B9AE1EB6DD710 /* DontTouch Detection.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		22E21944A4DC396F8B09C604 /* DontTouch Detection */ = {
+			isa = PBXGroup;
+			children = (
+				E1B79EC71D52726D04DA9F5E /* AnalysisOrchestrator.swift */,
+				4CBDD3A620FA609EC26FD061 /* ContentAnalyzer.swift */,
+				69AEA365CCCF1BFFF9771808 /* CoreMLAdapter.swift */,
+				5D38310A965637EF2DE03801 /* Info.plist */,
+				8DB602FE7E5A5CDB105C89C0 /* NSFWClassifier.swift */,
+				876B743ECDC6C0B81DE1F904 /* VideoFrameExtractor.swift */,
+			);
+			path = "DontTouch Detection";
+			sourceTree = "<group>";
+		};
+		4E812D21E2DC277C82C532E7 = {
+			isa = PBXGroup;
+			children = (
+				62A75FDDACDD5D202D744BE4 /* DontTouch */,
+				22E21944A4DC396F8B09C604 /* DontTouch Detection */,
+				5706A9986AD349D70251D5D3 /* DontTouch Extension */,
+				EB292F05D3C906471801052B /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		5706A9986AD349D70251D5D3 /* DontTouch Extension */ = {
+			isa = PBXGroup;
+			children = (
+				F93304E74A27F45083BDD5D6 /* Info.plist */,
+				7C8ED5533FBB9E70134CC3B2 /* SafariWebExtensionHandler.swift */,
+				D2BA7E00AC084DA2872799D8 /* Resources */,
+			);
+			path = "DontTouch Extension";
+			sourceTree = "<group>";
+		};
+		62A75FDDACDD5D202D744BE4 /* DontTouch */ = {
+			isa = PBXGroup;
+			children = (
+				793D5F80A0105BFC16E2765A /* AppSettings.swift */,
+				7BC4E2A1018927CB8AD0EA83 /* ContentView.swift */,
+				67235A8FF54A90FAEFC97A53 /* DontTouchApp.swift */,
+				860EE7934E990916E4C4E4E4 /* Info.plist */,
+			);
+			path = DontTouch;
+			sourceTree = "<group>";
+		};
+		D2BA7E00AC084DA2872799D8 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				6C6016C59ECDB0CEC5B30D40 /* background.js */,
+				6CA4CD2F2465933C90B658DA /* content.js */,
+				516BBF6A4573FAFFC363E7CE /* manifest.json */,
+				7FA45B4BC9F7B0FCCDC1DA9C /* popup.css */,
+				B1FB9F31D42090C2B56CA815 /* popup.html */,
+				F0D55EEAC484F2DACAA03463 /* popup.js */,
+				98D6E948CF8B4F029064EF13 /* style.css */,
+				E1D43284B85A8362F3448470 /* icons */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		E1D43284B85A8362F3448470 /* icons */ = {
+			isa = PBXGroup;
+			children = (
+				C74466CAE7C3FB1D146DFF8F /* icon-16.png */,
+				DE640456F71891836703AF43 /* icon-32.png */,
+				A049C50CC9AE8FB99DCAE2B4 /* icon-48.png */,
+				CCA08F92AF171987E3C3F961 /* icon-128.png */,
+				07F09EEE7526222980C75A1C /* icon-512.png */,
+			);
+			path = icons;
+			sourceTree = "<group>";
+		};
+		EB292F05D3C906471801052B /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				48891C0EC653E9259AB076DB /* DontTouch Detection.framework */,
+				C605778DC9268CD801E065CA /* DontTouch Extension.appex */,
+				376349FB297563250736BAE6 /* DontTouch.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		56F85DDC2BC0B9F9A41952C6 /* DontTouch Detection */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0273EAB06AB96D942D0C27E2 /* Build configuration list for PBXNativeTarget "DontTouch Detection" */;
+			buildPhases = (
+				148C8BDA9731739820C24910 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "DontTouch Detection";
+			packageProductDependencies = (
+			);
+			productName = "DontTouch Detection";
+			productReference = 48891C0EC653E9259AB076DB /* DontTouch Detection.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		7A7E774A6C24A6BB15E3E807 /* DontTouch Extension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5C6F113E338DC119B06BE462 /* Build configuration list for PBXNativeTarget "DontTouch Extension" */;
+			buildPhases = (
+				41409CD83181517F5203F26A /* Sources */,
+				9683368BC153529D655E5977 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "DontTouch Extension";
+			packageProductDependencies = (
+			);
+			productName = "DontTouch Extension";
+			productReference = C605778DC9268CD801E065CA /* DontTouch Extension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		93AE097C215058090C59C624 /* DontTouch */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E481B16D097952D74BEF30B3 /* Build configuration list for PBXNativeTarget "DontTouch" */;
+			buildPhases = (
+				4DF456E20923ABB58761EA0B /* Sources */,
+				C757AE23B7BE532466D3C332 /* Frameworks */,
+				20DC87D1B027304A1CA2E464 /* Embed Foundation Extensions */,
+				39CD1C262DBBB9DDBF07A170 /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				956593902AB05646488404CD /* PBXTargetDependency */,
+				8FEDED2D1E65BB28222CB130 /* PBXTargetDependency */,
+			);
+			name = DontTouch;
+			packageProductDependencies = (
+			);
+			productName = DontTouch;
+			productReference = 376349FB297563250736BAE6 /* DontTouch.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		01424B7A9EFF600D855B78BD /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+				};
+			};
+			buildConfigurationList = 9070152AD03915ADB1C8EF2C /* Build configuration list for PBXProject "DontTouch" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 4E812D21E2DC277C82C532E7;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = EB292F05D3C906471801052B /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				93AE097C215058090C59C624 /* DontTouch */,
+				56F85DDC2BC0B9F9A41952C6 /* DontTouch Detection */,
+				7A7E774A6C24A6BB15E3E807 /* DontTouch Extension */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		9683368BC153529D655E5977 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0218D0673E529BA10D5B62EA /* background.js in Resources */,
+				EFA6F39EB3DF52A6BCB5DA0E /* content.js in Resources */,
+				866581323A361D94214265D3 /* icon-128.png in Resources */,
+				3FF2525BF70299DC64318A8D /* icon-16.png in Resources */,
+				5C17D8BA8B6F2CC17B7961B2 /* icon-32.png in Resources */,
+				40AC8021AD6678C614545A44 /* icon-48.png in Resources */,
+				A4C70904378D0677B4EB05BD /* icon-512.png in Resources */,
+				D49BD4AFA3106EC47BEFCC44 /* manifest.json in Resources */,
+				9EDAA9AA01C827638F8F4995 /* popup.css in Resources */,
+				3B6D865A1ABB220094FA06B1 /* popup.html in Resources */,
+				66BC2FBDFB739AE4C5AFE503 /* popup.js in Resources */,
+				A4C8B6B484FD9C67C89D9884 /* style.css in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		148C8BDA9731739820C24910 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6288DA5D0096C8532D16BED0 /* AnalysisOrchestrator.swift in Sources */,
+				737AF962EF6ACD79D0AC9F9B /* ContentAnalyzer.swift in Sources */,
+				49ED27BB50B5C4C3BAC41599 /* CoreMLAdapter.swift in Sources */,
+				3FD221C36204DE07E25B42F1 /* NSFWClassifier.swift in Sources */,
+				824344D9B8E1AEAED11114C8 /* VideoFrameExtractor.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		41409CD83181517F5203F26A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8084F9D28666E18ED84AF818 /* SafariWebExtensionHandler.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4DF456E20923ABB58761EA0B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				22E94DF0202096DAF70D60F3 /* AppSettings.swift in Sources */,
+				AF856E513CB3615636FFDF9A /* ContentView.swift in Sources */,
+				07C3395577EC058989B62E29 /* DontTouchApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		8FEDED2D1E65BB28222CB130 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 56F85DDC2BC0B9F9A41952C6 /* DontTouch Detection */;
+			targetProxy = 7FEEE9A5EF2DE5E981CEFB6E /* PBXContainerItemProxy */;
+		};
+		956593902AB05646488404CD /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 7A7E774A6C24A6BB15E3E807 /* DontTouch Extension */;
+			targetProxy = 84C2EA3AA4E2B879F1EC5DB2 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		0682936C8797763E30668EE2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = "DontTouch Detection/Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yourname.donttouch.detection;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Release;
+		};
+		4D550B181CE8B12D75B0DAC8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = "DontTouch Detection/Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yourname.donttouch.detection;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Debug;
+		};
+		ABD3193D60CE18B716207130 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Release;
+		};
+		AC041534B01F1F4CEFCECBF5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				INFOPLIST_FILE = DontTouch/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yourname.donttouch;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		AC9E6435DE42B360AE730D0F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				INFOPLIST_FILE = "DontTouch Extension/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yourname.donttouch.extension;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		D8F61E4F7D727A5CFBBB700D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				INFOPLIST_FILE = DontTouch/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yourname.donttouch;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		F21DF6B17D5D814970071F10 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				INFOPLIST_FILE = "DontTouch Extension/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yourname.donttouch.extension;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		F36F56BEC8C0257CDDE3180F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		0273EAB06AB96D942D0C27E2 /* Build configuration list for PBXNativeTarget "DontTouch Detection" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4D550B181CE8B12D75B0DAC8 /* Debug */,
+				0682936C8797763E30668EE2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		5C6F113E338DC119B06BE462 /* Build configuration list for PBXNativeTarget "DontTouch Extension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F21DF6B17D5D814970071F10 /* Debug */,
+				AC9E6435DE42B360AE730D0F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		9070152AD03915ADB1C8EF2C /* Build configuration list for PBXProject "DontTouch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F36F56BEC8C0257CDDE3180F /* Debug */,
+				ABD3193D60CE18B716207130 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		E481B16D097952D74BEF30B3 /* Build configuration list for PBXNativeTarget "DontTouch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D8F61E4F7D727A5CFBBB700D /* Debug */,
+				AC041534B01F1F4CEFCECBF5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 01424B7A9EFF600D855B78BD /* Project object */;
+}
