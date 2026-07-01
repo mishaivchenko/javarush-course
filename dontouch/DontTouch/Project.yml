@@ -69,6 +69,8 @@ targets:
       INFOPLIST_FILE: DontTouch Detection/Info.plist
       MARKETING_VERSION: "1.0"
       CURRENT_PROJECT_VERSION: "1"
+    dependencies:
+      - sdk: AVFoundation.framework
     info:
       path: DontTouch Detection/Info.plist
       properties:

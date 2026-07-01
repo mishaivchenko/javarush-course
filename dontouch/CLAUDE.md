@@ -18,7 +18,7 @@ Three Xcode targets defined declaratively in `DontTouch/Project.yml` (XcodeGen):
 
 - **Adapter Pattern for detection**: `ContentAnalyzer` protocol abstracts the ML backend. `CoreMLAdapter` conforms to it using Apple's Vision framework (`VNClassifyImageRequest` with NSFW-relevant label mapping). Swap implementations without touching the rest of the system.
 - **Built-in Vision classifier**: Uses `VNClassifyImageRequest` — no custom CoreML model file required. Apple's on-device classifier ships with a pre-trained Inceptionv3-derived model. NSFW detection works by flagging classification labels (swimwear, lingerie, etc.) with weighted confidence scoring. A future custom `.mlpackage` can be loaded via `NSFWClassifier.loadModel()` for higher accuracy.
-- **AnalysisEngine singleton**: `AnalysisEngine.shared` is the central entry point called by `SafariWebExtensionHandler`. It wraps `AnalysisOrchestrator` for image analysis, handles URL-based caching (per-URL, session-scoped), runs text blocklist matching via `blocklist.txt`, provides `analyzeVideoFrame()` for `CVPixelBuffer` and base64 inputs, and offers `shouldBlock(confidence:)` that reads the user's sensitivity threshold from `AppSettings.shared.sensitivityThreshold` (default 0.6).
+- **AnalysisEngine singleton**: `AnalysisEngine.shared` is the central entry point called by `SafariWebExtensionHandler`. It wraps `AnalysisOrchestrator` for image analysis, handles URL-based caching (per-URL, session-scoped), runs text blocklist matching via `blocklist.txt`, provides `analyzeVideoFrame()` for `CVPixelBuffer` and base64 inputs, and offers `shouldBlock(confidence:)` that reads the user's sensitivity threshold from `UserDefaults` (App Group `group.com.yourname.donttouch`, default 0.6).
 - **AnalysisOrchestrator actor**: Singleton actor (`AnalysisOrchestrator.shared`) manages the Vision pipeline, caches results per image data hash (SHA-256), and applies the user's sensitivity threshold. Actors serialize access to mutable state without locks.
 - **App Groups for settings**: `UserDefaults(suiteName: "group.com.yourname.donttouch")` shared between the host app and Safari extension. Settings manager (`AppSettings.swift`) uses `@Published` for SwiftUI reactivity.
 - **Safari Web Extension model**: Content script (`content.js`) injects CSS (`dt-hidden` class with `filter: blur(20px)`) and communicates with the native extension via `browser.runtime.sendMessage`. Native handler processes heavy work (Vision analysis) and responds with block decisions.
@@ -99,6 +99,7 @@ dontouch/
 │       ├── NSFWClassifier.swift       — Classification helper
 │       ├── AnalysisOrchestrator.swift  — Pipeline coordinator (actor)
 │       ├── AnalysisEngine.swift       — Central entry point (singleton)
+│       ├── VideoAnalyzer.swift        — AVPlayerItem frame sampler with running average
 │       ├── VideoFrameExtractor.swift   — Base64 → CVPixelBuffer
 │       ├── blocklist.txt              — NSFW keyword blocklist (~215 terms)
 │       └── Info.plist

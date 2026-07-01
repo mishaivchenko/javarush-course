@@ -117,13 +117,16 @@ class AnalysisEngine {
 
     /// Determine whether content should be blocked at the given confidence level.
     ///
-    /// Reads the user's sensitivity threshold from `AppSettings.shared.sensitivityThreshold`
-    /// (stored in `UserDefaults` via App Groups). Default threshold is **0.6**.
+    /// Reads the user's sensitivity threshold from `UserDefaults` (App Group suite
+    /// `group.com.yourname.donttouch`), falling back to `UserDefaults.standard` if
+    /// the App Group container is unavailable. Default threshold is **0.6**.
     ///
     /// - Parameter confidence: Detection confidence score (0.0 – 1.0).
     /// - Returns: `true` if confidence meets or exceeds the threshold.
     func shouldBlock(confidence: Double) -> Bool {
-        let threshold = AppSettings.shared.sensitivityThreshold
+        let defaults = UserDefaults(suiteName: "group.com.yourname.donttouch")
+            ?? UserDefaults.standard
+        let threshold = defaults.object(forKey: "sensitivityThreshold") as? Double ?? 0.6
         return confidence >= threshold
     }
 

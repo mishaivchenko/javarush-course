@@ -17,7 +17,7 @@ This phase adds on-device CoreML models for detecting NSFW content in images, vi
 
 **Note (Phase 2 implementation):** No downloadable CoreML model was bundled. Instead, `NSFWClassifier.swift` uses Apple's built-in `VNClassifyImageRequest` (on-device Inceptionv3-derived classifier) with NSFW-relevant label mapping. The label blocklist covers clothing types (lingerie, brassiere, swimwear, etc.) with weighted confidence scoring and fuzzy label matching. `CoreMLAdapter.swift` drives the detection and `DefaultAnalyzer.make()` now returns `CoreMLAdapter()` instead of `StubAnalyzer()`. The `VNCoreMLRequest` path in `NSFWClassifier` is retained for future custom model loading via `loadModel(at:)`.
 
-- [ ] Implement the on-device analysis engine (`AnalysisEngine.swift`):
+- [x] Implement the on-device analysis engine (`AnalysisEngine.swift`):
   1. Create `AnalysisEngine.swift` in `DontTouchBlocker/`:
      - A singleton class with a `shared` instance.
      - `func analyzeImage(_ data: Data) -> Double` — returns confidence score (0.0–1.0) using the CoreML model. If no model loaded, uses Vision fallback.
@@ -26,13 +26,15 @@ This phase adds on-device CoreML models for detecting NSFW content in images, vi
   2. Use `VNImageRequestHandler` and `VNCoreMLRequest` for image analysis. Run on a background queue (`DispatchQueue.global(qos: .userInitiated)`).
   3. Cache analysis results per URL per session to avoid re-analyzing the same image.
 
-- [ ] Add video frame analysis support:
+- [x] Add video frame analysis support:
   1. In `AnalysisEngine.swift`, add `func analyzeVideoFrame(_ pixelBuffer: CVPixelBuffer) -> Double` that uses the same CoreML model via `VNImageRequestHandler` on the pixel buffer.
   2. Create `VideoAnalyzer.swift` in `DontTouchBlocker/`:
      - Uses `AVPlayerItemVideoOutput` to periodically sample video frames.
      - Default sample rate: every 2 seconds. Configurable via UserDefaults.
      - For each sampled frame, calls `AnalysisEngine.shared.analyzeVideoFrame()`.
      - Maintains a running average over the last 5 frames. If the average exceeds threshold → mark the video element as blocked.
+  
+  **Note:** `analyzeVideoFrame(pixelBuffer:)` and a base64 variant were already present in `AnalysisEngine.swift`. `VideoAnalyzer.swift` was created in `DontTouch/DontTouch Detection/`. Also fixed a pre-existing compilation error in `NSFWClassifier.swift` (removed deprecated `imageCropAndScaleOption` on `VNClassifyImageRequest` and redundant `as?` cast on `results`), and fixed a cross-target dependency in `AnalysisEngine.swift` (replaced `AppSettings.shared.sensitivityThreshold` with direct `UserDefaults` access so the Detection framework is self-contained).
 
 - [ ] Build the content scanner that runs in the page context (`contentBlocker.js`):
   1. In `DontTouchBlocker/Resources/`, create `contentBlocker.js`:

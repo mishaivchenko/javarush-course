@@ -10,6 +10,7 @@
 		0218D0673E529BA10D5B62EA /* background.js in Resources */ = {isa = PBXBuildFile; fileRef = 6C6016C59ECDB0CEC5B30D40 /* background.js */; };
 		05C3A738CDED1E3271C2C9C6 /* AnalysisEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3F68740790FDA8EDED128FD /* AnalysisEngine.swift */; };
 		07C3395577EC058989B62E29 /* DontTouchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67235A8FF54A90FAEFC97A53 /* DontTouchApp.swift */; };
+		0F0B31809A435D2DC8F0148F /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E020181021EA96FF67965DB3 /* AVFoundation.framework */; };
 		10313820A382CD84461B0F43 /* blocklist.txt in Resources */ = {isa = PBXBuildFile; fileRef = F82566C2557EAA8B2F862DEE /* blocklist.txt */; };
 		22E94DF0202096DAF70D60F3 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 793D5F80A0105BFC16E2765A /* AppSettings.swift */; };
 		3B6D865A1ABB220094FA06B1 /* popup.html in Resources */ = {isa = PBXBuildFile; fileRef = B1FB9F31D42090C2B56CA815 /* popup.html */; };
@@ -33,6 +34,7 @@
 		CEE89E49482B9AE1EB6DD710 /* DontTouch Detection.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 48891C0EC653E9259AB076DB /* DontTouch Detection.framework */; };
 		D49BD4AFA3106EC47BEFCC44 /* manifest.json in Resources */ = {isa = PBXBuildFile; fileRef = 516BBF6A4573FAFFC363E7CE /* manifest.json */; };
 		EFA6F39EB3DF52A6BCB5DA0E /* content.js in Resources */ = {isa = PBXBuildFile; fileRef = 6CA4CD2F2465933C90B658DA /* content.js */; };
+		F805871B7509CA2856676E64 /* VideoAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41E1D4F2265B297E9ED22F0D /* VideoAnalyzer.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -80,6 +82,7 @@
 /* Begin PBXFileReference section */
 		07F09EEE7526222980C75A1C /* icon-512.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon-512.png"; sourceTree = "<group>"; };
 		376349FB297563250736BAE6 /* DontTouch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DontTouch.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		41E1D4F2265B297E9ED22F0D /* VideoAnalyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoAnalyzer.swift; sourceTree = "<group>"; };
 		48891C0EC653E9259AB076DB /* DontTouch Detection.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = "DontTouch Detection.framework"; sourceTree = BUILT_PRODUCTS_DIR; };
 		4CBDD3A620FA609EC26FD061 /* ContentAnalyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentAnalyzer.swift; sourceTree = "<group>"; };
 		516BBF6A4573FAFFC363E7CE /* manifest.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = manifest.json; sourceTree = "<group>"; };
@@ -103,6 +106,7 @@
 		CCA08F92AF171987E3C3F961 /* icon-128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon-128.png"; sourceTree = "<group>"; };
 		D3F68740790FDA8EDED128FD /* AnalysisEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalysisEngine.swift; sourceTree = "<group>"; };
 		DE640456F71891836703AF43 /* icon-32.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon-32.png"; sourceTree = "<group>"; };
+		E020181021EA96FF67965DB3 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		E1B79EC71D52726D04DA9F5E /* AnalysisOrchestrator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalysisOrchestrator.swift; sourceTree = "<group>"; };
 		F0D55EEAC484F2DACAA03463 /* popup.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = popup.js; sourceTree = "<group>"; };
 		F82566C2557EAA8B2F862DEE /* blocklist.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = blocklist.txt; sourceTree = "<group>"; };
@@ -110,6 +114,14 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		1E3375A2124AA875B9A1975E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0F0B31809A435D2DC8F0148F /* AVFoundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		C757AE23B7BE532466D3C332 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -131,9 +143,18 @@
 				69AEA365CCCF1BFFF9771808 /* CoreMLAdapter.swift */,
 				5D38310A965637EF2DE03801 /* Info.plist */,
 				8DB602FE7E5A5CDB105C89C0 /* NSFWClassifier.swift */,
+				41E1D4F2265B297E9ED22F0D /* VideoAnalyzer.swift */,
 				876B743ECDC6C0B81DE1F904 /* VideoFrameExtractor.swift */,
 			);
 			path = "DontTouch Detection";
+			sourceTree = "<group>";
+		};
+		340B22C5B4E7DE1DE3399622 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				E020181021EA96FF67965DB3 /* AVFoundation.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		4E812D21E2DC277C82C532E7 = {
@@ -142,6 +163,7 @@
 				62A75FDDACDD5D202D744BE4 /* DontTouch */,
 				22E21944A4DC396F8B09C604 /* DontTouch Detection */,
 				5706A9986AD349D70251D5D3 /* DontTouch Extension */,
+				340B22C5B4E7DE1DE3399622 /* Frameworks */,
 				EB292F05D3C906471801052B /* Products */,
 			);
 			sourceTree = "<group>";
@@ -213,6 +235,7 @@
 			buildPhases = (
 				148C8BDA9731739820C24910 /* Sources */,
 				2042E49453A1F54CA897B944 /* Resources */,
+				1E3375A2124AA875B9A1975E /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -337,6 +360,7 @@
 				737AF962EF6ACD79D0AC9F9B /* ContentAnalyzer.swift in Sources */,
 				49ED27BB50B5C4C3BAC41599 /* CoreMLAdapter.swift in Sources */,
 				3FD221C36204DE07E25B42F1 /* NSFWClassifier.swift in Sources */,
+				F805871B7509CA2856676E64 /* VideoAnalyzer.swift in Sources */,
 				824344D9B8E1AEAED11114C8 /* VideoFrameExtractor.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

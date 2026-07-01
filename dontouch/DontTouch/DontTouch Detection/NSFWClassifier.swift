@@ -83,12 +83,11 @@ class NSFWClassifier {
     /// Flags images whose top classification labels match NSFW-relevant categories.
     private func classifyWithVisionBuiltin(_ ciImage: CIImage) async throws -> Double {
         let request = VNClassifyImageRequest()
-        request.imageCropAndScaleOption = .centerCrop
 
         let handler = VNImageRequestHandler(ciImage: ciImage, options: [:])
         try handler.perform([request])
 
-        guard let results = request.results as? [VNClassificationObservation] else {
+        guard let results = request.results else {
             return 0.0
         }
 
