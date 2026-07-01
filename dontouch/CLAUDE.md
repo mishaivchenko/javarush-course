@@ -8,11 +8,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Architecture
 
-Three Xcode targets defined declaratively in `DontTouch/Project.yml` (XcodeGen):
+Three Xcode targets defined declaratively in `DontTouch/Project.yml` (XcodeGen), expanded to four via platform-specific variants:
 
 1. **DontTouch** — macOS host app (SwiftUI). Onboarding screen, Safari extension preferences link, status display.
-2. **DontTouch Extension** — Safari Web Extension (JS/CSS/HTML). Content script (`content.js`) scans images/video frames/text on every page. Native handler (`SafariWebExtensionHandler.swift`) processes messages and runs detection.
-3. **DontTouch Detection** — Swift framework with the detection pipeline. Uses the **Adapter Pattern**: `ContentAnalyzer` protocol → `CoreMLAdapter` (Vision framework) / `StubAnalyzer` (placeholder).
+2. **DontTouch_iOS** — iOS host app (SwiftUI). Same shared sources as macOS, with iOS-specific stubs.
+3. **DontTouch Extension (macOS + iOS variants)** — Safari Web Extension (JS/CSS/HTML). Content script (`content.js`) scans images/video frames/text on every page. Native handler (`SafariWebExtensionHandler.swift`) processes messages and runs detection (macOS full implementation; iOS stub due to missing SFSafariExtensionHandling types).
+4. **DontTouch Detection** — Swift framework with the detection pipeline. Uses the **Adapter Pattern**: `ContentAnalyzer` protocol → `CoreMLAdapter` (Vision framework) / `StubAnalyzer` (placeholder). Compiled as source in all four targets.
 
 ### Cross-target dependencies
 
@@ -83,7 +84,7 @@ cd DontTouch && xcodebuild -project DontTouch.xcodeproj -scheme DontTouch -desti
 Multi-phase implementation covered in `.maestro/playbooks/`:
 - **Phase 1** (`DONT-TOUCH-01.md`): Project scaffold, Safari extension, CSS injection, badge
 - **Phase 2** (`DONT-TOUCH-02.md`): Adapter Pattern, CoreMLAdapter, image/text analysis, settings popover
-- **Phase 3** (Initiation): Video frame analysis, live slider, cross-platform polish, App Groups
+- **Phase 3** (`DONT-TOUCH-03.md`): Video frame analysis, live slider, cross-platform polish, iOS build
 
 ## Project Structure
 
@@ -92,17 +93,24 @@ dontouch/
 ├── .maestro/playbooks/        — Multi-phase implementation plans
 │   ├── DONT-TOUCH-01.md       — Foundation & Safari scaffold
 │   ├── DONT-TOUCH-02.md       — Detection pipeline with Adapter Pattern
-│   └── Initiation/             — Phase 03 details (video, polish)
-├── DontTouch/                  — XcodeGen project root (once scaffolded)
-│   ├── Project.yml             — Declarative project definition
-│   ├── DontTouch/              — macOS host app
-│   │   ├── DontTouchApp.swift  — SwiftUI @main app entry point
-│   │   ├── ContentView.swift   — Onboarding UI, settings
+│   └── DONT-TOUCH-03.md       — Video analysis, iOS support, error handling
+├── DontTouch/                  — XcodeGen project root
+│   ├── Project.yml             — Declarative project definition (4 targets)
+│   ├── .gitignore
+│   ├── VERIFICATION.md         — Build status, architecture, feature checklist
+│   ├── DontTouch/              — Shared host app source (macOS + iOS)
+│   │   ├── DontTouchApp.swift  — SwiftUI @main (macOS, #if os(macOS))
+│   │   ├── ContentView.swift   — Onboarding UI, settings (macOS-only APIs guarded)
 │   │   ├── AppSettings.swift   — Shared settings with @Published
-│   │   └── Info.plist
-│   ├── DontTouch Extension/    — Safari Web Extension
-│   │   ├── SafariWebExtensionHandler.swift  — Native message handler
 │   │   ├── Info.plist
+│   │   └── iOS/                — iOS host app stubs
+│   │       ├── iOSApp.swift    — SwiftUI @main (iOS, #if os(iOS))
+│   │       ├── SceneDelegate.swift
+│   │       └── Info.plist
+│   ├── DontTouch Extension/    — Safari Web Extension (shared sources)
+│   │   ├── SafariWebExtensionHandler.swift  — macOS full impl, iOS stub
+│   │   ├── Info.plist           — macOS extension Info.plist
+│   │   ├── iOS-Info.plist       — iOS extension Info.plist
 │   │   └── Resources/
 │   │       ├── manifest.json   — W3C extension manifest
 │   │       ├── content.js      — Page scanner (images, video, text) — badge, CSS, messaging
@@ -110,7 +118,7 @@ dontouch/
 │   │       ├── background.js   — Event relay
 │   │       ├── popup.html/css/js — Toolbar popover settings UI
 │   │       └── icons/
-│   └── DontTouch Detection/    — Detection framework
+│   └── DontTouch Detection/    — Detection framework (compiled as source in all targets)
 │       ├── ContentAnalyzer.swift      — Adapter protocol
 │       ├── CoreMLAdapter.swift        — Vision-based analyzer
 │       ├── NSFWClassifier.swift       — Classification helper
@@ -122,3 +130,16 @@ dontouch/
 │       └── Info.plist
 └── CLAUDE.md
 ```
+
+## Build Targets (XcodeGen Project.yml)
+
+| Target | Type | Platform | Bundle ID |
+|---|---|---|---|
+| `DontTouch` | Application | macOS | `com.yourname.donttouch` |
+| `DontTouch_iOS` | Application | iOS | `com.yourname.donttouch` |
+| `DontTouch_Extension_Mac` | Safari Web Extension | macOS | `com.yourname.donttouch.extension` |
+| `DontTouch_Extension_iOS` | Safari Web Extension | iOS | `com.yourname.donttouch.extension` |
+
+- macOS app (`DontTouch`) embeds `DontTouch_Extension_Mac`
+- iOS app (`DontTouch_iOS`) embeds `DontTouch_Extension_iOS`
+- App Groups (`group.com.yourname.donttouch`) shared across all targets
