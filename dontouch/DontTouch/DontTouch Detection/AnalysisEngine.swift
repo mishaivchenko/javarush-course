@@ -172,7 +172,7 @@ public class AnalysisEngine {
     // MARK: - Cache Management
 
     /// Clear the URL-based confidence cache.
-    func clearUrlCache() {
+    public func clearUrlCache() {
         cacheQueue.sync {
             urlCache.removeAll()
         }

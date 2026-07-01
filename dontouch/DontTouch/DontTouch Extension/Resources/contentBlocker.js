@@ -401,6 +401,12 @@
      *   - textBlocked: text blocklist match
      */
     function handleBlockResponse(response) {
+        // Re-analyze request from native handler (triggered by "Apply to Current Page")
+        if (response.action === 'reanalyze') {
+            handleReanalyze();
+            return;
+        }
+
         // Video frame result — route through per-video sliding window
         if (response.action === 'frameResult' && response.videoId != null && response.selector) {
             const windowAction = updateVideoWindow(response.videoId, response.isFlagged);
@@ -525,6 +531,71 @@
             const overlay = wrapper.querySelector('.dt-video-overlay');
             if (overlay) overlay.remove();
         }
+    }
+
+    // ── Reanalyze Handler ──────────────────────────────────────────────────
+
+    /**
+     * Reset all scanned state and re-scan the page from scratch.
+     *
+     * Triggered by the native handler when the user clicks "Apply to Current Page"
+     * in the popup. Clears all detection markers, unhides all elements, resets
+     * counters, and re-runs the full scan pipeline (images, videos, text).
+     *
+     * This ensures the page is re-evaluated with fresh analysis after
+     * sensitivity changes or when the user wants to force a re-check.
+     */
+    function handleReanalyze() {
+        console.log(LOG_PREFIX, 'Re-analyzing page — clearing scanned state');
+
+        // ── Reset element markers ──
+        // Remove scanned/image markers so scanImages() will re-process them
+        document.querySelectorAll('[data-dt-scanned]').forEach(el => {
+            el.removeAttribute('data-dt-scanned');
+        });
+        // Remove video setup markers so setupVideoScanning() will re-attach listeners
+        document.querySelectorAll('[data-dt-video-setup]').forEach(el => {
+            el.removeAttribute('data-dt-video-setup');
+        });
+        // Remove text IDs so scanText() will assign fresh ones
+        document.querySelectorAll('[data-dt-text-id]').forEach(el => {
+            el.removeAttribute('data-dt-text-id');
+        });
+        // Remove URL markers (legacy path from content.js)
+        document.querySelectorAll('[data-dt-url]').forEach(el => {
+            el.removeAttribute('data-dt-url');
+        });
+        // Remove video blocked state so onVideoPlay can fire
+        document.querySelectorAll('[data-dt-video-blocked]').forEach(el => {
+            el.removeAttribute('data-dt-video-blocked');
+        });
+
+        // ── Unhide all elements ──
+        document.querySelectorAll('.dt-hidden').forEach(el => {
+            el.classList.remove('dt-hidden');
+        });
+
+        // ── Remove video overlays ──
+        document.querySelectorAll('.dt-video-wrapper').forEach(wrapper => {
+            const overlay = wrapper.querySelector('.dt-video-overlay');
+            if (overlay) overlay.remove();
+        });
+
+        // ── Reset state ──
+        blockedCount = 0;
+        scannedCount = 0;
+        textIdCounter = 0;
+        videoIdCounter = 0;
+        window.__dtVideoStates = {};
+
+        console.log(LOG_PREFIX, 'State reset — re-scanning page');
+
+        // ── Re-run scan pipeline ──
+        scanImages();
+        setupVideoScanning();
+        scanText();
+
+        console.log(LOG_PREFIX, 'Re-scan complete');
     }
 
     // ── Selector Builder ────────────────────────────────────────────────────

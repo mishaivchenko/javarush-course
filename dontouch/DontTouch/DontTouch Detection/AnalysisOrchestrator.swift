@@ -56,7 +56,7 @@ public actor AnalysisOrchestrator {
     }
 
     /// Clear the analysis cache.
-    func clearCache() {
+    public func clearCache() {
         cache.removeAll()
     }
 

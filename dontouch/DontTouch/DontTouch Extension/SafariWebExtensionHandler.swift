@@ -100,6 +100,12 @@ class SafariWebExtensionHandler: NSObject, SFSafariExtensionHandling {
                     "blockText": blockText
                 ])
 
+            case "clearCache":
+                self.handleClearCache(page: page)
+
+            case "reanalyze":
+                self.handleReanalyze(page: page)
+
             default:
                 self.logger.warning("Unknown message: \(messageName, privacy: .public)")
                 self.respond(to: page, result: [
@@ -321,6 +327,69 @@ class SafariWebExtensionHandler: NSObject, SFSafariExtensionHandling {
         }
 
         logger.debug("Settings saved to App Groups")
+    }
+
+    // MARK: - Cache & Reanalyze
+
+    /// Handle cache clearing from the popup or content script.
+    ///
+    /// Clears both the AnalysisOrchestrator detection cache (by image hash)
+    /// and the AnalysisEngine URL-based confidence cache so the next analysis
+    /// runs fresh detection instead of returning cached results.
+    ///
+    /// Payload format:
+    /// ```json
+    /// { "type": "clearCache" }
+    /// ```
+    ///
+    /// Response format:
+    /// ```json
+    /// { "type": "donttouch-response", "cleared": true }
+    /// ```
+    private func handleClearCache(page: SFSafariPage) {
+        logger.debug("Clearing detection caches")
+
+        Task {
+            await AnalysisOrchestrator.shared.clearCache()
+            self.engine.clearUrlCache()
+            self.logger.info("Detection caches cleared")
+
+            self.respond(to: page, result: [
+                "type": "donttouch-response",
+                "cleared": true
+            ])
+        }
+    }
+
+    /// Handle re-analyze request from the popup ("Apply to Current Page").
+    ///
+    /// 1. Clears the detection cache so fresh analysis runs on all content
+    /// 2. Tells the content script to reset its scanned state and re-scan
+    ///    all images, videos, and text on the page
+    ///
+    /// Payload format:
+    /// ```json
+    /// { "type": "reanalyze" }
+    /// ```
+    ///
+    /// Response format:
+    /// ```json
+    /// { "type": "donttouch-response", "action": "reanalyze" }
+    /// ```
+    private func handleReanalyze(page: SFSafariPage) {
+        logger.debug("Re-analyze requested — clearing caches")
+
+        Task {
+            await AnalysisOrchestrator.shared.clearCache()
+            self.engine.clearUrlCache()
+            self.logger.info("Caches cleared, requesting content script re-scan")
+
+            // Tell the content script to reset scanned state and re-scan
+            self.respond(to: page, result: [
+                "type": "donttouch-response",
+                "action": "reanalyze"
+            ])
+        }
     }
 
     // MARK: - Legacy Handler (Phase 1)

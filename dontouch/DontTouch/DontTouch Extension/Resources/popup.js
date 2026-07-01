@@ -24,6 +24,7 @@
     const blockText = document.getElementById('blockText');
     const toggleButton = document.getElementById('toggleExtension');
     const itemsBlocked = document.getElementById('itemsBlocked');
+    const reanalyzeBtn = document.getElementById('reanalyzeBtn');
 
     let isPaused = false;
 
@@ -130,6 +131,31 @@
             blockText: blockText.checked,
             isPaused
         });
+    });
+
+    // ── Apply to Current Page ────────────────────────────────────────────────
+
+    /**
+     * Re-analyze the current page from scratch.
+     * Sends a `reanalyze` message to the native handler, which:
+     * 1. Clears the detection cache
+     * 2. Tells the content script to clear its scanned state and re-scan
+     *
+     * Visual feedback: button shows "Applying…" while the message is in flight.
+     */
+    reanalyzeBtn.addEventListener('click', async () => {
+        reanalyzeBtn.textContent = 'Applying…';
+        reanalyzeBtn.classList.add('sending');
+        try {
+            await browser.runtime.sendMessage({ type: 'reanalyze' });
+        } catch (err) {
+            console.debug(LOG_PREFIX, 'reanalyze message failed:', err.message);
+        }
+        // Reset button text after a brief delay for visual feedback
+        setTimeout(() => {
+            reanalyzeBtn.textContent = 'Apply to Current Page';
+            reanalyzeBtn.classList.remove('sending');
+        }, 1500);
     });
 
     // ── Blocked Count (from content script) ────────────────────────────────────

@@ -60,7 +60,7 @@ Add real video frame analysis, live sensitivity slider, cross-platform App Group
   - Unblock when running average drops below threshold
   - See Phase-03 Initiation doc for full spec
 
-- [ ] Add "Apply to current page" button, `clearCache` and `reanalyze` handlers:
+- [x] Add "Apply to current page" button, `clearCache` and `reanalyze` handlers:
   - `DontTouch/DontTouch Extension/Resources/popup.js`:
     - Add "Apply to current page" button that sends `{type: "reanalyze"}` to content script
   - `DontTouch/DontTouch Extension/SafariWebExtensionHandler.swift`:
