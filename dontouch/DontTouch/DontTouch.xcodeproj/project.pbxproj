@@ -8,7 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		0218D0673E529BA10D5B62EA /* background.js in Resources */ = {isa = PBXBuildFile; fileRef = 6C6016C59ECDB0CEC5B30D40 /* background.js */; };
+		05C3A738CDED1E3271C2C9C6 /* AnalysisEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3F68740790FDA8EDED128FD /* AnalysisEngine.swift */; };
 		07C3395577EC058989B62E29 /* DontTouchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67235A8FF54A90FAEFC97A53 /* DontTouchApp.swift */; };
+		10313820A382CD84461B0F43 /* blocklist.txt in Resources */ = {isa = PBXBuildFile; fileRef = F82566C2557EAA8B2F862DEE /* blocklist.txt */; };
 		22E94DF0202096DAF70D60F3 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 793D5F80A0105BFC16E2765A /* AppSettings.swift */; };
 		3B6D865A1ABB220094FA06B1 /* popup.html in Resources */ = {isa = PBXBuildFile; fileRef = B1FB9F31D42090C2B56CA815 /* popup.html */; };
 		3FD221C36204DE07E25B42F1 /* NSFWClassifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DB602FE7E5A5CDB105C89C0 /* NSFWClassifier.swift */; };
@@ -99,9 +101,11 @@
 		C605778DC9268CD801E065CA /* DontTouch Extension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "DontTouch Extension.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C74466CAE7C3FB1D146DFF8F /* icon-16.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon-16.png"; sourceTree = "<group>"; };
 		CCA08F92AF171987E3C3F961 /* icon-128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon-128.png"; sourceTree = "<group>"; };
+		D3F68740790FDA8EDED128FD /* AnalysisEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalysisEngine.swift; sourceTree = "<group>"; };
 		DE640456F71891836703AF43 /* icon-32.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon-32.png"; sourceTree = "<group>"; };
 		E1B79EC71D52726D04DA9F5E /* AnalysisOrchestrator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalysisOrchestrator.swift; sourceTree = "<group>"; };
 		F0D55EEAC484F2DACAA03463 /* popup.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = popup.js; sourceTree = "<group>"; };
+		F82566C2557EAA8B2F862DEE /* blocklist.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = blocklist.txt; sourceTree = "<group>"; };
 		F93304E74A27F45083BDD5D6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -120,7 +124,9 @@
 		22E21944A4DC396F8B09C604 /* DontTouch Detection */ = {
 			isa = PBXGroup;
 			children = (
+				D3F68740790FDA8EDED128FD /* AnalysisEngine.swift */,
 				E1B79EC71D52726D04DA9F5E /* AnalysisOrchestrator.swift */,
+				F82566C2557EAA8B2F862DEE /* blocklist.txt */,
 				4CBDD3A620FA609EC26FD061 /* ContentAnalyzer.swift */,
 				69AEA365CCCF1BFFF9771808 /* CoreMLAdapter.swift */,
 				5D38310A965637EF2DE03801 /* Info.plist */,
@@ -206,6 +212,7 @@
 			buildConfigurationList = 0273EAB06AB96D942D0C27E2 /* Build configuration list for PBXNativeTarget "DontTouch Detection" */;
 			buildPhases = (
 				148C8BDA9731739820C24910 /* Sources */,
+				2042E49453A1F54CA897B944 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -291,6 +298,14 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		2042E49453A1F54CA897B944 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				10313820A382CD84461B0F43 /* blocklist.txt in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		9683368BC153529D655E5977 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -317,6 +332,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				05C3A738CDED1E3271C2C9C6 /* AnalysisEngine.swift in Sources */,
 				6288DA5D0096C8532D16BED0 /* AnalysisOrchestrator.swift in Sources */,
 				737AF962EF6ACD79D0AC9F9B /* ContentAnalyzer.swift in Sources */,
 				49ED27BB50B5C4C3BAC41599 /* CoreMLAdapter.swift in Sources */,

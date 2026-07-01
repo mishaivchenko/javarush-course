@@ -62,6 +62,8 @@ targets:
     sources:
       - path: DontTouch Detection
         type: group
+    resources:
+      - path: DontTouch Detection/blocklist.txt
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: com.yourname.donttouch.detection
       INFOPLIST_FILE: DontTouch Detection/Info.plist
