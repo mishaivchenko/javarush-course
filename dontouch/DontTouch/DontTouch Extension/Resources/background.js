@@ -29,9 +29,30 @@
             const tabId = sender?.tab?.id;
             if (tabId != null) {
                 tabBlockedCounts[tabId] = message.count;
+                // Persist for popup access — keyed by tab ID
+                browser.storage.local.set({
+                    ['blockedCount_' + tabId]: message.count,
+                    latestBlockedTab: tabId
+                }).catch(() => {});
             }
             sendResponse({ received: true });
             return false;
+        }
+
+        // Popup query: return blocked count for the current tab
+        // Uses the most recently reported tab — content scripts always report
+        // for their own tab, so the latest reportBlocked has the right count.
+        if (message.type === 'getBlockedCount') {
+            // Return the count for the tab that reported most recently,
+            // or try storage (persisted by reportBlocked handler above)
+            browser.storage.local.get('latestBlockedTab').then(stored => {
+                const tabId = stored.latestBlockedTab;
+                const count = tabId != null ? (tabBlockedCounts[tabId] || 0) : 0;
+                sendResponse({ count });
+            }).catch(() => {
+                sendResponse({ count: 0 });
+            });
+            return true; // Keep channel open for async response
         }
 
         // Safari native messaging bridge — forward all other messages to the native extension

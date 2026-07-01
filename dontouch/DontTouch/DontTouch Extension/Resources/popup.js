@@ -135,6 +135,20 @@
     // ── Blocked Count (from content script) ────────────────────────────────────
 
     /**
+     * Query the background script for the current tab's blocked count.
+     */
+    async function loadBlockedCount() {
+        try {
+            const response = await browser.runtime.sendMessage({ type: 'getBlockedCount' });
+            if (response && response.count != null) {
+                itemsBlocked.textContent = response.count;
+            }
+        } catch (err) {
+            console.debug(LOG_PREFIX, 'getBlockedCount failed:', err.message);
+        }
+    }
+
+    /**
      * Listen for blocked-count updates from the content script.
      */
     browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -149,5 +163,6 @@
     document.addEventListener('DOMContentLoaded', async () => {
         const settings = await loadSettings();
         updateUI(settings);
+        loadBlockedCount();
     });
 })();

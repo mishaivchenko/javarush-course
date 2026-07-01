@@ -300,7 +300,7 @@ class SafariWebExtensionHandler: NSObject, SFSafariExtensionHandling {
             return
         }
 
-        let defaults = UserDefaults(suiteName: AppSettings.appGroupIdentifier) ?? .standard
+        let defaults = UserDefaults(suiteName: "group.com.yourname.donttouch") ?? .standard
 
         if let sensitivity = settings["sensitivity"] as? Int {
             let threshold = Double(sensitivity) / 100.0

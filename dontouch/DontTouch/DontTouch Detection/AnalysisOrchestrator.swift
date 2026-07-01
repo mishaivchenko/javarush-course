@@ -73,7 +73,7 @@ public actor AnalysisOrchestrator {
     }
 }
 
-public public struct AnalysisResult {
+public struct AnalysisResult {
     public let blocked: Bool
     public let confidence: Double
     public let cached: Bool
