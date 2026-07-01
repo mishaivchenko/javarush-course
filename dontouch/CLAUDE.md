@@ -89,7 +89,8 @@ dontouch/
 │   │   ├── Info.plist
 │   │   └── Resources/
 │   │       ├── manifest.json   — W3C extension manifest
-│   │       ├── content.js      — Page scanner (images, video, text)
+│   │       ├── content.js      — Page scanner (images, video, text) — badge, CSS, messaging
+│   │       ├── contentBlocker.js — Scanning module: images, video frames, text nodes, MutationObserver
 │   │       ├── background.js   — Event relay
 │   │       ├── popup.html/css/js — Toolbar popover settings UI
 │   │       └── icons/

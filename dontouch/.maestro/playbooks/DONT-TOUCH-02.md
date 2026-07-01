@@ -36,7 +36,7 @@ This phase adds on-device CoreML models for detecting NSFW content in images, vi
   
   **Note:** `analyzeVideoFrame(pixelBuffer:)` and a base64 variant were already present in `AnalysisEngine.swift`. `VideoAnalyzer.swift` was created in `DontTouch/DontTouch Detection/`. Also fixed a pre-existing compilation error in `NSFWClassifier.swift` (removed deprecated `imageCropAndScaleOption` on `VNClassifyImageRequest` and redundant `as?` cast on `results`), and fixed a cross-target dependency in `AnalysisEngine.swift` (replaced `AppSettings.shared.sensitivityThreshold` with direct `UserDefaults` access so the Detection framework is self-contained).
 
-- [ ] Build the content scanner that runs in the page context (`contentBlocker.js`):
+- [x] Build the content scanner that runs in the page context (`contentBlocker.js`):
   1. In `DontTouchBlocker/Resources/`, create `contentBlocker.js`:
      - On `DOMContentLoaded`, scan all `<img>` elements: collect their `src` URLs, batch them, and send to native extension via `safari.extension.dispatchMessage("analyzeImages", {urls: [...]})`.
      - Scan all `<video>` elements: for each, observe on `play` event, sample frames via a `<canvas>` draw at 2-second intervals, send canvas `toDataURL()` (base64) to native via `safari.extension.dispatchMessage("analyzeVideoFrame", {data: base64})`. If blocked, pause video and add `dt-hidden` class.

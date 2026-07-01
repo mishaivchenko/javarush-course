@@ -76,12 +76,6 @@
         }
     }
 
-    // ── Image Scanning (stub for Phase 2) ────────────────────────────────────
-    function scanImages() {
-        // Phase 2: iterate <img> elements, sample to canvas, send to native
-        console.log(LOG_PREFIX, 'Image scanning ready (Phase 2)');
-    }
-
     // ── Initialization ───────────────────────────────────────────────────────
     function init() {
         // Only run on web pages
@@ -92,7 +86,6 @@
         injectStyles();
         createBadge();
         notifyPageLoaded();
-        scanImages();
     }
 
     // Run when DOM is ready (already at document_end per manifest)
