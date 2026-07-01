@@ -21,9 +21,9 @@ protocol ContentAnalyzer {
 /// Swap this out during tests or when switching ML backends.
 enum DefaultAnalyzer {
     static func make() -> ContentAnalyzer {
-        // Phase 1: stub — always returns safe
-        // Phase 2: replace with CoreMLAdapter()
-        return StubAnalyzer()
+        // Uses Vision framework VNClassifyImageRequest with NSFW-relevant label mapping.
+        // No custom CoreML model file needed — Apple's built-in on-device classifier handles it.
+        return CoreMLAdapter()
     }
 }
 
