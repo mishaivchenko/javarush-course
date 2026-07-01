@@ -38,11 +38,13 @@ This phase adds on-device CoreML models for detecting NSFW content in images, vi
 
 - [x] Build the content scanner that runs in the page context (`contentBlocker.js`):
   1. In `DontTouchBlocker/Resources/`, create `contentBlocker.js`:
-     - On `DOMContentLoaded`, scan all `<img>` elements: collect their `src` URLs, batch them, and send to native extension via `safari.extension.dispatchMessage("analyzeImages", {urls: [...]})`.
-     - Scan all `<video>` elements: for each, observe on `play` event, sample frames via a `<canvas>` draw at 2-second intervals, send canvas `toDataURL()` (base64) to native via `safari.extension.dispatchMessage("analyzeVideoFrame", {data: base64})`. If blocked, pause video and add `dt-hidden` class.
-     - Scan all text nodes (using `TreeWalker` with `NodeFilter.SHOW_TEXT`): chunk text into paragraphs, strip HTML, send batches to native via `safari.extension.dispatchMessage("analyzeText", {text: "..."})`.
+     - On `DOMContentLoaded`, scan all `<img>` elements: collect their `src` URLs, batch them, and send to native extension via `browser.runtime.sendMessage("analyzeImages", {images: [...]})`.
+     - Scan all `<video>` elements: for each, observe on `play` event, sample frames via a `<canvas>` draw at 2-second intervals, send canvas `toDataURL()` (base64) to native via `browser.runtime.sendMessage("analyzeVideoFrame", {data: base64})`. If blocked, pause video and add `dt-hidden` class.
+     - Scan all text nodes (using `TreeWalker` with `NodeFilter.SHOW_TEXT`): chunk text into paragraphs, strip HTML, send batches to native via `browser.runtime.sendMessage("analyzeText", {text: "..."})`.
   2. On receiving a response from native with `{action: "block", selector: "..."}` → add the `dt-hidden` class to the matched element. On `{action: "unblock", ...}` → remove it.
   3. Throttle scanning: after the initial scan, re-scan dynamically added content every 3 seconds using a `MutationObserver` watching `childList` on the document body.
+
+  **Note:** `contentBlocker.js` was created in `DontTouch/DontTouch Extension/Resources/` (project uses `DontTouch Extension/`, not `DontTouchBlocker/`). Uses `browser.runtime.sendMessage()` (Safari Web Extension API) instead of `safari.extension.dispatchMessage()` (Safari App Extension API) to match the existing messaging architecture in `content.js`/`background.js`. Added `contentBlocker.js` to `manifest.json` as the first content script so style.css is injected before content.js runs. Removed the redundant `scanImages()` stub from `content.js`. Video scanning includes: `dt-video-blocked` data attribute to prevent re-scanning, play-event listener (fires once), canvas frame caps at 512×512 max, video pause + `.dt-video-overlay` when blocked. Text scanning uses `TreeWalker` with block-element boundary detection for natural paragraph grouping, capped at 2000 chars per message, tagged with `data-dt-text-id` for response targeting. Response handler supports three formats: new `action: 'block'|'unblock'` + `selector`, legacy `blocked: true` + `url`, and `textBlocked: true` + `textId`.
 
 - [ ] Wire up native-side message handling in `SafariExtensionHandler.swift`:
   1. In the `messageReceived` method, add cases:
