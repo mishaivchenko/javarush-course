@@ -16,8 +16,9 @@ Three Xcode targets defined declaratively in `DontTouch/Project.yml` (XcodeGen):
 
 ### Key architectural decisions
 
-- **Adapter Pattern for detection**: `ContentAnalyzer` protocol abstracts the ML backend. `CoreMLAdapter` conforms to it using Apple's Vision framework (`VNClassifyImageRequest`). Swap implementations without touching the rest of the system.
-- **AnalysisOrchestrator actor**: Singleton actor (`AnalysisOrchestrator.shared`) manages the pipeline, caches results per URL hash, and applies the user's sensitivity threshold. Actors serialize access to mutable state without locks.
+- **Adapter Pattern for detection**: `ContentAnalyzer` protocol abstracts the ML backend. `CoreMLAdapter` conforms to it using Apple's Vision framework (`VNClassifyImageRequest` with NSFW-relevant label mapping). Swap implementations without touching the rest of the system.
+- **Built-in Vision classifier**: Uses `VNClassifyImageRequest` — no custom CoreML model file required. Apple's on-device classifier ships with a pre-trained Inceptionv3-derived model. NSFW detection works by flagging classification labels (swimwear, lingerie, etc.) with weighted confidence scoring. A future custom `.mlpackage` can be loaded via `NSFWClassifier.loadModel()` for higher accuracy.
+- **AnalysisOrchestrator actor**: Singleton actor (`AnalysisOrchestrator.shared`) manages the pipeline, caches results per URL hash (SHA-256), and applies the user's sensitivity threshold. Actors serialize access to mutable state without locks.
 - **App Groups for settings**: `UserDefaults(suiteName: "group.com.yourname.donttouch")` shared between the host app and Safari extension. Settings manager (`AppSettings.swift`) uses `@Published` for SwiftUI reactivity.
 - **Safari Web Extension model**: Content script (`content.js`) injects CSS (`dt-hidden` class with `filter: blur(20px)`) and communicates with the native extension via `browser.runtime.sendMessage`. Native handler processes heavy work (Vision analysis) and responds with block decisions.
 - **Privacy by design**: No network calls in the detection pipeline. All ML inference is on-device via the Vision framework that ships with macOS/iOS.

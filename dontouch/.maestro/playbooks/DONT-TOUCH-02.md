@@ -9,11 +9,13 @@ This phase adds on-device CoreML models for detecting NSFW content in images, vi
 
 ---
 
-- [ ] Add a CoreML NSFW image classification model to the project:
+- [x] Add a CoreML NSFW image classification model to the project:
   1. Search for an open-source NSFW detection CoreML model (e.g., Nudity). Convert it or download a ready `.mlpackage` / `.mlmodel` file. If none is readily available, create a wrapper using Apple's Vision framework with a built-in classification request that flags content categories.
   2. Drag the model file into Xcode's `DontTouchBlocker` group → "Copy items if needed" → add to `DontTouchBlocker` target.
   3. In Build Settings for `DontTouchBlocker`, verify the model is listed under "CoreML Model Compiler" input. Build to trigger model compilation.
   4. If the model fails to compile, create a fallback Vision-based classifier using `VNClassifyImageRequest` with a custom confidence threshold (0.7+ for NSFW labels). Test that it produces results.
+
+**Note (Phase 2 implementation):** No downloadable CoreML model was bundled. Instead, `NSFWClassifier.swift` uses Apple's built-in `VNClassifyImageRequest` (on-device Inceptionv3-derived classifier) with NSFW-relevant label mapping. The label blocklist covers clothing types (lingerie, brassiere, swimwear, etc.) with weighted confidence scoring and fuzzy label matching. `CoreMLAdapter.swift` drives the detection and `DefaultAnalyzer.make()` now returns `CoreMLAdapter()` instead of `StubAnalyzer()`. The `VNCoreMLRequest` path in `NSFWClassifier` is retained for future custom model loading via `loadModel(at:)`.
 
 - [ ] Implement the on-device analysis engine (`AnalysisEngine.swift`):
   1. Create `AnalysisEngine.swift` in `DontTouchBlocker/`:
