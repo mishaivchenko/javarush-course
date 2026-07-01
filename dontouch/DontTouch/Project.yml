@@ -48,9 +48,12 @@ targets:
         NSExtension:
           NSExtensionPointIdentifier: com.apple.Safari-web-extension
           NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).SafariWebExtensionHandler
+          SFSafariContentScript: true
+          NSExtensionAttributes:
+            SFSafariWebsiteAccess:
+              Level: All
         SFSafariExtensionBundleIdentifier: $(PRODUCT_BUNDLE_IDENTIFIER)
-        SFSafariWebsiteAccess:
-          Level: All
+        NSPhotoLibraryUsageDescription: Don't Touch needs camera access to analyze images on-device
         LSMinimumSystemVersion: "14.0"
 
   DontTouch Detection:

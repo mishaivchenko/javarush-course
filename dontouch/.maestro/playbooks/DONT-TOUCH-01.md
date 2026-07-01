@@ -19,7 +19,7 @@ This phase sets up the Xcode project, creates the Safari extension skeleton, and
   5. Generated with `xcodegen generate` → `DontTouch.xcodeproj`.
   6. **Build verification requires Xcode.app** (not available on this machine; CLI tools don't include SafariServices SDK).
 
-- [ ] Configure the extension's Info.plist for content blocking and page access:
+- [x] Configure the extension's Info.plist for content blocking and page access:
   1. Open `DontTouchBlocker/Info.plist`. Add `NSExtension` dictionary with key `SFSafariContentScript` → set to `YES`.
   2. Add `SFSafariWebsiteAccess` with value `All` under `NSExtensionAttributes` so the extension runs on all pages.
   3. Add `NSPhotoLibraryUsageDescription` with value `"Don't Touch needs camera access to analyze images on-device"` (required for CoreML/Vision on-device image analysis).
