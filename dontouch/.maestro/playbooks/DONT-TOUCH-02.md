@@ -81,7 +81,7 @@ This phase adds on-device CoreML models for detecting NSFW content in images, vi
   - `background.js` extended with `saveSettings`/`reportBlocked`/`settingsUpdated` message routing
   - Spec: `docs/superpowers/specs/2026-07-01-popover-settings-design.md`
 
-- [ ] Add text blocklist file:
+- [x] Add text blocklist file:
   1. Create `blocklist.txt` in `DontTouchBlocker/Resources/` with one word per line. Include common adult content keywords (this is a blocker, so accuracy matters). Aim for ~100 entries covering explicit language and adult content indicators.
   2. In `AnalysisEngine.swift`, load this file on init into a `Set<String>` for fast lookup. The `analyzeText()` method tokenizes input text (split on whitespace/punctuation, lowercase) and checks each token against the set.
   3. Return confidence = (matched tokens / total tokens) × 1.0. If fewer than 2 tokens match, return 0.0 to avoid false positives on single-word matches.
