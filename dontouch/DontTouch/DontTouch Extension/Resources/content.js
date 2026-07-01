@@ -67,7 +67,11 @@
     });
 
     function handleBlockResponse(response) {
-        if (response.blocked) {
+        if (response.blocked && response.url) {
+            // Skip data: and blob: URIs — these images cannot be loaded for analysis
+            // (CORS restrictions) and should never have been sent to the native handler.
+            if (response.url.startsWith('data:') || response.url.startsWith('blob:')) return;
+
             const el = document.querySelector(`[data-dt-url="${response.url}"]`);
             if (el) {
                 el.classList.add(HIDDEN_CLASS);

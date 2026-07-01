@@ -69,7 +69,7 @@ Add real video frame analysis, live sensitivity slider, cross-platform App Group
   - `DontTouch/DontTouch Extension/Resources/contentBlocker.js`:
     - Add `reanalyze` message handler: remove `data-dt-scanned`/`data-dt-video-setup` from all elements, clear `dt-hidden` class, re-run `scanImages()`, `setupVideoScanning()`, `scanText()`
 
-- [ ] Add edge-case handling in content scripts:
+- [x] Add edge-case handling in content scripts:
   - `contentBlocker.js`:
     - Skip `data:` URIs and `blob:` URIs (can't load to canvas due to CORS)
     - Wrap all canvas operations in try/catch (tainted canvas fallback)

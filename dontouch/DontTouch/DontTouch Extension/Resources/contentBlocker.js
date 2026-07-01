@@ -92,6 +92,29 @@
         return null;
     }
 
+    // ── DOM & Messaging Helpers ───────────────────────────────────────────────
+
+    /**
+     * Check if an element is still connected to the DOM.
+     */
+    function isInDOM(el) {
+        return el && typeof el.isConnected !== 'undefined' ? el.isConnected : document.contains(el);
+    }
+
+    /**
+     * Send a runtime message with one retry after 1 second on failure.
+     * Can still throw if the runtime is unavailable after retry.
+     */
+    async function sendMessageWithRetry(message) {
+        try {
+            return await browser.runtime.sendMessage(message);
+        } catch (err) {
+            console.warn(LOG_PREFIX, 'sendMessage failed, retrying in 1s:', err.message);
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            return await browser.runtime.sendMessage(message);
+        }
+    }
+
     // ── Settings ──────────────────────────────────────────────────────────────
 
     /**
@@ -128,6 +151,12 @@
         images.forEach(img => {
             const src = img.currentSrc || img.src || img.getAttribute('src');
             if (!src) return;
+            // Skip data: and blob: URIs — can't load to canvas (CORS) and would fail analysis
+            if (src.startsWith('data:') || src.startsWith('blob:')) {
+                // Still mark as scanned so we don't retry them
+                img.dataset.dtScanned = 'true';
+                return;
+            }
             // Mark as scanned immediately to avoid re-scanning before response arrives
             img.dataset.dtScanned = 'true';
             batch.push({ src, selector: buildSelector(img) });
@@ -137,8 +166,8 @@
 
         scannedCount += batch.length;
 
-        browser.runtime.sendMessage({ type: 'analyzeImages', images: batch })
-            .catch(err => console.warn(LOG_PREFIX, 'analyzeImages failed:', err.message));
+        sendMessageWithRetry({ type: 'analyzeImages', images: batch })
+            .catch(err => console.warn(LOG_PREFIX, 'analyzeImages failed after retry:', err.message));
     }
 
     // ── Video Scanning ──────────────────────────────────────────────────────
@@ -169,6 +198,11 @@
      */
     function onVideoPlay(event) {
         const video = event.target;
+        // Guard: video may have been removed from the DOM between setup and play
+        if (!isInDOM(video)) {
+            console.log(LOG_PREFIX, 'Video element removed from DOM, skipping play handler');
+            return;
+        }
         if (video.dataset.dtVideoBlocked === 'true') {
             video.pause();
             return;
@@ -188,6 +222,12 @@
         if (video.ended) return;
         if (video.paused && !(video.dataset.dtVideoBlocked === 'true')) return;
 
+        // Guard: video may have been removed from the DOM since scheduling
+        if (!isInDOM(video)) {
+            console.log(LOG_PREFIX, 'Video removed from DOM, stopping frame sampling');
+            return;
+        }
+
         const videoId = video.dataset.dtVideoId;
         if (!videoId) return;
 
@@ -203,17 +243,27 @@
             scheduleNextSample(video);
             return;
         }
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-        // Strip the data:image/jpeg;base64, prefix — native handler expects raw base64
-        const base64 = canvas.toDataURL('image/jpeg', 0.7).split(',')[1];
+        // Wrap canvas operations in try/catch — video frames loaded cross-origin
+        // can taint the canvas and throw a SecurityError, or the video may have
+        // been removed while we were processing.
+        let base64;
+        try {
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            // Strip the data:image/jpeg;base64, prefix — native handler expects raw base64
+            base64 = canvas.toDataURL('image/jpeg', 0.7).split(',')[1];
+        } catch (err) {
+            console.warn(LOG_PREFIX, 'Canvas operation failed (tainted or removed video):', err.message);
+            scheduleNextSample(video);
+            return;
+        }
 
-        browser.runtime.sendMessage({
+        sendMessageWithRetry({
             type: 'analyzeVideoFrame',
             data: base64,
             selector: buildSelector(video),
             videoId: parseInt(videoId, 10)
-        }).catch(err => console.warn(LOG_PREFIX, 'analyzeVideoFrame failed:', err.message));
+        }).catch(err => console.warn(LOG_PREFIX, 'analyzeVideoFrame failed after retry:', err.message));
 
         // Schedule next sample at the appropriate interval
         scheduleNextSample(video);
@@ -324,8 +374,8 @@
         paragraphs.forEach(p => {
             scannedCount++;
             const payload = { type: 'analyzeText', text: p.text, textId: p.id, selector: p.selector };
-            browser.runtime.sendMessage(payload)
-                .catch(err => console.warn(LOG_PREFIX, 'analyzeText failed:', err.message));
+            sendMessageWithRetry(payload)
+                .catch(err => console.warn(LOG_PREFIX, 'analyzeText failed after retry:', err.message));
         });
 
         console.log(LOG_PREFIX, `Sent ${paragraphs.length} text chunks for analysis`);
