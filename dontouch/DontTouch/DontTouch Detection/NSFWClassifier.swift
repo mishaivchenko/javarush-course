@@ -8,12 +8,12 @@ import Vision
 /// Uses Apple's built-in VNClassifyImageRequest for on-device classification
 /// with no network calls. Flags images whose classification labels match
 /// NSFW-relevant categories (e.g., swimwear, lingerie, explicit content).
-class NSFWClassifier {
+public class NSFWClassifier {
     private var model: VNCoreMLModel?
     private let nsfwLabels: Set<String>
     private let labelWeights: [String: Double]
 
-    init() {
+    public init() {
         // Phase 2: load a custom CoreML model (if bundled)
         // Phase 1: VNClassifyImageRequest used as fallback — no model file needed
 
@@ -46,7 +46,7 @@ class NSFWClassifier {
     }
 
     /// Load a custom CoreML model from the given URL (optional, for Phase 2+).
-    func loadModel(at url: URL) throws {
+    public func loadModel(at url: URL) throws {
         let compiledUrl = try MLModel.compileModel(at: url)
         let mlModel = try MLModel(contentsOf: compiledUrl)
         self.model = try VNCoreMLModel(for: mlModel)
@@ -56,7 +56,7 @@ class NSFWClassifier {
     /// Falls back to VNClassifyImageRequest when no custom CoreML model is loaded.
     /// - Parameter ciImage: The image to classify.
     /// - Returns: A confidence score between 0.0 (safe) and 1.0 (likely NSFW).
-    func classify(_ ciImage: CIImage) async throws -> Double {
+    public func classify(_ ciImage: CIImage) async throws -> Double {
         if let model = model {
             return try await classifyWithCoreML(ciImage, model: model)
         }

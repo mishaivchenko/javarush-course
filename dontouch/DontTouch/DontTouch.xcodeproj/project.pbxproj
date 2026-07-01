@@ -14,6 +14,7 @@
 		10313820A382CD84461B0F43 /* blocklist.txt in Resources */ = {isa = PBXBuildFile; fileRef = F82566C2557EAA8B2F862DEE /* blocklist.txt */; };
 		22E94DF0202096DAF70D60F3 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 793D5F80A0105BFC16E2765A /* AppSettings.swift */; };
 		3B6D865A1ABB220094FA06B1 /* popup.html in Resources */ = {isa = PBXBuildFile; fileRef = B1FB9F31D42090C2B56CA815 /* popup.html */; };
+		3C63A1142D829B84634F5FCC /* DontTouch Detection.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 48891C0EC653E9259AB076DB /* DontTouch Detection.framework */; };
 		3FD221C36204DE07E25B42F1 /* NSFWClassifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DB602FE7E5A5CDB105C89C0 /* NSFWClassifier.swift */; };
 		3FF2525BF70299DC64318A8D /* icon-16.png in Resources */ = {isa = PBXBuildFile; fileRef = C74466CAE7C3FB1D146DFF8F /* icon-16.png */; };
 		40AC8021AD6678C614545A44 /* icon-48.png in Resources */ = {isa = PBXBuildFile; fileRef = A049C50CC9AE8FB99DCAE2B4 /* icon-48.png */; };
@@ -31,6 +32,7 @@
 		A4C70904378D0677B4EB05BD /* icon-512.png in Resources */ = {isa = PBXBuildFile; fileRef = 07F09EEE7526222980C75A1C /* icon-512.png */; };
 		A4C8B6B484FD9C67C89D9884 /* style.css in Resources */ = {isa = PBXBuildFile; fileRef = 98D6E948CF8B4F029064EF13 /* style.css */; };
 		AF856E513CB3615636FFDF9A /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BC4E2A1018927CB8AD0EA83 /* ContentView.swift */; };
+		B03E47CD6114DD39A2A4C57D /* contentBlocker.js in Resources */ = {isa = PBXBuildFile; fileRef = A9E8282D8D1BC433BE2DF6D8 /* contentBlocker.js */; };
 		CEE89E49482B9AE1EB6DD710 /* DontTouch Detection.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 48891C0EC653E9259AB076DB /* DontTouch Detection.framework */; };
 		D49BD4AFA3106EC47BEFCC44 /* manifest.json in Resources */ = {isa = PBXBuildFile; fileRef = 516BBF6A4573FAFFC363E7CE /* manifest.json */; };
 		EFA6F39EB3DF52A6BCB5DA0E /* content.js in Resources */ = {isa = PBXBuildFile; fileRef = 6CA4CD2F2465933C90B658DA /* content.js */; };
@@ -51,6 +53,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 7A7E774A6C24A6BB15E3E807;
 			remoteInfo = "DontTouch Extension";
+		};
+		983D42F8799B7D4591B2AC98 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 01424B7A9EFF600D855B78BD /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 56F85DDC2BC0B9F9A41952C6;
+			remoteInfo = "DontTouch Detection";
 		};
 /* End PBXContainerItemProxy section */
 
@@ -100,6 +109,7 @@
 		8DB602FE7E5A5CDB105C89C0 /* NSFWClassifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSFWClassifier.swift; sourceTree = "<group>"; };
 		98D6E948CF8B4F029064EF13 /* style.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = style.css; sourceTree = "<group>"; };
 		A049C50CC9AE8FB99DCAE2B4 /* icon-48.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon-48.png"; sourceTree = "<group>"; };
+		A9E8282D8D1BC433BE2DF6D8 /* contentBlocker.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = contentBlocker.js; sourceTree = "<group>"; };
 		B1FB9F31D42090C2B56CA815 /* popup.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = popup.html; sourceTree = "<group>"; };
 		C605778DC9268CD801E065CA /* DontTouch Extension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "DontTouch Extension.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C74466CAE7C3FB1D146DFF8F /* icon-16.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon-16.png"; sourceTree = "<group>"; };
@@ -127,6 +137,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				CEE89E49482B9AE1EB6DD710 /* DontTouch Detection.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FA1D9768D36556312A775392 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3C63A1142D829B84634F5FCC /* DontTouch Detection.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -194,6 +212,7 @@
 			children = (
 				6C6016C59ECDB0CEC5B30D40 /* background.js */,
 				6CA4CD2F2465933C90B658DA /* content.js */,
+				A9E8282D8D1BC433BE2DF6D8 /* contentBlocker.js */,
 				516BBF6A4573FAFFC363E7CE /* manifest.json */,
 				7FA45B4BC9F7B0FCCDC1DA9C /* popup.css */,
 				B1FB9F31D42090C2B56CA815 /* popup.html */,
@@ -254,10 +273,12 @@
 			buildPhases = (
 				41409CD83181517F5203F26A /* Sources */,
 				9683368BC153529D655E5977 /* Resources */,
+				FA1D9768D36556312A775392 /* Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				BCF1CB37104F3F8756C5E2D4 /* PBXTargetDependency */,
 			);
 			name = "DontTouch Extension";
 			packageProductDependencies = (
@@ -335,6 +356,7 @@
 			files = (
 				0218D0673E529BA10D5B62EA /* background.js in Resources */,
 				EFA6F39EB3DF52A6BCB5DA0E /* content.js in Resources */,
+				B03E47CD6114DD39A2A4C57D /* contentBlocker.js in Resources */,
 				866581323A361D94214265D3 /* icon-128.png in Resources */,
 				3FF2525BF70299DC64318A8D /* icon-16.png in Resources */,
 				5C17D8BA8B6F2CC17B7961B2 /* icon-32.png in Resources */,
@@ -395,6 +417,11 @@
 			isa = PBXTargetDependency;
 			target = 7A7E774A6C24A6BB15E3E807 /* DontTouch Extension */;
 			targetProxy = 84C2EA3AA4E2B879F1EC5DB2 /* PBXContainerItemProxy */;
+		};
+		BCF1CB37104F3F8756C5E2D4 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 56F85DDC2BC0B9F9A41952C6 /* DontTouch Detection */;
+			targetProxy = 983D42F8799B7D4591B2AC98 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 

@@ -32,7 +32,7 @@ import OSLog
 /// ```swift
 /// VideoAnalyzer.sampleRate = 3.0  // sample every 3 seconds
 /// ```
-class VideoAnalyzer {
+public class VideoAnalyzer {
     // MARK: - Configuration
 
     /// How often to sample a video frame (in seconds).
@@ -74,7 +74,7 @@ class VideoAnalyzer {
     /// to the given player item. Call `stopMonitoring()` to detach it.
     ///
     /// - Parameter playerItem: The player item whose video frames should be analyzed.
-    func startMonitoring(playerItem: AVPlayerItem) {
+    public func startMonitoring(playerItem: AVPlayerItem) {
         let output = AVPlayerItemVideoOutput(pixelBufferAttributes: [
             kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA
         ])
@@ -88,7 +88,7 @@ class VideoAnalyzer {
     ///
     /// Resets the running average. Call this when the player item is
     /// deallocated or when monitoring is no longer needed.
-    func stopMonitoring() {
+    public func stopMonitoring() {
         videoOutput = nil
         recentConfidences.removeAll()
         logger.debug("Video monitoring stopped")
@@ -106,7 +106,7 @@ class VideoAnalyzer {
     ///   to sample the frame.
     /// - Returns: The running average confidence over the last N frames (0.0 – 1.0).
     ///   Returns `0.0` if no video output is attached or the frame could not be copied.
-    func analyzeFrame(at time: CMTime) async -> Double {
+    public func analyzeFrame(at time: CMTime) async -> Double {
         guard let output = videoOutput else {
             logger.warning("analyzeFrame called without active monitoring")
             return 0.0
@@ -136,7 +136,7 @@ class VideoAnalyzer {
     /// The running average confidence over the last `runningAverageWindow` frames.
     ///
     /// Returns `0.0` when no frames have been analyzed yet.
-    var runningAverage: Double {
+    public var runningAverage: Double {
         guard !recentConfidences.isEmpty else { return 0.0 }
         return recentConfidences.reduce(0, +) / Double(recentConfidences.count)
     }
@@ -144,7 +144,7 @@ class VideoAnalyzer {
     /// Whether the running average exceeds the user's configured sensitivity threshold.
     ///
     /// Delegates to `AnalysisEngine.shared.shouldBlock(confidence:)`.
-    var shouldBlock: Bool {
+    public var shouldBlock: Bool {
         AnalysisEngine.shared.shouldBlock(confidence: runningAverage)
     }
 
@@ -154,7 +154,7 @@ class VideoAnalyzer {
     ///
     /// Call this when switching to a new video or after a threshold change
     /// to avoid a stale average from the previous content.
-    func reset() {
+    public func reset() {
         recentConfidences.removeAll()
         logger.debug("Running average reset")
     }

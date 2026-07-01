@@ -5,7 +5,7 @@ import Foundation
 ///
 /// This enables the Adapter Pattern: swap ML backends (CoreML, stub, future models)
 /// without changing the rest of the system.
-protocol ContentAnalyzer {
+public protocol ContentAnalyzer {
     /// Analyze a base64-encoded image.
     /// - Parameter imageData: Base64 string of the image (JPEG or PNG).
     /// - Returns: A confidence score between 0.0 (safe) and 1.0 (explicit).
@@ -19,7 +19,7 @@ protocol ContentAnalyzer {
 
 /// Default analyzer type used by AnalysisOrchestrator.
 /// Swap this out during tests or when switching ML backends.
-enum DefaultAnalyzer {
+public enum DefaultAnalyzer {
     static func make() -> ContentAnalyzer {
         // Uses Vision framework VNClassifyImageRequest with NSFW-relevant label mapping.
         // No custom CoreML model file needed — Apple's built-in on-device classifier handles it.
@@ -29,7 +29,7 @@ enum DefaultAnalyzer {
 
 /// Stub analyzer that always returns safe.
 /// Used during Phase 1 development before CoreML integration.
-struct StubAnalyzer: ContentAnalyzer {
+public struct StubAnalyzer: ContentAnalyzer {
     func analyzeImage(_ imageData: Data) async throws -> Double {
         // Stub: always returns 0.0 (safe)
         return 0.0

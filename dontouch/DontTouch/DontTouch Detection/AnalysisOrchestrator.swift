@@ -10,8 +10,8 @@ import CryptoKit
 /// 3. run analyzer
 /// 4. cache result
 /// 5. compare against threshold → return block decision
-actor AnalysisOrchestrator {
-    static let shared = AnalysisOrchestrator()
+public actor AnalysisOrchestrator {
+    public static let shared = AnalysisOrchestrator()
 
     private let analyzer: ContentAnalyzer
     private var cache: [String: CacheEntry] = [:]
@@ -29,7 +29,7 @@ actor AnalysisOrchestrator {
     }
 
     /// Analyze an image and return whether it should be blocked.
-    func analyzeImage(_ imageData: Data, url: String, threshold: Double? = nil) async throws -> AnalysisResult {
+    public func analyzeImage(_ imageData: Data, url: String, threshold: Double? = nil) async throws -> AnalysisResult {
         let effectiveThreshold = threshold ?? defaultThreshold
         let hash = sha256(of: imageData)
 
@@ -73,8 +73,14 @@ actor AnalysisOrchestrator {
     }
 }
 
-struct AnalysisResult {
-    let blocked: Bool
-    let confidence: Double
-    let cached: Bool
+public public struct AnalysisResult {
+    public let blocked: Bool
+    public let confidence: Double
+    public let cached: Bool
+
+    public init(blocked: Bool, confidence: Double, cached: Bool) {
+        self.blocked = blocked
+        self.confidence = confidence
+        self.cached = cached
+    }
 }

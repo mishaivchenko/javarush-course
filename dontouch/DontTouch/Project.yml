@@ -42,6 +42,8 @@ targets:
       INFOPLIST_FILE: DontTouch Extension/Info.plist
       MARKETING_VERSION: "1.0"
       CURRENT_PROJECT_VERSION: "1"
+    dependencies:
+      - target: DontTouch Detection
     info:
       path: DontTouch Extension/Info.plist
       properties:

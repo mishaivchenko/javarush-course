@@ -20,10 +20,10 @@ import OSLog
 /// let confidence = await AnalysisEngine.shared.analyzeImage(imageData)
 /// if AnalysisEngine.shared.shouldBlock(confidence: confidence) { ... }
 /// ```
-class AnalysisEngine {
+public class AnalysisEngine {
     // MARK: - Singleton
 
-    static let shared = AnalysisEngine()
+    public static let shared = AnalysisEngine()
 
     // MARK: - Dependencies
 
@@ -62,7 +62,7 @@ class AnalysisEngine {
     /// Delegates to `AnalysisOrchestrator` which uses `CoreMLAdapter` / `NSFWClassifier`
     /// backed by the Vision framework's built-in `VNClassifyImageRequest`.
     /// Results are cached by image data hash inside the orchestrator.
-    func analyzeImage(_ data: Data) async -> Double {
+    public func analyzeImage(_ data: Data) async -> Double {
         do {
             let result = try await orchestrator.analyzeImage(data, url: "")
             return result.confidence
@@ -80,7 +80,7 @@ class AnalysisEngine {
     ///   - url: The image source URL (used for cache key).
     ///   - data: Raw image data (JPEG / PNG).
     /// - Returns: A confidence score between 0.0 (safe) and 1.0 (likely NSFW).
-    func analyzeImage(url: String, data: Data) async -> Double {
+    public func analyzeImage(url: String, data: Data) async -> Double {
         if let cached = getCachedConfidence(for: url) {
             logger.debug("URL cache hit: \(url, privacy: .public)")
             return cached
@@ -103,7 +103,7 @@ class AnalysisEngine {
     ///
     /// - Parameter text: The text to analyze.
     /// - Returns: A confidence score between 0.0 (safe) and 1.0 (likely NSFW).
-    func analyzeText(_ text: String) -> Double {
+    public func analyzeText(_ text: String) -> Double {
         let tokens = tokenize(text)
         guard tokens.count >= Self.blocklistMinMatchCount else { return 0.0 }
 
@@ -123,7 +123,7 @@ class AnalysisEngine {
     ///
     /// - Parameter confidence: Detection confidence score (0.0 – 1.0).
     /// - Returns: `true` if confidence meets or exceeds the threshold.
-    func shouldBlock(confidence: Double) -> Bool {
+    public func shouldBlock(confidence: Double) -> Bool {
         let defaults = UserDefaults(suiteName: "group.com.yourname.donttouch")
             ?? UserDefaults.standard
         let threshold = defaults.object(forKey: "sensitivityThreshold") as? Double ?? 0.6
@@ -139,7 +139,7 @@ class AnalysisEngine {
     ///
     /// - Parameter pixelBuffer: A video frame pixel buffer.
     /// - Returns: A confidence score between 0.0 (safe) and 1.0 (likely NSFW).
-    func analyzeVideoFrame(_ pixelBuffer: CVPixelBuffer) async -> Double {
+    public func analyzeVideoFrame(_ pixelBuffer: CVPixelBuffer) async -> Double {
         let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
         do {
             return try await classifier.classify(ciImage)
@@ -155,7 +155,7 @@ class AnalysisEngine {
     ///
     /// - Parameter base64: Base64-encoded JPEG/PNG image data.
     /// - Returns: A confidence score between 0.0 (safe) and 1.0 (likely NSFW).
-    func analyzeVideoFrame(base64: String) async -> Double {
+    public func analyzeVideoFrame(base64: String) async -> Double {
         guard let data = Data(base64Encoded: base64),
               let ciImage = CIImage(data: data) else {
             logger.warning("Could not decode base64 video frame")

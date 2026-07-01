@@ -3,14 +3,14 @@ import CoreImage
 
 /// Utility for converting base64-encoded image data to CVPixelBuffer
 /// for Vision framework processing.
-class VideoFrameExtractor {
-    enum FrameError: Error {
+public class VideoFrameExtractor {
+    public enum FrameError: Error {
         case invalidData
         case conversionFailed
     }
 
     /// Convert base64 image data to a CVPixelBuffer.
-    func pixelBuffer(from base64String: String) throws -> CVPixelBuffer {
+    public func pixelBuffer(from base64String: String) throws -> CVPixelBuffer {
         guard let data = Data(base64Encoded: base64String) else {
             throw FrameError.invalidData
         }
@@ -18,7 +18,7 @@ class VideoFrameExtractor {
     }
 
     /// Convert raw image Data to a CVPixelBuffer.
-    func pixelBuffer(from data: Data) throws -> CVPixelBuffer {
+    public func pixelBuffer(from data: Data) throws -> CVPixelBuffer {
         guard let ciImage = CIImage(data: data) else {
             throw FrameError.invalidData
         }
@@ -26,7 +26,7 @@ class VideoFrameExtractor {
     }
 
     /// Convert a CIImage to a CVPixelBuffer.
-    func pixelBuffer(from ciImage: CIImage) throws -> CVPixelBuffer {
+    public func pixelBuffer(from ciImage: CIImage) throws -> CVPixelBuffer {
         let context = CIContext()
         let width = Int(ciImage.extent.width)
         let height = Int(ciImage.extent.height)

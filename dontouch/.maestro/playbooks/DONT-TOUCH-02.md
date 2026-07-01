@@ -46,13 +46,19 @@ This phase adds on-device CoreML models for detecting NSFW content in images, vi
 
   **Note:** `contentBlocker.js` was created in `DontTouch/DontTouch Extension/Resources/` (project uses `DontTouch Extension/`, not `DontTouchBlocker/`). Uses `browser.runtime.sendMessage()` (Safari Web Extension API) instead of `safari.extension.dispatchMessage()` (Safari App Extension API) to match the existing messaging architecture in `content.js`/`background.js`. Added `contentBlocker.js` to `manifest.json` as the first content script so style.css is injected before content.js runs. Removed the redundant `scanImages()` stub from `content.js`. Video scanning includes: `dt-video-blocked` data attribute to prevent re-scanning, play-event listener (fires once), canvas frame caps at 512×512 max, video pause + `.dt-video-overlay` when blocked. Text scanning uses `TreeWalker` with block-element boundary detection for natural paragraph grouping, capped at 2000 chars per message, tagged with `data-dt-text-id` for response targeting. Response handler supports three formats: new `action: 'block'|'unblock'` + `selector`, legacy `blocked: true` + `url`, and `textBlocked: true` + `textId`.
 
-- [ ] Wire up native-side message handling in `SafariExtensionHandler.swift`:
+- [x] Wire up native-side message handling in `SafariExtensionHandler.swift`:
   1. In the `messageReceived` method, add cases:
      - `"analyzeImages"`: iterate URLs, for each fetch image data via URLSession (yes, same-origin fetch), pass to `AnalysisEngine.shared.analyzeImage()`. Respond with `{action: "block" | "ok", selector: "img[src='url']"}` per image.
      - `"analyzeVideoFrame"`: decode base64 to `Data` → create `CGImageSource` → pass to `AnalysisEngine.shared.analyzeImage()`. Respond with block decision.
      - `"analyzeText"`: pass text to `AnalysisEngine.shared.analyzeText()`. If flagged, respond with `{action: "block", selector: "text-node-id"}`.
   2. All analysis runs on background queues. Use `dispatchGroup` to batch responses and send them at once.
   3. The extension's `SFSafariPage.dispatchMessageToScript()` is used to send responses back to the page script.
+
+  **Note:** Implemented via `SafariWebExtensionHandler.swift`. Added `DontTouch Detection` framework as a dependency for `DontTouch Extension` target in `Project.yml` so the handler can import `DontTouch_Detection`. All Detection framework types (AnalysisEngine, AnalysisOrchestrator, AnalysisResult, NSFWClassifier, VideoAnalyzer, VideoFrameExtractor, ContentAnalyzer protocol) marked `public` for cross-module access. Three handlers added:
+  - `handleAnalyzeImages`: Fetches images via URLSession using Swift `withTaskGroup` for concurrency, sends `{type: "donttouch-response", action: "block", selector: "..."}` per blocked image
+  - `handleAnalyzeVideoFrame`: Decodes base64 via `AnalysisEngine.analyzeVideoFrame(base64:)`, sends block response
+  - `handleAnalyzeText`: Synchronous blocklist matching via `AnalysisEngine.analyzeText()`, sends `{type: "donttouch-response", textBlocked: true, textId: N}` response
+  - `handleImageCheck` (legacy): Upgraded from Phase 1 stub to real on-device detection via `AnalysisEngine.analyzeImage(url:data:)`
 
 - [ ] Create a settings popover for the extension toolbar button:
   1. In `DontTouchBlocker`, create `SafariExtensionViewController`:
