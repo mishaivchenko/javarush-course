@@ -20,6 +20,32 @@
     let blockedCount = 0;
     let scannedCount = 0;
     let textIdCounter = 0;
+    let blockImagesEnabled = true;
+    let blockVideosEnabled = true;
+    let blockTextEnabled = true;
+    let isPaused = false;
+
+    // ── Settings ──────────────────────────────────────────────────────────────
+
+    /**
+     * Load block-type toggles from browser.storage.local.
+     * Called once on init and whenever the popup saves changes
+     * (received via onMessage).
+     */
+    async function loadSettings() {
+        try {
+            const result = await browser.storage.local.get([
+                'sensitivity', 'blockImages', 'blockVideos', 'blockText', 'isPaused'
+            ]);
+            blockImagesEnabled = result.blockImages !== false;
+            blockVideosEnabled = result.blockVideos !== false;
+            blockTextEnabled = result.blockText !== false;
+            isPaused = result.isPaused ?? false;
+            console.log(LOG_PREFIX, `Settings loaded — images:${blockImagesEnabled} videos:${blockVideosEnabled} text:${blockTextEnabled} paused:${isPaused}`);
+        } catch (err) {
+            console.warn(LOG_PREFIX, 'Failed to load settings:', err.message);
+        }
+    }
 
     // ── Image Scanning ──────────────────────────────────────────────────────
 
@@ -28,6 +54,7 @@
      * and send them in a batch to the native handler for analysis.
      */
     function scanImages() {
+        if (!blockImagesEnabled || isPaused) return;
         const images = document.querySelectorAll('img:not([data-dt-scanned])');
         const batch = [];
 
@@ -53,6 +80,7 @@
      * Attach play-event listeners to <video> elements not yet set up.
      */
     function setupVideoScanning() {
+        if (!blockVideosEnabled || isPaused) return;
         document.querySelectorAll('video:not([data-dt-video-setup])').forEach(video => {
             video.dataset.dtVideoSetup = 'true';
             video.addEventListener('play', onVideoPlay, { once: true });
@@ -123,6 +151,7 @@
      * semantic parent element so the response can target the right node.
      */
     function scanText() {
+        if (!blockTextEnabled || isPaused) return;
         const walker = document.createTreeWalker(
             document.body,
             NodeFilter.SHOW_TEXT,
@@ -234,13 +263,31 @@
     // ── Response Handling ───────────────────────────────────────────────────
 
     /**
-     * Listen for native handler responses relayed through the background script.
+     * Report the current blocked count to the background script
+     * so the popup can display it.
+     */
+    function reportBlockedCount() {
+        browser.runtime.sendMessage({ type: 'reportBlocked', count: blockedCount })
+            .catch(() => {}); // Ignore — background may not respond
+    }
+
+    /**
+     * Listen for messages:
+     * - 'donttouch-response' — block/unblock decisions from the native handler
+     * - 'settingsUpdated' — toggle state changes from the popup
+     * - 'donttouch-toggle' — pause/resume toggle from the native handler
      */
     browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
         if (message.type === 'donttouch-response') {
             handleBlockResponse(message);
+        } else if (message.type === 'settingsUpdated') {
+            // Reload settings when the popup saves changes
+            loadSettings();
+        } else if (message.type === 'donttouch-toggle') {
+            isPaused = !isPaused;
+            browser.storage.local.set({ isPaused });
+            console.log(LOG_PREFIX, 'Extension toggled:', isPaused ? 'paused' : 'active');
         }
-        // Return true for async response handling
         sendResponse({ received: true });
     });
 
@@ -294,6 +341,9 @@
 
             console.log(LOG_PREFIX, 'Blocked:', selector);
         });
+        if (blockedCount > 0) {
+            reportBlockedCount();
+        }
     }
 
     /**
@@ -454,16 +504,18 @@
 
         console.log(LOG_PREFIX, 'Scanner active');
 
-        // Initial scans
-        scanImages();
-        setupVideoScanning();
-        scanText();
+        // Load settings first, then start scanning
+        loadSettings().then(() => {
+            // Initial scans (gated by toggle state inside each function)
+            scanImages();
+            setupVideoScanning();
+            scanText();
 
-        // Watch for dynamic content
-        setupMutationObserver();
+            // Watch for dynamic content
+            setupMutationObserver();
 
-        // Log summary after initial scans complete
-        console.log(LOG_PREFIX, `Initial scan complete — scanned ${scannedCount} items`);
+            console.log(LOG_PREFIX, `Initial scan complete — scanned ${scannedCount} items`);
+        });
     }
 
     if (document.readyState === 'loading') {

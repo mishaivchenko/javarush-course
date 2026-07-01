@@ -25,16 +25,36 @@
             </label>
             <input type="range" id="sensitivitySlider" min="0" max="100" value="60">
 
+            <div class="toggle-row">
+                <label for="blockImages">Block Images</label>
+                <label class="switch">
+                    <input type="checkbox" id="blockImages" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="toggle-row">
+                <label for="blockVideos">Block Videos</label>
+                <label class="switch">
+                    <input type="checkbox" id="blockVideos" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="toggle-row">
+                <label for="blockText">Block Text</label>
+                <label class="switch">
+                    <input type="checkbox" id="blockText" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+
             <button id="toggleExtension" class="toggle-btn">Pause on This Page</button>
         </div>
 
         <div class="stats">
             <div class="stat">
-                <span class="stat-value" id="imagesScanned">0</span>
-                <span class="stat-label">Scanned</span>
-            </div>
-            <div class="stat">
-                <span class="stat-value" id="imagesBlocked">0</span>
+                <span class="stat-value" id="itemsBlocked">0</span>
                 <span class="stat-label">Blocked</span>
             </div>
         </div>

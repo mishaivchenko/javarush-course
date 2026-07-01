@@ -81,13 +81,24 @@ class SafariWebExtensionHandler: NSObject, SFSafariExtensionHandling {
             case "analyzeText":
                 self.handleAnalyzeText(userInfo: userInfo, page: page)
 
+            case "saveSettings":
+                self.handleSaveSettings(userInfo: userInfo, page: page)
+
             case "getState":
+                let defaults = UserDefaults(suiteName: "group.com.yourname.donttouch") ?? .standard
+                let threshold = defaults.object(forKey: "sensitivityThreshold") as? Double ?? 0.6
+                let blockImages = defaults.object(forKey: "blockImages") as? Bool ?? true
+                let blockVideos = defaults.object(forKey: "blockVideos") as? Bool ?? true
+                let blockText = defaults.object(forKey: "blockText") as? Bool ?? true
                 self.respond(to: page, result: [
                     "type": "donttouch-response",
                     "paused": false,
-                    "sensitivity": 60,
+                    "sensitivity": Int(threshold * 100),
                     "scanned": 0,
-                    "blocked": 0
+                    "blocked": 0,
+                    "blockImages": blockImages,
+                    "blockVideos": blockVideos,
+                    "blockText": blockText
                 ])
 
             default:
@@ -270,6 +281,44 @@ class SafariWebExtensionHandler: NSObject, SFSafariExtensionHandling {
             ])
             logger.debug("Text blocked (id: \(textId), confidence: \(confidence))")
         }
+    }
+
+    /// Handle settings persistence from the toolbar popup.
+    ///
+    /// Saves settings to UserDefaults (App Group) so both the host app
+    /// (`AppSettings.swift`) and native detection code (`AnalysisEngine.shouldBlock()`)
+    /// can read them.
+    ///
+    /// Payload format:
+    /// ```json
+    /// { "type": "saveSettings", "settings": { "sensitivity": 60, "blockImages": true, ... } }
+    /// ```
+    private func handleSaveSettings(userInfo: [String: Any]?, page: SFSafariPage) {
+        guard let userInfo = userInfo,
+              let settings = userInfo["settings"] as? [String: Any] else {
+            logger.debug("saveSettings: invalid payload")
+            return
+        }
+
+        let defaults = UserDefaults(suiteName: AppSettings.appGroupIdentifier) ?? .standard
+
+        if let sensitivity = settings["sensitivity"] as? Int {
+            let threshold = Double(sensitivity) / 100.0
+            defaults.set(threshold, forKey: "sensitivityThreshold")
+            logger.info("Sensitivity set to \(threshold)")
+        }
+
+        if let blockImages = settings["blockImages"] as? Bool {
+            defaults.set(blockImages, forKey: "blockImages")
+        }
+        if let blockVideos = settings["blockVideos"] as? Bool {
+            defaults.set(blockVideos, forKey: "blockVideos")
+        }
+        if let blockText = settings["blockText"] as? Bool {
+            defaults.set(blockText, forKey: "blockText")
+        }
+
+        logger.debug("Settings saved to App Groups")
     }
 
     // MARK: - Legacy Handler (Phase 1)

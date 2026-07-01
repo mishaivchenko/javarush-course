@@ -60,7 +60,7 @@ This phase adds on-device CoreML models for detecting NSFW content in images, vi
   - `handleAnalyzeText`: Synchronous blocklist matching via `AnalysisEngine.analyzeText()`, sends `{type: "donttouch-response", textBlocked: true, textId: N}` response
   - `handleImageCheck` (legacy): Upgraded from Phase 1 stub to real on-device detection via `AnalysisEngine.analyzeImage(url:data:)`
 
-- [ ] Create a settings popover for the extension toolbar button:
+- [x] Create a settings popover for the extension toolbar button:
   1. In `DontTouchBlocker`, create `SafariExtensionViewController`:
      - A small popover (width: 300, height: 250) with:
        - **Sensitivity slider** (0.0–1.0, default 0.6) stored in `UserDefaults` under key `blockThreshold`.
@@ -70,6 +70,16 @@ This phase adds on-device CoreML models for detecting NSFW content in images, vi
        - A small status label showing "Blocked X items on this page" (updated via message from the content script).
   2. Override `popoverViewController()` in `SafariExtensionHandler` to return this view controller.
   3. Connect the toggles and slider to `UserDefaults.shared` (App Group container so both main app and extension share settings). Add an App Group capability in both targets with identifier `group.com.yourname.donttouch`.
+  
+  **Note:** Uses Safari Web Extension popup model (popup.html/js/css) rather than native `SafariExtensionViewController`. Architecture:
+  - Popup saves to `browser.storage.local` (content script access) AND relays to native handler via `saveSettings` message
+  - `SafariWebExtensionHandler.handleSaveSettings()` writes to UserDefaults(App Group `group.com.yourname.donttouch`)
+  - `contentBlocker.js` reads toggles from `browser.storage.local` and gates `scanImages()`/`setupVideoScanning()`/`scanText()`
+  - Three toggle switches added to popup.html (css toggle switch styles in popup.css)
+  - Blocked count tracking: contentBlocker.js reports via `reportBlocked` message → background.js → popup reads
+  - App Groups entitlements created for both targets (`DontTouch.entitlements`, `DontTouch_Extension.entitlements`) and linked in `Project.yml`
+  - `background.js` extended with `saveSettings`/`reportBlocked`/`settingsUpdated` message routing
+  - Spec: `docs/superpowers/specs/2026-07-01-popover-settings-design.md`
 
 - [ ] Add text blocklist file:
   1. Create `blocklist.txt` in `DontTouchBlocker/Resources/` with one word per line. Include common adult content keywords (this is a blocker, so accuracy matters). Aim for ~100 entries covering explicit language and adult content indicators.
