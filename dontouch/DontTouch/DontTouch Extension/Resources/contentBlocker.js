@@ -20,10 +20,77 @@
     let blockedCount = 0;
     let scannedCount = 0;
     let textIdCounter = 0;
+    let videoIdCounter = 0;
     let blockImagesEnabled = true;
     let blockVideosEnabled = true;
     let blockTextEnabled = true;
     let isPaused = false;
+
+    // ── Per-Video Frame State ──────────────────────────────────────────────
+    // Each video gets a stable ID assigned at setup time. The sliding window
+    // tracks the last N frame results. Block only after 2 of 3 consecutive
+    // frames are flagged, preventing flicker on transient detections.
+    const VIDEO_WINDOW_SIZE = 3;
+    const VIDEO_BLOCK_THRESHOLD = 2;
+    const VIDEO_SAMPLE_INTERVAL_MS = 2000;
+    const VIDEO_SAMPLE_INTERVAL_BLOCKED_MS = 5000;
+
+    window.__dtVideoStates = {};
+
+    /**
+     * Get or initialize the frame state for a video element.
+     * Returns null if the video has no dt-video-id assigned.
+     */
+    function getVideoState(video) {
+        const videoId = video.dataset.dtVideoId;
+        return videoId ? (window.__dtVideoStates[videoId] || null) : null;
+    }
+
+    /**
+     * Initialize tracking state for a video.
+     */
+    function initVideoState(videoId, selector) {
+        window.__dtVideoStates[videoId] = {
+            blocked: false,       // Is this video currently visually blocked?
+            window: [],           // Sliding window of recent frame results (booleans)
+            selector: selector    // CSS selector for this video element
+        };
+    }
+
+    /**
+     * Record a frame result into the per-video sliding window and return
+     * the action to take:
+     * - 'block' if 2/3 consecutive frames are flagged and not yet blocked
+     * - 'unblock' if <2 frames flagged and currently blocked
+     * - null if no state change is needed
+     *
+     * Updates `state.blocked` to track the current visual state, keeping
+     * future calls aware of whether the video is currently hidden.
+     */
+    function updateVideoWindow(videoId, isFlagged) {
+        const state = window.__dtVideoStates[videoId];
+        if (!state) return null;
+
+        // Add result to the sliding window
+        state.window.push(isFlagged);
+        if (state.window.length > VIDEO_WINDOW_SIZE) {
+            state.window.shift();
+        }
+
+        // Count flagged frames in the current window
+        const flaggedCount = state.window.filter(Boolean).length;
+        const enoughWindowData = state.window.length >= 2; // have enough samples
+
+        if (!state.blocked && enoughWindowData && flaggedCount >= VIDEO_BLOCK_THRESHOLD) {
+            state.blocked = true;
+            return 'block';
+        } else if (state.blocked && flaggedCount < VIDEO_BLOCK_THRESHOLD) {
+            state.blocked = false;
+            return 'unblock';
+        }
+
+        return null;
+    }
 
     // ── Settings ──────────────────────────────────────────────────────────────
 
@@ -78,11 +145,21 @@
 
     /**
      * Attach play-event listeners to <video> elements not yet set up.
+     * Assigns each video a stable ID and initializes its frame state.
      */
     function setupVideoScanning() {
         if (!blockVideosEnabled || isPaused) return;
         document.querySelectorAll('video:not([data-dt-video-setup])').forEach(video => {
             video.dataset.dtVideoSetup = 'true';
+
+            // Assign unique video ID if not already present
+            if (!video.dataset.dtVideoId) {
+                const id = ++videoIdCounter;
+                video.dataset.dtVideoId = String(id);
+                const selector = buildSelector(video);
+                initVideoState(id, selector);
+            }
+
             video.addEventListener('play', onVideoPlay, { once: true });
         });
     }
@@ -100,13 +177,19 @@
     }
 
     /**
-     * Sample a video frame to a canvas every 2 seconds and send the
-     * base64-encoded image data to the native handler for analysis.
+     * Sample a video frame to a canvas and send the base64-encoded image
+     * data to the native handler for analysis.
+     *
+     * Continues sampling even while visually blocked so the sliding window
+     * can detect when it is safe to unblock. Uses an adaptive interval:
+     * 2 seconds while active, 5 seconds while blocked.
      */
     function scheduleFrameSample(video) {
-        if (video.paused || video.ended || video.dataset.dtVideoBlocked === 'true') {
-            return;
-        }
+        if (video.ended) return;
+        if (video.paused && !(video.dataset.dtVideoBlocked === 'true')) return;
+
+        const videoId = video.dataset.dtVideoId;
+        if (!videoId) return;
 
         const canvas = document.createElement('canvas');
         // Cap dimensions to avoid sending enormous images
@@ -117,7 +200,7 @@
 
         const ctx = canvas.getContext('2d');
         if (!ctx) {
-            setTimeout(() => scheduleFrameSample(video), 2000);
+            scheduleNextSample(video);
             return;
         }
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
@@ -128,17 +211,33 @@
         browser.runtime.sendMessage({
             type: 'analyzeVideoFrame',
             data: base64,
-            selector: buildSelector(video)
+            selector: buildSelector(video),
+            videoId: parseInt(videoId, 10)
         }).catch(err => console.warn(LOG_PREFIX, 'analyzeVideoFrame failed:', err.message));
 
-        // Schedule next sample in 2 seconds
+        // Schedule next sample at the appropriate interval
+        scheduleNextSample(video);
+    }
+
+    /**
+     * Schedule the next frame sample.
+     * Uses a shorter interval when active, longer when blocked (so the
+     * sliding window can still accumulate clean frames to trigger unblock).
+     */
+    function scheduleNextSample(video) {
+        if (video.ended) return;
+        const videoState = getVideoState(video);
+        const interval = (videoState && videoState.blocked)
+            ? VIDEO_SAMPLE_INTERVAL_BLOCKED_MS
+            : VIDEO_SAMPLE_INTERVAL_MS;
+
         setTimeout(() => {
-            if (!video.paused && !video.ended) {
+            if (!video.ended) {
                 scheduleFrameSample(video);
             } else {
                 video.dataset.dtPlaying = 'false';
             }
-        }, 2000);
+        }, interval);
     }
 
     // ── Text Scanning ───────────────────────────────────────────────────────
@@ -294,12 +393,27 @@
     /**
      * Process a block/unblock response from the native extension.
      *
-     * Response format:
-     *   { action: 'block' | 'unblock', selector: '<CSS selector>', ... }
-     *   or legacy format:
-     *   { blocked: true, url: '<image URL>' }
+     * Response types:
+     *   - frameResult: video frame analysis result — routes through the
+     *     per-video sliding window (2-of-3 consecutive frames to block)
+     *   - block/unblock with selector: direct block decision (images, etc.)
+     *   - legacy: { blocked: true, url: '...' }
+     *   - textBlocked: text blocklist match
      */
     function handleBlockResponse(response) {
+        // Video frame result — route through per-video sliding window
+        if (response.action === 'frameResult' && response.videoId != null && response.selector) {
+            const windowAction = updateVideoWindow(response.videoId, response.isFlagged);
+            if (windowAction === 'block') {
+                applyBlock(response.selector);
+                console.log(LOG_PREFIX, `Video blocked after 2/3 frames (id:${response.videoId})`);
+            } else if (windowAction === 'unblock') {
+                applyUnblock(response.selector);
+                console.log(LOG_PREFIX, `Video unblocked — running avg below threshold (id:${response.videoId})`);
+            }
+            return;
+        }
+
         // New format: action + selector
         if (response.action === 'block' && response.selector) {
             applyBlock(response.selector);

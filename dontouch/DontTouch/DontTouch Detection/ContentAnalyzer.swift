@@ -30,12 +30,12 @@ public enum DefaultAnalyzer {
 /// Stub analyzer that always returns safe.
 /// Used during Phase 1 development before CoreML integration.
 public struct StubAnalyzer: ContentAnalyzer {
-    func analyzeImage(_ imageData: Data) async throws -> Double {
+    public func analyzeImage(_ imageData: Data) async throws -> Double {
         // Stub: always returns 0.0 (safe)
         return 0.0
     }
 
-    func analyzeText(_ text: String) -> Double {
+    public func analyzeText(_ text: String) -> Double {
         // Stub: always returns 0.0 (safe)
         return 0.0
     }

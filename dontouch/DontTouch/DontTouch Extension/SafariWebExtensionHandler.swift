@@ -1,6 +1,5 @@
 import SafariServices
 import OSLog
-import DontTouch_Detection
 
 /// Native handler for the Safari Web Extension.
 /// Conforms to SFSafariExtensionHandling to bridge between the
@@ -111,22 +110,13 @@ class SafariWebExtensionHandler: NSObject, SFSafariExtensionHandling {
         }
     }
 
-    /// Validate that the extension should run on the given page.
-    func validate(
-        context: SFSafariExtensionContext,
-        validationHandler: @escaping (Bool, NSError?) -> Void
-    ) {
-        validationHandler(true, nil)
-    }
-
     /// Handle toolbar button click.
     func toolbarItemClicked(in window: SFSafariWindow) {
         logger.debug("Toolbar item clicked")
-        window.getActivePage { page in
-            page?.dispatchMessageToScript(
-                withName: "donttouch-toggle",
-                userInfo: nil
-            )
+        window.getActiveTab { tab in
+            tab?.getActivePage { page in
+                page?.dispatchMessageToScript(withName: "donttouch-toggle", userInfo: nil)
+            }
         }
     }
 
@@ -221,33 +211,45 @@ class SafariWebExtensionHandler: NSObject, SFSafariExtensionHandling {
     /// Handle video frame analysis from contentBlocker.js.
     ///
     /// Decodes the base64-encoded frame data and runs on-device detection.
-    /// If the frame exceeds the sensitivity threshold, sends a block response
-    /// with the video element's CSS selector.
+    /// Always responds with the frame result (`isFlagged: true/false`) and
+    /// the `videoId` so the content script can update its sliding window
+    /// and only block after 2-of-3 consecutive flagged frames.
     ///
     /// Payload format:
     /// ```json
-    /// { "type": "analyzeVideoFrame", "data": "<base64>", "selector": "..." }
+    /// { "type": "analyzeVideoFrame", "data": "<base64>", "selector": "...", "videoId": 1 }
+    /// ```
+    ///
+    /// Response format:
+    /// ```json
+    /// { "type": "donttouch-response", "action": "frameResult", "videoId": 1,
+    ///   "isFlagged": true, "selector": "..." }
     /// ```
     private func handleAnalyzeVideoFrame(userInfo: [String: Any]?, page: SFSafariPage) {
         guard let userInfo = userInfo,
               let base64 = userInfo["data"] as? String,
-              let selector = userInfo["selector"] as? String else {
+              let selector = userInfo["selector"] as? String,
+              let videoId = userInfo["videoId"] as? Int else {
             logger.debug("analyzeVideoFrame: invalid payload")
             return
         }
 
-        logger.debug("Analyzing video frame for: \(selector, privacy: .public)")
+        logger.debug("Analyzing video frame (id:\(videoId)) for: \(selector, privacy: .public)")
 
         Task {
             let confidence = await engine.analyzeVideoFrame(base64: base64)
+            let isFlagged = engine.shouldBlock(confidence: confidence)
 
-            if engine.shouldBlock(confidence: confidence) {
-                self.respond(to: page, result: [
-                    "type": "donttouch-response",
-                    "action": "block",
-                    "selector": selector
-                ])
-                self.logger.info("Video frame blocked: \(selector, privacy: .public)")
+            self.respond(to: page, result: [
+                "type": "donttouch-response",
+                "action": "frameResult",
+                "videoId": videoId,
+                "isFlagged": isFlagged,
+                "selector": selector
+            ])
+
+            if isFlagged {
+                self.logger.debug("Video frame flagged (id:\(videoId))")
             }
         }
     }
