@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="drawio" version="30.2.6">
+  <diagram name="Generate Flow">
+    <mxGraphModel>
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Flow title -->
+        <mxCell id="title" value="&lt;b&gt;Haiku 50 — Full Request Cycle&lt;/b&gt;" style="text;html=1;fontSize=16;fontColor=#333333;fillColor=none;strokeColor=none;align=center;" vertex="1" parent="1">
+          <mxGeometry x="210" y="10" width="280" height="30" as="geometry"/>
+        </mxCell>
+
+        <!-- ===== Phase 1: USER INPUT ===== -->
+        <mxCell id="phase1" value="Phase 1: User Input" style="swimlane;startSize=28;whiteSpace=wrap;html=1;fontStyle=1;fontSize=12;fillColor=#d5e8d4;gradientColor=#e8f4e8;gradientDirection=south;shadow=1;rounded=1;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry x="30" y="50" width="340" height="100" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="start" value="&lt;b&gt;User enters&lt;br&gt;keywords + language + wasabi&lt;/b&gt;" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;shadow=1;fontSize=12;" vertex="1" parent="phase1">
+          <mxGeometry x="15" y="35" width="140" height="48" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="click-gen" value="&lt;b&gt;Clicks Generate&lt;br&gt;or presses Enter&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;shadow=1;arcSize=10;fontSize=12;" vertex="1" parent="phase1">
+          <mxGeometry x="185" y="38" width="130" height="42" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e-start-click" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;flowAnimation=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="phase1" source="start" target="click-gen">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- ===== Phase 2: CLIENT VALIDATION ===== -->
+        <mxCell id="phase2" value="Phase 2: Client Validation" style="swimlane;startSize=28;whiteSpace=wrap;html=1;fontStyle=1;fontSize=12;fillColor=#dae8fc;gradientColor=#eef4fb;gradientDirection=south;shadow=1;rounded=1;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry x="430" y="50" width="340" height="100" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="client-valid" value="&lt;b&gt;Keywords: 3–7?&lt;br&gt;Language selected?&lt;/b&gt;" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;shadow=1;fontSize=12;" vertex="1" parent="phase2">
+          <mxGeometry x="25" y="30" width="130" height="45" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="client-error" value="&lt;b&gt;Show error&lt;/b&gt;&lt;br&gt;&lt;font style='font-size:10px'&gt;in Result Card&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;shadow=1;arcSize=10;fontSize=12;" vertex="1" parent="phase2">
+          <mxGeometry x="185" y="35" width="130" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- Cross-swimlane: Phase 1 → Phase 2 -->
+        <mxCell id="e-click-valid" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="click-gen" target="client-valid">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Phase 2 internal: No branch -->
+        <mxCell id="e-valid-no" value="&lt;b&gt;No&lt;/b&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;fontColor=#b85450;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="phase2" source="client-valid" target="client-error">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Cross-swimlane: Phase 2 → Phase 3 (Yes branch — route through inter-tier gap) -->
+        <mxCell id="e-valid-yes" value="&lt;b&gt;Yes&lt;/b&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;fontColor=#82b366;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;entryX=0.5;entryY=0;flowAnimation=1;" edge="1" parent="1" source="client-valid" target="api-call">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="520" y="175"/>
+              <mxPoint x="130" y="175"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- ===== Phase 3: API REQUEST → RESPONSE ===== -->
+        <mxCell id="phase3" value="Phase 3: API Request → Response" style="swimlane;startSize=28;whiteSpace=wrap;html=1;fontStyle=1;fontSize=12;fillColor=#ffe6cc;gradientColor=#fef2e4;gradientDirection=south;shadow=1;rounded=1;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry x="30" y="200" width="740" height="280" as="geometry"/>
+        </mxCell>
+
+        <!-- Row 1 (y=35) -->
+        <mxCell id="api-call" value="&lt;b&gt;fetch POST /generate-haiku&lt;/b&gt;&lt;br&gt;&lt;font style='font-size:10px'&gt;AbortController (30s timeout)&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;shadow=1;arcSize=10;fontSize=12;" vertex="1" parent="phase3">
+          <mxGeometry x="20" y="35" width="160" height="44" as="geometry"/>
+        </mxCell>
+        <mxCell id="oa" value="&lt;b&gt;OpenAI API&lt;/b&gt;&lt;br&gt;&lt;font style='font-size:10px'&gt;gpt-5-nano · Chat Completions&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;shadow=1;arcSize=10;fontSize=12;" vertex="1" parent="phase3">
+          <mxGeometry x="230" y="35" width="160" height="44" as="geometry"/>
+        </mxCell>
+        <mxCell id="cf-decision" value="&lt;b&gt;Content filter&lt;br&gt;triggered?&lt;/b&gt;" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;shadow=1;fontSize=12;" vertex="1" parent="phase3">
+          <mxGeometry x="430" y="35" width="140" height="45" as="geometry"/>
+        </mxCell>
+        <mxCell id="cf-modal" value="&lt;b&gt;Show Profanity Modal&lt;/b&gt;&lt;br&gt;&lt;font style='font-size:10px'&gt;Flagged words list&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;shadow=1;arcSize=10;fontSize=12;" vertex="1" parent="phase3">
+          <mxGeometry x="600" y="38" width="120" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- Row 2 (y=95) -->
+        <mxCell id="sv" value="&lt;b&gt;validateRequest()&lt;/b&gt;&lt;br&gt;&lt;font style='font-size:10px'&gt;words[3..7], lang, wasabi&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;shadow=1;arcSize=10;fontSize=12;" vertex="1" parent="phase3">
+          <mxGeometry x="20" y="95" width="160" height="44" as="geometry"/>
+        </mxCell>
+        <mxCell id="bp" value="&lt;b&gt;buildPrompt()&lt;/b&gt;&lt;br&gt;&lt;font style='font-size:10px'&gt;prompts.js — base + spice + safety&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;shadow=1;arcSize=10;fontSize=12;" vertex="1" parent="phase3">
+          <mxGeometry x="230" y="95" width="160" height="44" as="geometry"/>
+        </mxCell>
+        <mxCell id="nh" value="&lt;b&gt;normalizeHaiku()&lt;/b&gt;&lt;br&gt;&lt;font style='font-size:10px'&gt;Strip markdown → split → trim → 3 lines&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;shadow=1;arcSize=10;fontSize=12;" vertex="1" parent="phase3">
+          <mxGeometry x="430" y="95" width="160" height="44" as="geometry"/>
+        </mxCell>
+        <mxCell id="retry-box" value="&lt;b&gt;Retry API&lt;/b&gt;&lt;br&gt;&lt;font style='font-size:10px'&gt;1 attempt, stricter prompt&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;shadow=1;arcSize=10;fontSize=12;" vertex="1" parent="phase3">
+          <mxGeometry x="600" y="95" width="120" height="44" as="geometry"/>
+        </mxCell>
+
+        <!-- Row 3 (y=165) -->
+        <mxCell id="sv-decision" value="&lt;b&gt;Valid?&lt;/b&gt;" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;shadow=1;fontSize=12;" vertex="1" parent="phase3">
+          <mxGeometry x="30" y="165" width="140" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="sv-400" value="&lt;b&gt;400: error&lt;/b&gt;&lt;br&gt;&lt;font style='font-size:10px'&gt;Return to client&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;shadow=1;arcSize=10;fontSize=12;" vertex="1" parent="phase3">
+          <mxGeometry x="230" y="168" width="120" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="lt3" value="&lt;b&gt;&amp;lt; 3 lines?&lt;/b&gt;" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;shadow=1;fontSize=12;" vertex="1" parent="phase3">
+          <mxGeometry x="440" y="165" width="140" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="fallback-box" value="&lt;b&gt;Fallback haiku&lt;/b&gt;&lt;br&gt;&lt;font style='font-size:10px'&gt;Stock text (free)&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;shadow=1;arcSize=10;fontSize=12;" vertex="1" parent="phase3">
+          <mxGeometry x="600" y="155" width="120" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- Row 4 (y=225) -->
+        <mxCell id="end-box" value="&lt;b&gt;Haiku displayed&lt;/b&gt;&lt;br&gt;&lt;font style='font-size:10px'&gt;in Result Card&lt;/font&gt;" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;shadow=1;fontSize=12;" vertex="1" parent="phase3">
+          <mxGeometry x="30" y="225" width="140" height="45" as="geometry"/>
+        </mxCell>
+        <mxCell id="history-box" value="&lt;b&gt;Save to history&lt;/b&gt;&lt;br&gt;&lt;font style='font-size:10px'&gt;localStorage (max 100)&lt;/font&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;shadow=1;fontSize=12;" vertex="1" parent="phase3">
+          <mxGeometry x="230" y="225" width="160" height="45" as="geometry"/>
+        </mxCell>
+        <mxCell id="done-box" value="&lt;b&gt;resultState = 'done'&lt;/b&gt;&lt;br&gt;&lt;font style='font-size:10px'&gt;renderDone()&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;shadow=1;arcSize=10;fontSize=12;" vertex="1" parent="phase3">
+          <mxGeometry x="440" y="225" width="140" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- ===== INTERNAL EDGES: Row 1 → Row 1 ===== -->
+        <mxCell id="e-api-sv" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="phase3" source="api-call" target="sv">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e-bp-oa" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;entryX=0.5;entryY=1;" edge="1" parent="phase3" source="bp" target="oa">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e-oa-cf" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="phase3" source="oa" target="cf-decision">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e-cf-yes" value="&lt;b&gt;Yes&lt;/b&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;fontColor=#b85450;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="phase3" source="cf-decision" target="cf-modal">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e-cf-no" value="&lt;b&gt;No&lt;/b&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;fontColor=#82b366;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;entryX=0.5;entryY=0;flowAnimation=1;" edge="1" parent="phase3" source="cf-decision" target="nh">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Row 1 → Row 2: validation pipeline -->
+        <mxCell id="e-sv-decision" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="phase3" source="sv" target="sv-decision">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Row 2 → Row 3: decision branches -->
+        <mxCell id="e-sv-no" value="&lt;b&gt;No&lt;/b&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;fontColor=#b85450;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="phase3" source="sv-decision" target="sv-400">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e-sv-yes" value="&lt;b&gt;Yes&lt;/b&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;fontColor=#82b366;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;entryX=0.5;entryY=0;flowAnimation=1;" edge="1" parent="phase3" source="sv-decision" target="bp">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="210" y="185"/>
+              <mxPoint x="210" y="80"/>
+              <mxPoint x="310" y="80"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Row 2 horizontal: normalize pipeline -->
+        <mxCell id="e-nh-lt3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="phase3" source="nh" target="lt3">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Row 3: decisions → actions -->
+        <mxCell id="e-lt3-yes" value="&lt;b&gt;Yes&lt;/b&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;fontColor=#b85450;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="phase3" source="lt3" target="retry-box">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e-lt3-no" value="&lt;b&gt;No&lt;/b&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;fontColor=#82b366;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;entryX=0.5;entryY=0;flowAnimation=1;" edge="1" parent="phase3" source="lt3" target="done-box">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Retry → fallback (vertical down) -->
+        <mxCell id="e-retry-fallback" value="still &amp;lt; 3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=10;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="phase3" source="retry-box" target="fallback-box">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Fallback → done (short leftward, Row 3) -->
+        <mxCell id="e-fallback-done" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;entryX=1;entryY=0.5;" edge="1" parent="phase3" source="fallback-box" target="done-box">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Bottom row connections (routes above the row via gap between Row 3 & Row 4) -->
+        <mxCell id="e-done-history" value="!fallback" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=10;labelBackgroundColor=#ffffff;exitX=0;exitY=0.5;entryX=1;entryY=0.5;" edge="1" parent="phase3" source="history-box" target="done-box">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e-history-end" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="phase3" source="end-box" target="history-box">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- done → end when fallback (routes below the bottom row to avoid history-box) -->
+        <mxCell id="e-done-end" value="fallback=true" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=10;labelBackgroundColor=#ffffff;exitX=0;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="phase3" source="done-box" target="end-box">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="430" y="245"/>
+              <mxPoint x="430" y="275"/>
+              <mxPoint x="20" y="275"/>
+              <mxPoint x="20" y="247"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

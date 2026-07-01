@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="drawio" version="30.2.6">
+  <diagram name="State Machine">
+    <mxGraphModel>
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Title -->
+        <mxCell id="title" value="&lt;b&gt;Haiku 50 — State Machine&lt;/b&gt;" style="text;html=1;fontSize=16;fontColor=#333333;fillColor=none;strokeColor=none;align=center;" vertex="1" parent="1">
+          <mxGeometry x="240" y="10" width="280" height="30" as="geometry"/>
+        </mxCell>
+
+        <!-- Legend -->
+        <mxCell id="legend" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8f8f8;strokeColor=#cccccc;shadow=1;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="20" y="20" width="250" height="125" as="geometry"/>
+        </mxCell>
+        <mxCell id="legend-title" value="&lt;b&gt;Legend&lt;/b&gt;" style="text;html=1;fontSize=12;fillColor=none;strokeColor=none;" vertex="1" parent="legend">
+          <mxGeometry x="10" y="6" width="80" height="18" as="geometry"/>
+        </mxCell>
+        <mxCell id="l-state" value="State" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;shadow=1;arcSize=8;fontSize=11;" vertex="1" parent="legend">
+          <mxGeometry x="10" y="28" width="70" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="l-state-label" value="= resultState value" style="text;html=1;fontSize=11;fillColor=none;strokeColor=none;" vertex="1" parent="legend">
+          <mxGeometry x="88" y="30" width="150" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="l-initial" value="Initial" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;shadow=1;fontSize=11;" vertex="1" parent="legend">
+          <mxGeometry x="10" y="58" width="70" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="l-initial-label" value="= entry point on load" style="text;html=1;fontSize=11;fillColor=none;strokeColor=none;" vertex="1" parent="legend">
+          <mxGeometry x="88" y="60" width="150" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="l-modal" value="Modal" style="rounded=1;dashed=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;shadow=1;arcSize=8;fontSize=11;" vertex="1" parent="legend">
+          <mxGeometry x="10" y="88" width="70" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="l-modal-label" value="= overlay (non-blocking)" style="text;html=1;fontSize=11;fillColor=none;strokeColor=none;" vertex="1" parent="legend">
+          <mxGeometry x="88" y="90" width="150" height="20" as="geometry"/>
+        </mxCell>
+
+        <!-- ===== STATES ===== -->
+
+        <!-- EMPTY (initial) — centered top -->
+        <mxCell id="s-empty" value="&lt;b&gt;EMPTY&lt;/b&gt;&lt;br&gt;&lt;font style='font-size:10px'&gt;No haiku yet — waiting for input&lt;/font&gt;" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;shadow=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="340" y="50" width="160" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- LOADING — below empty -->
+        <mxCell id="s-loading" value="&lt;b&gt;LOADING&lt;/b&gt;&lt;br&gt;&lt;font style='font-size:10px'&gt;Spinner + &amp;quot;Composing the lines…&amp;quot;&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;shadow=1;arcSize=10;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="340" y="160" width="160" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- DONE — bottom-left -->
+        <mxCell id="s-done" value="&lt;b&gt;DONE&lt;/b&gt;&lt;br&gt;&lt;font style='font-size:10px'&gt;3 haiku lines + lang/spice tags&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;shadow=1;arcSize=10;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="120" y="330" width="160" height="48" as="geometry"/>
+        </mxCell>
+
+        <!-- ERROR — bottom center-right -->
+        <mxCell id="s-error" value="&lt;b&gt;ERROR&lt;/b&gt;&lt;br&gt;&lt;font style='font-size:10px'&gt;! icon + error message text&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;shadow=1;arcSize=10;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="360" y="330" width="160" height="48" as="geometry"/>
+        </mxCell>
+
+        <!-- PROFANITY MODAL — right of loading -->
+        <mxCell id="s-profanity" value="&lt;b&gt;PROFANITY MODAL&lt;/b&gt;&lt;br&gt;&lt;font style='font-size:10px'&gt;Overlay with red word chips&lt;/font&gt;" style="rounded=1;dashed=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;shadow=1;arcSize=10;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="590" y="160" width="170" height="48" as="geometry"/>
+        </mxCell>
+
+        <!-- ⚠ label above profanity -->
+        <mxCell id="modal-label" value="&lt;b&gt;⚠ Overlays ALL states&lt;/b&gt;&lt;br&gt;Returns to EMPTY on close" style="text;html=1;fontSize=10;fillColor=none;strokeColor=none;fontColor=#b85450;align=center;" vertex="1" parent="1">
+          <mxGeometry x="600" y="130" width="150" height="26" as="geometry"/>
+        </mxCell>
+
+        <!-- ===== TRANSITIONS ===== -->
+
+        <!-- t1: EMPTY → LOADING (vertical down) -->
+        <mxCell id="t1" value="&lt;b&gt;generate()&lt;/b&gt;&amp;nbsp;valid keywords + lang" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;labelBackgroundColor=#ffffff;flowAnimation=1;strokeColor=#82b366;strokeWidth=2;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="s-empty" target="s-loading">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- t2: LOADING → DONE (vertical down, then left) -->
+        <mxCell id="t2" value="&lt;b&gt;API success&lt;/b&gt;&amp;nbsp;200 { haiku }" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;labelBackgroundColor=#ffffff;flowAnimation=1;strokeColor=#82b366;strokeWidth=2;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="s-loading" target="s-done">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="200" y="270"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- t3: LOADING → ERROR (down-right, short) -->
+        <mxCell id="t3" value="&lt;b&gt;API / network error&lt;/b&gt;&amp;nbsp;timeout / 400 / 500 / offline" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;labelBackgroundColor=#ffffff;strokeColor=#b85450;strokeWidth=2;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="s-loading" target="s-error">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- t4: LOADING → PROFANITY (horizontal right) -->
+        <mxCell id="t4" value="&lt;b&gt;profanityWords&lt;/b&gt;&amp;nbsp;from API" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;labelBackgroundColor=#ffffff;strokeColor=#b85450;strokeWidth=2;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="s-loading" target="s-profanity">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- t5: PROFANITY → EMPTY (down → right corridor → up into empty right side) -->
+        <mxCell id="t5" value="&lt;b&gt;Modal closed&lt;/b&gt;&amp;nbsp;✕ / Escape / backdrop" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;labelBackgroundColor=#ffffff;exitX=1;exitY=1;entryX=1;entryY=0.25;" edge="1" parent="1" source="s-profanity" target="s-empty">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="780" y="208"/>
+              <mxPoint x="780" y="62"/>
+              <mxPoint x="500" y="62"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- t6: ERROR → EMPTY (top-right → right corridor → empty right side) -->
+        <mxCell id="t6" value="&lt;b&gt;User clears input&lt;/b&gt;&amp;nbsp;or retries" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;labelBackgroundColor=#ffffff;exitX=1;exitY=0;entryX=1;entryY=0.5;" edge="1" parent="1" source="s-error" target="s-empty">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="530" y="330"/>
+              <mxPoint x="530" y="75"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- t7: DONE → EMPTY (bottom → right corridor → empty right side) -->
+        <mxCell id="t7" value="&lt;b&gt;Clears keywords&lt;/b&gt;&amp;nbsp;or starts new" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;entryX=1;entryY=0.75;" edge="1" parent="1" source="s-done" target="s-empty">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="200" y="400"/>
+              <mxPoint x="530" y="400"/>
+              <mxPoint x="530" y="87"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- t8: DONE → LOADING (top → horizontal corridor → loading bottom) -->
+        <mxCell id="t8" value="&lt;b&gt;Generate again&lt;/b&gt;&amp;nbsp;new keywords" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;labelBackgroundColor=#ffffff;flowAnimation=1;strokeColor=#82b366;exitX=0.5;exitY=0;entryX=0.5;entryY=1;" edge="1" parent="1" source="s-done" target="s-loading">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="200" y="260"/>
+              <mxPoint x="420" y="260"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

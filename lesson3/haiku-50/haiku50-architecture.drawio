@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="drawio" version="30.2.6">
+  <diagram name="Architecture">
+    <mxGraphModel>
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- ===== TIER 1: BROWSER ===== -->
+        <mxCell id="t1" value="" style="swimlane;startSize=42;whiteSpace=wrap;html=1;fontStyle=1;fontSize=15;fillColor=#dae8fc;gradientColor=#eef4fb;gradientDirection=south;shadow=1;rounded=1;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="30" y="40" width="740" height="200" as="geometry"/>
+        </mxCell>
+        <mxCell id="t1-title" value="&lt;b&gt;Browser&lt;/b&gt;&amp;nbsp;&amp;nbsp;—&amp;nbsp;&amp;nbsp;index.html (single-file frontend)" style="text;html=1;fontSize=14;fontColor=#333;fillColor=none;strokeColor=none;" vertex="1" parent="t1">
+          <mxGeometry x="60" y="8" width="450" height="26" as="geometry"/>
+        </mxCell>
+        <mxCell id="t1-icon" value="" style="shape=mxgraph.webicons.html5;rounded=0;whiteSpace=wrap;html=1;fillColor=#E44D26;" vertex="1" parent="t1">
+          <mxGeometry x="20" y="4" width="30" height="34" as="geometry"/>
+        </mxCell>
+
+        <!-- Row 1 -->
+        <mxCell id="bento" value="&lt;b&gt;Bento Grid&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:10px&#39;&gt;6 cards — Result, Keywords,&lt;br&gt;Language, Wasabi, History, Info&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;shadow=1;arcSize=10;fontSize=12;" vertex="1" parent="t1">
+          <mxGeometry x="25" y="60" width="155" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="state-m" value="&lt;b&gt;State Machine&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:10px&#39;&gt;resultState: empty / loading / done / error&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;shadow=1;arcSize=10;fontSize=12;" vertex="1" parent="t1">
+          <mxGeometry x="205" y="60" width="155" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="api-c" value="&lt;b&gt;API Client&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:10px&#39;&gt;fetch POST /generate-haiku&lt;br&gt;AbortController (30s timeout)&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;shadow=1;arcSize=10;fontSize=12;" vertex="1" parent="t1">
+          <mxGeometry x="385" y="60" width="155" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="render-f" value="&lt;b&gt;Render Functions&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:10px&#39;&gt;6 render*() — state to DOM&lt;br&gt;renderResult() dispatches states&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;shadow=1;arcSize=10;fontSize=12;" vertex="1" parent="t1">
+          <mxGeometry x="565" y="60" width="155" height="55" as="geometry"/>
+        </mxCell>
+
+        <!-- Row 2 -->
+        <mxCell id="history" value="&lt;b&gt;History&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:10px&#39;&gt;localStorage, max 100 entries&lt;/font&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;shadow=1;fontSize=12;" vertex="1" parent="t1">
+          <mxGeometry x="25" y="130" width="155" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="splash" value="&lt;b&gt;Splash Screen&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:10px&#39;&gt;3s SVG animation + fade-out&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;shadow=1;arcSize=10;fontSize=12;" vertex="1" parent="t1">
+          <mxGeometry x="205" y="130" width="155" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="prof-modal" value="&lt;b&gt;Profanity Modal&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:10px&#39;&gt;Overlay with flagged words&lt;br&gt;Close: X / Escape / backdrop&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;shadow=1;arcSize=10;fontSize=12;" vertex="1" parent="t1">
+          <mxGeometry x="385" y="130" width="155" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="escape-html" value="&lt;b&gt;escapeHtml()&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:10px&#39;&gt;XSS protection for DOM&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;shadow=1;arcSize=10;fontSize=12;" vertex="1" parent="t1">
+          <mxGeometry x="565" y="130" width="155" height="55" as="geometry"/>
+        </mxCell>
+
+        <!-- ===== TIER 2: SERVER ===== -->
+        <mxCell id="t2" value="" style="swimlane;startSize=42;whiteSpace=wrap;html=1;fontStyle=1;fontSize=15;fillColor=#ffe6cc;gradientColor=#fef2e4;gradientDirection=south;shadow=1;rounded=1;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="30" y="290" width="740" height="200" as="geometry"/>
+        </mxCell>
+        <mxCell id="t2-title" value="&lt;b&gt;Server&lt;/b&gt;&amp;nbsp;&amp;nbsp;—&amp;nbsp;&amp;nbsp;server.js (Express + OpenAI SDK)" style="text;html=1;fontSize=14;fontColor=#333;fillColor=none;strokeColor=none;" vertex="1" parent="t2">
+          <mxGeometry x="60" y="8" width="450" height="26" as="geometry"/>
+        </mxCell>
+        <mxCell id="t2-icon" value="" style="shape=mxgraph.office.servers.server_generic;rounded=0;whiteSpace=wrap;html=1;fillColor=#DA4026;" vertex="1" parent="t2">
+          <mxGeometry x="20" y="5" width="27" height="32" as="geometry"/>
+        </mxCell>
+
+        <!-- Row 1 (Server) -->
+        <mxCell id="validation" value="&lt;b&gt;validateRequest()&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:10px&#39;&gt;words[3..7], language, wasabi[0..6]&lt;br&gt;Source of truth — same rules as client&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;shadow=1;arcSize=10;fontSize=12;" vertex="1" parent="t2">
+          <mxGeometry x="25" y="60" width="210" height="58" as="geometry"/>
+        </mxCell>
+        <mxCell id="route" value="&lt;b&gt;POST /generate-haiku&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:10px&#39;&gt;Main route: validate + prompt + API + normalize + retry&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;shadow=1;arcSize=10;fontSize=12;" vertex="1" parent="t2">
+          <mxGeometry x="265" y="60" width="230" height="58" as="geometry"/>
+        </mxCell>
+        <mxCell id="retry-logic" value="&lt;b&gt;Retry Logic&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:10px&#39;&gt;If &amp;lt; 3 lines: 1 retry with stricter prompt&lt;br&gt;Still fails: stock fallback haiku&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;shadow=1;arcSize=10;fontSize=12;" vertex="1" parent="t2">
+          <mxGeometry x="525" y="60" width="200" height="58" as="geometry"/>
+        </mxCell>
+
+        <!-- Row 2 (Server) -->
+        <mxCell id="prompts" value="&lt;b&gt;prompts.js&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:10px&#39;&gt;buildPrompt() — base + spice + safety&lt;br&gt;normalizeHaiku() — strip, split, trim, pad&lt;br&gt;SPICE_DESCRIPTIONS[0..6]&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;shadow=1;arcSize=10;fontSize=12;" vertex="1" parent="t2">
+          <mxGeometry x="25" y="135" width="210" height="58" as="geometry"/>
+        </mxCell>
+        <mxCell id="fallback" value="&lt;b&gt;Fallback Haiku&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:10px&#39;&gt;Silence / where words should be / a blank page&lt;br&gt;Only used when OpenAI fails twice&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;shadow=1;arcSize=10;fontSize=12;" vertex="1" parent="t2">
+          <mxGeometry x="265" y="135" width="230" height="58" as="geometry"/>
+        </mxCell>
+        <mxCell id="content-filter" value="&lt;b&gt;Content Filter&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:10px&#39;&gt;OpenAI content_filter error&lt;br&gt;returns 400 with profanityWords[]&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;shadow=1;arcSize=10;fontSize=12;" vertex="1" parent="t2">
+          <mxGeometry x="525" y="135" width="200" height="58" as="geometry"/>
+        </mxCell>
+
+        <!-- Server internal edges — left-to-right across rows -->
+        <mxCell id="e-route-valid" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="t2" source="validation" target="route"/>
+        <mxCell id="e-route-retry" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="t2" source="route" target="retry-logic"/>
+        <mxCell id="e-route-prompts" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="t2" source="route" target="prompts"/>
+        <mxCell id="e-route-fallback" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="t2" source="retry-logic" target="fallback"/>
+        <mxCell id="e-route-filter" value="&lt;b&gt;400&lt;/b&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=#ffffff;fontSize=11;fontColor=#b85450;exitX=0;exitY=0.5;exitDx=0;entryX=1;entryY=0.5;" edge="1" parent="t2" source="content-filter" target="route"/>
+
+        <!-- ===== TIER 3: EXTERNAL ===== -->
+        <mxCell id="t3" value="External API" style="swimlane;startSize=34;whiteSpace=wrap;html=1;fontStyle=1;fontSize=13;fillColor=#f5f5f5;gradientColor=#fafafa;gradientDirection=south;strokeColor=#999999;dashed=0;shadow=1;rounded=1;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="30" y="540" width="740" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="openai" value="&lt;b&gt;OpenAI API&lt;/b&gt;&lt;br&gt;&lt;font style=&#39;font-size:10px&#39;&gt;gpt-5-nano-2025-08-07 | reasoning_effort: low | temperature: 0.8&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#999999;shadow=1;arcSize=10;fontSize=12;" vertex="1" parent="t3">
+          <mxGeometry x="250" y="40" width="260" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- ===== CROSS-TIER EDGES ===== -->
+
+        <!-- Browser → Server: POST request (vertical down, right side) -->
+        <mxCell id="e-http" value="&lt;b&gt;POST /generate-haiku&lt;/b&gt;&amp;nbsp;{ words[], language, wasabiLevel }" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;fontColor=#333;labelBackgroundColor=#ffffff;flowAnimation=1;strokeColor=#d79b00;strokeWidth=2;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="api-c" target="route">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Server → External: OpenAI call (vertical down, center) -->
+        <mxCell id="e-openai" value="&lt;b&gt;HTTPS&lt;/b&gt;&amp;nbsp;Chat Completions" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;labelBackgroundColor=#ffffff;flowAnimation=1;strokeColor=#9673a6;strokeWidth=2;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="route" target="openai">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Server → Browser: response (routes up the RIGHT side of swimlanes) -->
+        <mxCell id="e-response" value="&lt;b&gt;200&lt;/b&gt; { haiku, fallback }&amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp;&lt;b&gt;400&lt;/b&gt; { error, profanityWords }&amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp;&lt;b&gt;500&lt;/b&gt; { error }" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;fontColor=#333;labelBackgroundColor=#ffffff;strokeColor=#82b366;strokeWidth=2;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="route" target="api-c">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="580" y="355"/>
+              <mxPoint x="580" y="125"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
